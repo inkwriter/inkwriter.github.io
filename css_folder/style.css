@@ -1,0 +1,253 @@
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+* {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: black;
+    font-family: 'Abel', cursive, Arial, Helvetica, sans-serif;
+    color: white;
+    font-size: 16px;
+    flex-wrap: wrap;
+}
+
+body, html {
+    height: 100%;
+    margin: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.hero-image {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("../img_folder/hero.jpg");
+    height: 50%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+}
+
+.hero-text {
+    text-align: center;
+    position: absolute;
+    bottom: 0; /* Align the text to the bottom of the hero */
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 15px;
+    text-shadow: #FC0 1px 0 10px;
+}
+
+h1 {
+    font-family: 'Amatic SC', cursive, Arial, Helvetica, sans-serif;
+    color: white;
+    /* font-size: 130px; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h2 {
+    font-family: 'Abel', cursive, Arial, Helvetica, sans-serif;
+    color: white;
+    font-size: 25px;
+}
+
+h1, h2 {
+    margin: 10px;
+}
+
+p {
+    font-family: 'Abel', cursive, Arial, Helvetica, sans-serif;
+    color: white;
+    font-size: 16px;
+    margin: 10px;
+}
+
+nav {
+    background-color: #CC5500;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+nav ul {
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    list-style-type: none;
+}
+
+nav a {
+    display: block;
+    padding: .8rem 0;
+    color: #000;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+nav li.active {
+    background-color: rgba(0, 0, 0, .3);
+}
+
+nav a:hover {
+    background-color: rgba(0, 0, 0, .2);
+}
+
+button#hamburgerBtn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2.4rem;
+    cursor: pointer;
+    padding: 0 30px 0 2vw;
+}
+
+#primaryNav {
+    display: none;
+}
+
+img {
+    width: 500px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+
+.dot {
+    height: 150px;
+    width: 150px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+footer {
+    display: flex;
+    border: 100px;
+}
+
+.clouds {
+    background:('img_folder/cloud.png');
+    position: absolute;
+    opacity: 0.35;
+    animation: moveClouds 35s linear infinite;
+    right: 0;
+}
+
+.cloud1 {
+    background:('img_folder/cloud.png');
+    position: absolute;
+    opacity: 0.35;
+    animation: moveCloud1 50s linear infinite;
+    top: 30%;
+    left: 20%; /* Adjust the starting position of the first cloud */
+  }
+  
+  .cloud2 {
+    background:('img_folder/cloud.png');
+    position: absolute;
+    opacity: 0.35;
+    animation: moveCloud2 35s linear infinite;
+    top: 50%;
+    left: 30%; /* Adjust the starting position of the second cloud */
+  }
+  
+  .cloud3 {
+    background:('img_folder/cloud.png');
+    position: absolute;
+    opacity: 0.35;
+    animation: moveCloud3 45s linear infinite;
+    top: 70%;
+    left: 80%; /* Adjust the starting position of the third cloud */
+  }
+
+div img {
+    width: 150px;
+}
+
+.project {
+    width: 300px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.mailto-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #CC5500; /* Button background color */
+    color: #fff; /* Button text color */
+    text-decoration: none; /* Remove underline */
+    border-radius: 5px; /* Rounded corners */
+    font-weight: bold;
+}
+
+.mailto-button:hover {
+    background-color: #0056b3; /* Change color on hover */
+}
+
+.sticky-nav-container {
+    position: sticky;
+    top: 0;
+    background-color: #CC5500; /* Customize the background color */
+    z-index: 100; /* Optional: adjust the z-index if needed */
+  }
+
+
+#intro {
+    margin-bottom: 150px;
+}
+
+#Projects {
+    margin-bottom: 150px;
+}
+
+
+
+@keyframes moveClouds {
+    0% {
+      left: 100%; /* Start position on the right */
+    }
+    100% {
+      left: -100%; /* End position on the left */
+    }
+  }
+  
+  @keyframes moveCloud1 {
+    0% {
+      left: 50%; /* Start position on the right for the first cloud */
+    }
+    100% {
+      left: -50%; /* End position on the left for the first cloud */
+    }
+  }
+  
+  @keyframes moveCloud2 {
+    0% {
+      left: 120%; /* Start position on the right for the second cloud */
+    }
+    100% {
+      left: -120%; /* End position on the left for the second cloud */
+    }
+  }
+  
+  @keyframes moveCloud3 {
+    0% {
+      left: 140%; /* Start position on the right for the third cloud */
+    }
+    100% {
+      left: -140%; /* End position on the left for the third cloud */
+    }
+  }

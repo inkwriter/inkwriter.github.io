@@ -1,20 +1,72 @@
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <title>Portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Basic Webpage</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Abel&display=swap" rel="stylesheet">
     <link href="css_folder/style.css" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 </head>
-
 <body>
-    <h1>Hello World</h1>
+    <div class="sticky-nav-container">
+        <nav class="clearfix">
+            <div>
+                <button id="hamburgerBtn">&#9776;</button>
+                <ul id="primaryNav" class="hidden"> <!-- Apply the "hidden" class here -->
+                    <li class="active"><a href="index.html">Home</a></li>
+                    <li><a href="#About">About</a></li>
+                    <li><a href="#Projects">Projects</a></li>
+                    <li><a href="#Contact">Contact</a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+    <div class="hero-image">
+        <div class="hero-text">
+            <h1>"The earth has music for those who listen." - Reginald Holmes</h1>
+        </div>
+        <section>
+            <div>
+              <img class="clouds" src="img_folder/cloud.png" alt="Cloud Image">
+              <img class="cloud1" src="img_folder/cloud.png" alt="Cloud Image">
+              <img class="cloud2" src="img_folder/cloud.png" alt="Cloud Image">
+              <img class="cloud3" src="img_folder/cloud.png" alt="Cloud Image">
+            </div>
+        </section>
+    </div>
+    <main>
+        <div class="mainContent">
+            <div id="intro">
+                <img class="dot" src="img_folder/Jake.png">
+                <p>Greetings, fellow travelers. I'm Jake, a web developer and cybersecurity 
+                    enthusiast who takes pleasure in unraveling the mysteries of the digital 
+                    world, as well as exploring the hidden wonders of creation. I live in 
+                    a small town in Eastern Kentucky. </p>
+            </div>
+            <div id="Projects">
+                <h2>Projects</h2>
+                <img class="project" src="img_folder/goblins.png">
+                <p>Goblins is a choose your own adventure game demo. 
+                        It features the game itself and an About page.
+                         It uses flex box to keep the page responsive. 
+                         Basic javascript is used to handle the hamburger
+                          button, roll for damage on the About page, and
+                           to act as a choice tree with the decisions made on the Home page.
+                </p>
+            </div>
+            <h2 id="Contact">Contact</h2>
+            <p></p>
+            <button class="mailto-button" onclick="location.href='mailto:jacobbsexton@gmail.com';">Connect with me</button>
+            <p>Email:jacobbsexton@gmail.com</p>
+            <img src="img_folder/IMG_9498.PNG">
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2023 YourWebsiteName</p>
+    </footer>
     <script src="js_folder/main.js"></script>
 </body>
-
 </html>
