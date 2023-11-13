@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Goblins | About</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <link href="css_folder/goblinsStyle.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+</head>
+
+<body>
+    <nav class="clearfix">
+        <div>
+            <button id="hamburgerBtn">&#9776;</button>
+            <ul id="primaryNav">
+                <li class="active"><a href="about.html">About</a></li>
+                <li><a href="goblins.html">Goblins</a></li>
+                <li><a href="index.html">Portfolio</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="hero-image">
+        <div class="hero-text">
+            <h1 style="font-size:50px">About</h1>
+        </div>
+    </div>
+
+
+
+    <main>
+        <div class="mainContent">
+
+            <h2>Welcome!</h2>
+
+            <p>Goblins is a simple choose your own adventure game. You are an adventurer, hired to bring down a camp
+                of
+                aggressive
+                goblins that are camped outide of town. Becareful though, as there may be traps and other surpirses
+                along
+                the way!
+            </p>
+
+            <h2> Features Coming Soon!</h2>
+            <p>Here are a list of features we plan on implenting over the next couple of months. Including:</p>
+            <div class="List">
+                <h2>Choosing a class:</h2>
+                <div class="rpgColumn">
+                    <div class="Direction">
+                        <div class="classMedium DirectionLarge">
+                            <p class="Names">Warrior</p>
+                            <div>
+                                <p class="description">This class is centered around strength and physcial combat,
+                                    usually using melee weapons.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <img class="Picture" src="img_folder/sword.jpg" alt="">
+                        </div>
+                    </div>
+                    <div class="Direction">
+                        <div class="classMedium DirectionLarge">
+                            <p class="Names">Rogue</p>
+                            <div>
+                                <p class="description">This class is centered around stealth and cunning, usually using
+                                    traps and quiet means to avoid combat entirely.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <img class="Picture" src="img_folder/daggers.jpg" alt="">
+                        </div>
+                    </div>
+                    <div class="Direction">
+                        <div class="classMedium DirectionLarge">
+                            <p class="Names">Wizard</p>
+                            <div>
+                                <p class="description">This class is centered around using spells in combat.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <img class="Picture" src="img_folder/staff.jpg" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="List">
+                <h2>Choosing a race:</h2>
+                <div class="rpgColumn">
+                    <div class="Direction">
+                        <div class="classMedium DirectionLarge">
+                            <p class="Names">Human</p>
+                            <div>
+                                <p class="description">Humans are creative trail-blazers, never being afraid of seeing
+                                    how far they can go.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <img class="Picture" src="img_folder/human.jpg" alt="">
+                        </div>
+                    </div>
+                    <div class="Direction">
+                        <div class="classMedium DirectionLarge">
+                            <p class="Names">Elf</p>
+                            <div>
+                                <p class="description">Elves are a people of magic, but mostly keeping to themselves.
+                                </p>
+                            </div>
+                        </div>
+                        <div>
+                            <img class="Picture" src="img_folder/elf.jpg" alt="">
+                        </div>
+                    </div>
+                    <div class="Direction">
+                        <div class="classMedium DirectionLarge">
+                            <p class="Names">Dwarf</p>
+                            <div>
+                                <p class="description">Dwarves are mountain dwellers who are almost always working on
+                                    something.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <img class="Picture" src="img_folder/dwarf.jpg" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h2>Weapons</h2>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Damage</th>
+                </tr>
+                <tr>
+                    <td>Fist</td>
+                    <td>Melee</td>
+                    <td>1d2</td>
+                </tr>
+                <tr>
+                    <td>Great Sword</td>
+                    <td>Melee</td>
+                    <td>3d6</td>
+                </tr>
+                <tr>
+                    <td>Mace</td>
+                    <td>Melee</td>
+                    <td>1d6</td>
+                </tr>
+                <tr>
+                    <td>Short Bow</td>
+                    <td>Ranged</td>
+                    <td>1d6</td>
+                </tr>
+                <tr>
+                    <td>Sling</td>
+                    <td>Ranged</td>
+                    <td>1d4</td>
+                </tr>
+            </table>
+            <p>Click here to test how much damage the great sword could do.</p>
+            <button onclick="document.getElementById('demo').innerHTML = final()">Roll for damage</button>
+            <p id="demo"></p>
+            <br>
+            <p>A few other things to look forward to are: </p>
+            <ul>
+                <li>New enemies</li>
+                <li>Dice rolls opening up new scenarios</li>
+                <li>And a contact form for you to send suggestions in.</li>
+            </ul>
+
+
+    </main>
+    <footer>
+        <!--CSS Animation-->
+        <div class="wrapper">
+            <div class="flame-wrapper">
+                <div class="flame darkgreen"></div>
+                <div class="flame green"></div>
+                <div class="flame gold"></div>
+                <div class="flame white"></div>
+            </div>
+        </div>
+    </footer>
+    <script src="js_folder/goblinsMain.js"></script>
+</body>
+
+</html>
