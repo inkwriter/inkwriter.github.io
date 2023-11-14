@@ -44,6 +44,10 @@ body, html {
     text-shadow: #FC0 1px 0 10px;
 }
 
+#intro {
+  margin-bottom: 150px;
+}
+
 h1 {
     font-family: 'Amatic SC', cursive, Arial, Helvetica, sans-serif;
     color: white;
@@ -93,10 +97,6 @@ nav a {
     text-decoration: none;
     display: flex;
     flex-wrap: wrap;
-}
-
-nav li.active {
-    background-color: rgba(0, 0, 0, .3);
 }
 
 nav a:hover {
@@ -210,12 +210,28 @@ div img {
     margin-bottom: 150px;
 }
 
-
 #Projects {
-    margin-bottom: 150px;
+  margin-bottom: 150px;
 }
 
+#Projects h2 {
+    text-align: center;
+} 
 
+.projectImg {
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+.mainContent{
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 25px 10px;
+  padding: 5px; 
+}
 
 @keyframes moveClouds {
     0% {
@@ -251,4 +267,100 @@ div img {
     100% {
       left: -140%; /* End position on the left for the third cloud */
     }
+  }
+
+
+  @media only screen and (min-width: 768px) {
+
+    #primaryNav {
+      display: flex;
+      margin-left: 2vw;
+    }
+
+    nav button {
+      display: none;
+    }
+
+    nav ul {
+      margin-left: 2vw;
+      display: block;
+    }
+      
+    nav li {
+      float:left;
+      width: auto;
+    }
+
+    nav a {
+      padding: 10px;
+    }
+
+    #intro {
+      display: flex; /* Use flex container */
+      align-items: center; /* Align items vertically in the center */
+      margin-bottom: 150px;
+    }
+    
+    #intro img {
+      margin-right: 30px;
+      margin-left: 20px;
+    }
+
+    #Projects {
+      display: flex; /* Use flex container */
+      align-items: center; /* Align items vertically in the center */
+    }
+
+    #Projects img {
+      margin-right: 30px;
+      margin-left: 20px;
+    }
+
+    #Contact {
+      display: flex;
+      justify-content: space-between; /* Adjust as needed */
+      align-items: center; /* Adjust as needed */
+    }
+
+    #Contact .mailto-button {
+      display: inline-block;
+      width: auto; /* Adjust the padding to make the button smaller */
+      border-radius: 5px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-left: 20px;
+      margin-bottom: 20px;
+    }
+
+    #Contact img {
+      margin-left: 50px;
+    }
+
+  }
+
+  @media only screen and (min-width: 1024px) {
+
+    #primaryNav {
+      display: flex;
+      margin-left: 2vw;
+    }
+
+    nav button {
+      display: none;
+    }
+
+    nav ul {
+      margin-left: 2vw;
+      display: block;
+    }
+      
+    nav li {
+      float:left;
+      width: auto;
+    }
+
+    nav a {
+      padding: 10px;
+    }
+
   }
