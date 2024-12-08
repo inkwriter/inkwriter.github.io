@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css_folder/banditsBaneStyle.css">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  </head>
+  <body>
+    <div class="game-screen">
+      <div class="stats">
+        <div class="stats-left">
+          <span id="playerName"></span>
+          <p>XP: <span id="xp">0/100</span></p>
+          <p>HP: <span id="hp">100</span></p>
+          <div class="stats-dropdown">
+            <button class="stats-btn">STATS</button>
+            <div class="stats-list">
+              <p>Attack: <span id="att">0</span></p>
+              <p>Defense: <span id="def">0</span></p>
+              <p>Speed: <span id="spd">0</span></p>
+            </div>
+          </div>
+        </div>
+        <div class="stats-left">
+          <div class="weatherSection">
+            <div id="weatherInfo">Loading</div>
+          </div>
+          <p>lvl <span id="level">1</span></p>
+          <p>Gold: <span id="gold">30</span></p>
+          <div class="inventory-dropdown">
+            <button class="inventory-button">INV</button>
+            <div class="inventory-list">
+              <p class="item">HP Potions <span id="healthPotions">0</span></p>
+              <p class="item">Poison <span id="poison">0</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <img src="/img_folder/shop.jpeg" id="shop">
+      </div>
+      <div class="shopItems">
+          <div class="item">
+            <p>HP Potion - 10 Gold</p>
+            <button id="buyPotionsBtn">Buy</button>
+          </div>
+          <div class="item">
+            <p>Poison - 20 Gold</p>
+            <button>Buy</button>
+          </div>
+      </div>
+      <div class="buttons">
+        <a href="gamePage.html">
+          <button id="backToTheWild">BACK TO THE WILD</button>
+        </a>
+      </div>
+    </div>
+    <script type="module" src="../js_folder/gameData.js"></script>
+    <script type="module" src="../js_folder/shop.js"></script>
+    <script type="module" src="../js_folder/global.js"></script>
+    <script type="module" src="../js_folder/weather.js"></script>
+  </body>
+</html>

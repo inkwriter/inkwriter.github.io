@@ -1,0 +1,486 @@
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+* {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+p {
+    margin: 1px;
+}
+
+body {
+    background-color:  #1B263B;
+    color: #00B4D8;
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vhpx;
+}
+
+h1, h2 {
+    font-family: 'Alegreya', serif;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: space-between;
+}
+
+button {
+    background-color: #3D5A80;
+    color: #FFFFFF;
+    border: 1px solid #00B4D8;
+    height: 60px;
+    width: 80px;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #FF6700;;
+    color: #FFFFFF;
+    transform: scale(1.05); /* Slightly enlarge button on hover */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.choice-buttons button:disabled {
+    background-color: #2E3B4E; /* Muted background for disabled buttons */
+    color: #AAAAAA; /* Muted text color */
+    border: 1px solid #555555; /* Subtle border for clarity */
+    cursor: not-allowed; /* Change cursor to indicate unclickable */
+    opacity: 0.7; /* Slightly fade the button for a disabled effect */
+    transition: none; /* Remove hover animation for disabled state */
+}
+
+a button {
+    display: inline-block;
+    /* margin: 10px; */
+}
+
+.shopItems {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.shopItems button {
+    height: 40px;
+    width: 60;
+    border-radius: 25%;
+}
+
+.game-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    background-color: #1B263B;
+    color: #00B4D8;
+    padding: 20px;
+    /* border: 2px solid #3D5A80; */
+    border-radius: 10px;
+}
+
+.stats {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px;
+    flex-wrap: wrap;
+}
+
+.stats-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.stats-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.stats span {
+    margin: 0 10px;
+}
+
+.inventory-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.inventory-list {
+    display: none;
+    position: absolute;
+    background-color: black;
+    color: #00B4D8;
+    border: 1px solid #00B4D8;
+    padding: 10px;
+    z-index: 1;
+}
+
+.inventory-dropdown:hover .inventory-list {
+    display: block;
+}
+
+.inventory-button {
+    background-color: black;
+    color: #00B4D8;
+    border: 1px solid #00B4D8;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 25%;
+    height: 30px;
+    width: 60px;
+}
+
+.hidden {
+    display: none;
+}
+
+#animated-gif {
+    width: 80%;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    background-color: yellow;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+#camp {
+    width: 100%;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    background-color: yellow;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+#shop {
+    width: 100%;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    background-color: yellow;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+#banditEnemy {
+    width: 100%;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    background-color: yellow;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+#banditKingPic {
+    width: 100%;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+#village {
+    width: 100%;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+.gif-text {
+    color: black;
+}
+
+.stats-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.stats-list {
+    display: none;
+    position: absolute;
+    background-color: black;
+    color: #00B4D8;
+    border: 1px solid #00B4D8;
+    padding: 10px;
+    z-index: 1;
+}
+
+.stats-dropdown:hover .stats-list {
+    display: block;
+}
+
+.stats-btn {
+    background-color: black;
+    color: #00B4D8;
+    border: 1px solid #00B4D8;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 25%;
+    height: 30px;
+    width: 60px;
+}
+
+.enemyHP {
+    display: flex;
+}
+
+#combat-feeback-box {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    max-width: 300px;
+    text-align: left;
+}
+
+#comabt-feedback-box div {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.inventory-dropdown,
+.stats-dropdown {
+    background-color: #3D5A80;
+    border-radius: 5px;
+    color: #FFFFFF;
+}
+
+.inventory-list p.item,
+stats-list p {
+    color: #00B4D8;
+}
+
+.introButton {
+    height: auto;
+    width: auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    text-align: center;
+    margin: 10px;
+}
+
+.choice-buttons {
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap if necessary */
+    justify-content: center; /* Center the buttons horizontally */
+    gap: 20px; /* Space between buttons */
+    margin: 20px 0; /* Space around the entire section */
+}
+
+.choice-buttons h3 {
+    width: 100%; /* Ensure headings take up full width */
+    text-align: center;
+    margin-bottom: 10px; /* Space below headings */
+}
+
+.choice-buttons button {
+    background-color: #3D5A80;
+    color: #FFFFFF;
+    border: 1px solid #00B4D8;
+    border-radius: 5px;
+    height: 50px;
+    width: 100px;
+    text-align: center;
+    font-size: 16px;
+    transition: all 0.2s ease-in-out;
+}
+
+.choice-buttons button:hover {
+    background-color: #FF6700;
+    color: #FFFFFF;
+}
+
+.journey-button {
+    float: center;
+}
+
+.combat-container {
+    text-align: center;
+    position: relative;
+}
+
+#dialogueBox {
+    position: absolute;
+    top: 50%; /* or adjust as needed */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    opacity: 1;
+    transition: opacity 0.5s;
+}
+
+.dialogue-box.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#backToTheWild {
+    height: 90px;
+}
+
+#combat-feedback-box {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: black;
+    max-width: 300px;
+    text-align: left;
+}
+
+#comabt-feedback-box div {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+#playerAttackFeedback, #enemyAttackFeedback {
+    display: block;
+    background-color: black;
+    color: white;
+    padding: 5px;
+    margin: 5px 0;
+    border-radius: 3px;
+    text-align: center;
+}
+
+
+/* For tablets and medium-sized devices (768px and up) */
+@media only screen and (min-width: 768px) {
+    #camp, #shop, #banditEnemy, #banditKingPic, #village {
+        height: 300px; /* Increase image size */
+    }
+    
+    body {
+        padding: 40px;
+        font-size: 16px;
+    }
+
+    .game-screen {
+        max-width: 700px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    button {
+        height: 60px;
+        width: 100px;
+        font-size: 14px;
+    }
+
+    .stats {
+        flex-wrap: nowrap;
+        justify-content: space-around;
+    }
+
+    .stats-btn, .inventory-button {
+        height: 30px;
+        width: 70px;
+    }
+
+    #animated-gif, #camp, #shop, #banditEnemy, #banditKingPic, #village {
+        height: 300px;
+    }
+}
+
+/* For desktops and large screens (1024px and up) */
+@media only screen and (min-width: 1024px) {
+    #camp, #shop, #banditEnemy, #banditKingPic, #village {
+        height: 400px; /* Larger images for desktops */
+    }
+    
+    body {
+        padding: 60px;
+        font-size: 14px;
+    }
+
+    .game-screen {
+        max-width: 900px;
+    }
+
+    h1 {
+        font-size: 2.2rem;
+    }  
+
+    h2 {
+        font-size: 1.7rem;
+    }
+
+    button {
+        height: 50px;
+        width: 100px;
+        font-size: 14px;
+    }
+
+    .stats {
+        justify-content: space-between;
+    }
+
+    .stats-btn, .inventory-button {
+        height: 40px;
+        width: 80px;
+        font: 20px;
+    }
+
+    #backToTheWild {
+        height: 70px;
+    }
+
+    #animated-gif, #camp, #shop, #banditEnemy, #banditKingPic, #village {
+        height: 300px;
+    }
+}
