@@ -1,5 +1,6 @@
 import { gameState, BanditKing, attackEnemy, savePlayerData } from "../js_folder/gameData.js";
 import { handleEndGame } from "../js_folder/endPage.js";
+import { showDialogue, hideDialogue } from "../js_folder/banditKingDialogue.js";
 
 let currentEnemy = { ...BanditKing };
 
@@ -9,6 +10,13 @@ let levelUpIncrements = {
     defense: 0,
     speed: 0,
 };
+
+function startCombat() {
+    showDialogue(); // Show the dialogue
+    // Use setTimeout to hide the dialogue after a few moments (e.g., 3 seconds)
+    setTimeout(hideDialogue, 3000);
+    console.log("Combat started...");
+}
 
 // Load the chosen increments from localStorage
 function loadLevelUpIncrements() {
@@ -130,4 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadLevelUpIncrements();
     updateCombatUI();
+
+    startCombat();
 });

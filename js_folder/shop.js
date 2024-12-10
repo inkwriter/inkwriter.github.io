@@ -1,6 +1,14 @@
 import { gameState, loadPlayerData, buyItem, Potion, savePlayerData } from "./gameData.js";
+import { showDialogue, hideDialogue } from "../js_folder/shopDialogue.js";
 
 loadPlayerData();
+
+function startDialogue() {
+    console.log("Dialogue started...");
+    showDialogue(); // Show the dialogue
+    // Use setTimeout to hide the dialogue after a few moments (e.g., 3 seconds)
+    setTimeout(hideDialogue, 3000);
+}
 
 // Update the shop UI with player data
 function updateShopUI(){
@@ -19,6 +27,7 @@ function handleBuyItem(item) {
         console.log("GameState after saving in shop:", JSON.parse(localStorage.getItem("gameState")));
         updateShopUI();
         console.log(`${item.name}purchased successfully!`);
+        startDialogue();
     } else {
         alert("Not enough gold!");
     }

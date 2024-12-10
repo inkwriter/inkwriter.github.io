@@ -42,24 +42,24 @@
       <div class="enemyHP">
         <p>Enemy HP: <span id="enemyHP">20</span></p>
       </div>
+      <div id="banditKingDialogueBox" class="dialogue-box hidden">
+        <p id="banditKingDialogueText">Bandit King: "You'll never take me down!"</p>
+      </div>
       <div>
         <img src="/img_folder/banditKing.jpeg" id="banditKingPic" alt="">
       </div>
       <div id="combat-feedback-box">
-        <div id="playerAttackFeedback">Player</div>
+        <div id="playerAttackFeedback"></div>
         <div id="enemyAttackFeedback"></div>
       </div>
       <div class="buttons">
-          <button id="attackBtn">Attack</button>
-          <button id="useItemBtn">Use Item</button>
-          <a href="gamePage.html">
-            <button id="runAway">Run Away</button>
-          </a>
+          <button id="attackBtn">ATTACK</button>
+          <button id="useItemBtn">USE POTION</button>
       </div>
     </div>
     <script type="module" src="../js_folder/gameData.js"></script>
     <script type="module" src="../js_folder/banditKing.js"></script>
-    <!-- <script type="module" src="../js_folder/weather.js"></script>-->
     <script type="module" src="../js_folder/global.js"></script>
+    <script type="module" src="../js_folder/banditKingDialogue.js"></script>
   </body>
 </html>

@@ -56,6 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("replayButton").addEventListener("click", () => {
         localStorage.removeItem("gameState"); // Clear game state from localStorage
         localStorage.removeItem("levelUpIncrements"); // Clear level up increments from localStorage
-        window.location.href = "../banditsBaneIndex.html"; // Redirect to start page
+        window.location.href = "../index.html"; // Redirect to start page
     });
 });

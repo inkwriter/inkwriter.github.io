@@ -39,17 +39,22 @@
           </div>
         </div>
       </div>
+      <div id="shopDialogueBox" class="dialogue-box hidden">
+        <p id="shopDialogueText">Shop Keeper: "Welcome!"</p>
+      </div>
       <div>
         <img src="/img_folder/shop.jpeg" id="shop">
       </div>
       <div class="shopItems">
           <div class="item">
-            <p>HP Potion - 10 Gold</p>
-            <button id="buyPotionsBtn">Buy</button>
+            <p>HP Potion</p>
+            <p>10 gold</p>
+            <button id="buyPotionsBtn" class="shopBtn">BUY</button>
           </div>
           <div class="item">
-            <p>Poison - 20 Gold</p>
-            <button>Buy</button>
+            <p>Poison</p>
+            <p>Sold Out</p>
+            <button id="poisonBtn" class="shopBtn">BUY</button>
           </div>
       </div>
       <div class="buttons">
@@ -61,6 +66,5 @@
     <script type="module" src="../js_folder/gameData.js"></script>
     <script type="module" src="../js_folder/shop.js"></script>
     <script type="module" src="../js_folder/global.js"></script>
-    <!-- <script type="module" src="../js_folder/weather.js"></script>-->
   </body>
 </html>

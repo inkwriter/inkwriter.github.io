@@ -20,8 +20,17 @@ function updateGameUI() {
     document.getElementById('att').textContent = gameState.stats.attack;
     document.getElementById('def').textContent = gameState.stats.defense;
     document.getElementById('spd').textContent = gameState.stats.speed;
-
 }
+
+ function revealBoss() {
+    if (gameState.level >= 3) {
+        discovered.classList.remove('hidden');
+        bossBattleBtn.classList.remove('hidden');
+     }
+ }
+
+revealBoss();
+
 window.addEventListener('beforeunload', savePlayerData);
 
 document.addEventListener('DOMContentLoaded', updateGameUI);

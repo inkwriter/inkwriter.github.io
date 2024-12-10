@@ -1,14 +1,13 @@
 // Select DOM elements
-const dialogueBox = document.getElementById("dialogueBox");
-const dialogueText = document.getElementById("dialogueText");
+const dialogueBox = document.getElementById("banditKingDialogueBox");
+const dialogueText = document.getElementById("banditKingDialogueText");
 
 // Function to update dialogue
 export function updateDialogue() {
     const dialogues = [
-        "Bandit: 'You'll never take me down!'",
-        "Bandit: 'I've faced tougher than you!'",
-        "Bandit: 'This is my turf!'",
-        "Bandit: 'I'll never tell you where our camp is!'"
+        "Bandit King:'You shouldn't have come here...'",
+        "Banit King:'I hope you've made peace...'",
+        "Bandit King:'This is the end for you...'",
     ];
     // Randomly select a dialogue
     dialogueText.textContent = dialogues[Math.floor(Math.random() * dialogues.length)];

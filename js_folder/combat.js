@@ -12,7 +12,6 @@ let levelUpIncrements = {
     speed: 0,
 };
 
-// Added
 function startCombat() {
     console.log("Combat started...");
     showDialogue(); // Show the dialogue
@@ -89,9 +88,12 @@ function attack() {
             }
         } else {
             console.log(`You defeated the ${currentEnemy.name}!`);
-            alert(`You defeated the ${currentEnemy.name}!`);
+            alert(`You defeated the ${currentEnemy.name}! + 10 Gold!`);
             gameState.gold += 10; // Reward gold
             grantXP(20); // Reward XP
+            
+            runAwayBtn.textContent = "RETURN TO CAMP";
+
             savePlayerData(); // Save updated game state
             updateCombatUI(); // Refresh UI
             return;
@@ -115,6 +117,7 @@ function grantXP(amount) {
         // Level up if XP threshold is reached
         gameState.xp -= 100; // Carry over excess XP
         gameState.level++; // Increment level
+        gameState.hp += 5; // Increase Health
         alert("You leveled up!");
 
         console.log("Applying level-up increments:", levelUpIncrements);
