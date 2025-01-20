@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
     const randomizeBtn = document.getElementById("randomizeBtn");
-    const randomizeFiveBtn = document.getElementById("randomizeFiveBtn"); // Use the existing button
+    const randomizeFiveBtn = document.getElementById("randomizeFiveBtn");
     const namesInput = document.getElementById("namesInput");
   
-    // Add event listeners for the buttons
+    // Event listeners for the buttons
     randomizeBtn.addEventListener("click", () => handleRandomization(false));
     randomizeFiveBtn.addEventListener("click", () => handleRandomization(true));
   
