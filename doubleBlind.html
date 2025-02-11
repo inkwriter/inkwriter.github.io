@@ -4,14 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Double Blind Prophecy</title>
-  <link rel="stylesheet" href="/css_folder/doubleBlind.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h1>Double Blind Prophecy</h1>
     <textarea id="namesInput" placeholder="Enter names, one per line"></textarea>
-    <button id="randomizeBtn">Randomize All and Assign</button>
-    <button id="randomizeFiveBtn">Randomize 5 and Assign</button>
+    <div  class="buttons">
+        <button id="randomizeBtn">Randomize All and Assign</button>
+        <button id="randomizeFiveBtn">Randomize 5 and Assign</button>
+        <button id="randomizeThreeBtn">Randomize 3 and Assign</button>
+    </diV>
     <div id="output" class="hidden">
       <h2>Your Prayer Assignments</h2>
       <ul id="assignmentList"></ul>
@@ -22,6 +25,6 @@
       </div>
     </div>
   </div>
-  <script src="/js_folder/doubleBlind.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
