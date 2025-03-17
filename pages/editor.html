@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bandit's Bane Editor</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 900px; margin: auto; }
+        select, input[type="text"], input[type="number"] { margin: 5px; padding: 5px; }
+        input[type="text"] { width: 100px; }
+        input[type="number"] { width: 60px; }
+        select { width: 80px; }
+        textarea { width: 100%; height: 200px; font-family: monospace; }
+        #abilityDesc { width: 300px; height: 50px; margin: 5px; padding: 5px; resize: none; }
+        label { display: inline-block; width: 150px; margin: 5px 0; }
+        button { padding: 8px; margin: 5px; }
+        #formContainer { display: none; margin-top: 20px; }
+        #entriesList { margin-top: 20px; }
+        .entry { border: 1px solid #ccc; padding: 10px; margin: 5px 0; }
+        .loot-section { margin-left: 20px; }
+        .loot-entry { margin: 5px 0; }
+        .tooltip { position: relative; }
+        .tooltip:hover::after {
+            content: attr(data-tooltip); position: absolute; background: #333; color: white; padding: 5px; border-radius: 3px; z-index: 1; left: 0; top: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bandit's Bane Editor</h1>
+    <label for="typeSelect">Choose Type:</label>
+    <select id="typeSelect">
+        <option value="">-- Select --</option>
+        <option value="enemy">Enemy</option>
+        <option value="item">Item</option>
+        <option value="equipment">Equipment (Weapon/Armor)</option>
+    </select>
+    <div id="formContainer"></div>
+    <button id="addBtn" disabled>Add Entry</button>
+    <button id="generateBtn" disabled>Generate Code</button>
+    <button id="exportBtn" disabled>Export as JS File</button>
+    <h3>Saved Entries</h3>
+    <div id="entriesList"></div>
+    <h3>Output</h3>
+    <textarea id="output" readonly placeholder="Generated code will appear here..."></textarea>
+
+    <script>
+        const typeSelect = document.getElementById("typeSelect");
+        const formContainer = document.getElementById("formContainer");
+        const addBtn = document.getElementById("addBtn");
+        const generateBtn = document.getElementById("generateBtn");
+        const exportBtn = document.getElementById("exportBtn");
+        const output = document.getElementById("output");
+        const entriesList = document.getElementById("entriesList");
+
+        const enemyAbilities = {
+            steal: "Steals 5 gold from the player if they have any.",
+            bite: "Deals extra damage based on a 1d4 roll.",
+            evade: "Has a 25% chance to dodge the next attack.",
+            charge: "Deals 1d6 bonus damage on the first attack.",
+            slash: "Hits for normal damage with a chance to cause bleeding (1 damage/turn, 3 turns).",
+            howl: "Reduces player attack by 1 for 2 turns.",
+            ambush: "Gains +2 speed for the first turn.",
+            disarm: "10% chance to unequip the player’s weapon.",
+            taunt: "Forces the player to attack this enemy next turn.",
+            sneak: "Starts combat with a free attack.",
+            frenzy: "Gains +1 attack each turn, up to +3.",
+            pounce: "Deals double damage if speed exceeds target’s.",
+            ravage: "Hits twice for half damage each.",
+            block: "Reduces incoming damage by 2.",
+            counter: "Deals 1d4 damage back if hit.",
+            lunge: "Ignores half of target’s defense.",
+            intimidate: "Lowers player speed by 2 for 2 turns.",
+            feint: "Next attack has +2 to hit.",
+            roar: "Stuns the player for 1 turn (10% chance).",
+            cripple: "Reduces target speed by 1 permanently.",
+            bash: "Deals 1d6 damage with a 20% chance to stun.",
+            sweep: "Hits all enemies for half damage if player has allies.",
+            gouge: "Deals 1d8 damage with a 15% chance to blind."
+        };
+        const damageDice = ["1d4", "1d6", "1d8", "1d10"];
+        const itemEffects = [
+            { name: "Healing", value: "heal", desc: "Restores HP" },
+            { name: "Damage", value: "damage", desc: "Deals damage to enemy" },
+            { name: "Poison", value: "poison", desc: "Poisons enemy" },
+            { name: "Sharpen", value: "sharpen", desc: "Boosts attack temporarily" },
+            { name: "Trap", value: "trap", desc: "Immobilizes enemy" },
+            { name: "Blind", value: "blind", desc: "Distracts enemy" },
+            { name: "Stun", value: "stun", desc: "Stuns enemy" },
+            { name: "Speed Boost", value: "speed", desc: "Increases speed temporarily" },
+            { name: "Custom", value: "custom", desc: "Define your own effect text" }
+        ];
+        const lootOptions = [
+            "wolfPelt", "dagger", "lockpick", "goldCoin", "healingPotion",
+            "herbalSalve", "campRations", "bomb", "poisonDart", "sharpeningStone",
+            "bearTrap", "pocketSand", "swiftBoots", "cloak", "shortSword",
+            "leatherArmor", "chainmail", "rareGem", "silverRing", "ironKey"
+        ];
+        const STANDARD_COMMON_CHANCE = 50;
+        const STANDARD_RARE_CHANCE = 10;
+
+        let entries = { enemies: {}, items: {}, equipment: {} };
+        let tempLoot = { common: [], rare: [] };
+
+        typeSelect.addEventListener("change", () => {
+            formContainer.innerHTML = "";
+            formContainer.style.display = "none";
+            addBtn.disabled = true;
+            tempLoot = { common: [], rare: [] };
+            if (typeSelect.value) {
+                renderForm(typeSelect.value);
+                formContainer.style.display = "block";
+                addBtn.disabled = false;
+            }
+        });
+
+        addBtn.addEventListener("click", addEntry);
+        generateBtn.addEventListener("click", generateCode);
+        exportBtn.addEventListener("click", exportToFile);
+
+        function renderForm(type) {
+            if (type === "enemy") {
+                formContainer.innerHTML = `
+                    <label class="tooltip" data-tooltip="Enemy's display name">Name: <input id="name" type="text" placeholder="e.g., Goblin"></label>
+                    <label class="tooltip" data-tooltip="Hit points">HP: <input id="hp" type="number" min="1" value="10"></label>
+                    <label>Attack: <input id="attack" type="number" min="0" value="2"></label>
+                    <label>Defense: <input id="defense" type="number" min="0" value="1"></label>
+                    <label>Speed: <input id="speed" type="number" min="0" value="3"></label>
+                    <label>Damage Die: <select id="damage">${damageDice.map(d => `<option value="${d}">${d}</option>`).join("")}</select></label>
+                    <label>Gold Reward: <input id="goldReward" type="number" min="0" value="5"></label>
+                    <label>XP Reward: <input id="xpReward" type="number" min="0" value="10"></label>
+                    <label>Ability: <select id="ability">${Object.keys(enemyAbilities).map(a => `<option value="${a}">${a}</option>`).join("")}</select></label>
+                    <label>Ability Desc: <textarea id="abilityDesc" readonly>${enemyAbilities["steal"]}</textarea></label>
+                    <div class="loot-section">
+                        <label>Loot:</label>
+                        <select id="lootItem">${lootOptions.map(item => `<option value="${item}">${item}</option>`).join("")}</select>
+                        <select id="lootRarity"><option value="common">Common (${STANDARD_COMMON_CHANCE}%)</option><option value="rare">Rare (${STANDARD_RARE_CHANCE}%)</option></select>
+                        <input id="lootChance" type="number" min="0" max="100" value="0" placeholder="Custom %" style="width: 60px;">
+                        <button id="addLootBtn">Add Loot</button>
+                        <div id="lootList"></div>
+                    </div>
+                `;
+                document.getElementById("addLootBtn").addEventListener("click", () => {
+                    const item = document.getElementById("lootItem").value;
+                    const rarity = document.getElementById("lootRarity").value;
+                    const customChance = parseInt(document.getElementById("lootChance").value) || 0;
+                    const chance = customChance > 0 ? customChance : (rarity === "common" ? STANDARD_COMMON_CHANCE : STANDARD_RARE_CHANCE);
+                    tempLoot[rarity].push({ item, chance });
+                    updateLootList();
+                });
+                document.getElementById("ability").addEventListener("change", (e) => {
+                    document.getElementById("abilityDesc").value = enemyAbilities[e.target.value];
+                });
+            } else if (type === "item") {
+                formContainer.innerHTML = `
+                    <label class="tooltip" data-tooltip="Item's display name">Name: <input id="name" type="text" placeholder="e.g., manaPotion"></label>
+                    <label>Effect: <select id="effect">${itemEffects.map(e => `<option value="${e.value}">${e.name} (${e.desc})</option>`).join("")}</select></label>
+                    <label>Effect Value: <input id="effectValue" type="number" min="0" value="10" placeholder="e.g., HP healed"></label>
+                    <label id="customEffectLabel" style="display: none;">Custom Effect Text: <input id="customEffect" type="text" placeholder="e.g., Boosts morale"></label>
+                    <label>Price: <input id="price" type="number" min="0" value="10"></label>
+                    <label>Sell Price: <input id="sellPrice" type="number" min="0" placeholder="Optional"></label>
+                `;
+                document.getElementById("effect").addEventListener("change", (e) => {
+                    document.getElementById("customEffectLabel").style.display = e.target.value === "custom" ? "block" : "none";
+                });
+            } else if (type === "equipment") {
+                formContainer.innerHTML = `
+                    <label class="tooltip" data-tooltip="Equipment's display name">Name: <input id="name" type="text" placeholder="e.g., greatAxe"></label>
+                    <label>Type: <select id="equipType"><option value="weapon">Weapon</option><option value="armor">Armor</option></select></label>
+                    <label>Attack Bonus: <input id="attack" type="number" value="0"></label>
+                    <label>Defense Bonus: <input id="defense" type="number" value="0"></label>
+                    <label>Speed Bonus: <input id="speed" type="number" value="0"></label>
+                    <label>Damage Die (weapons): <select id="damage">${damageDice.map(d => `<option value="${d}">${d}</option>`).join("")}</select></label>
+                    <label>Price: <input id="price" type="number" min="0" value="20"></label>
+                `;
+            }
+            updateLootList();
+        }
+
+        function updateLootList() {
+            const lootList = document.getElementById("lootList");
+            if (!lootList) return;
+            lootList.innerHTML = "<strong>Current Loot:</strong><br>" + 
+                "Common: " + (tempLoot.common.map(l => `${l.item} (${l.chance}%)`).join(", ") || "None") + "<br>" +
+                "Rare: " + (tempLoot.rare.map(l => `${l.item} (${l.chance}%)`).join(", ") || "None");
+        }
+
+        function addEntry() {
+            const type = typeSelect.value;
+            const name = document.getElementById("name")?.value.trim();
+            if (!name) {
+                alert("Name is required!");
+                return;
+            }
+            const key = name.toLowerCase().replace(/\s+/g, "");
+
+            let entry = {};
+            if (type === "enemy") {
+                const hp = parseInt(document.getElementById("hp").value);
+                if (hp < 1) { alert("HP must be at least 1!"); return; }
+                const commonLoot = tempLoot.common.length ? tempLoot.common : [{ item: "wolfPelt", chance: STANDARD_COMMON_CHANCE }];
+                const rareLoot = tempLoot.rare.length ? tempLoot.rare : [{ item: "dagger", chance: STANDARD_RARE_CHANCE }];
+
+                entry = {
+                    name,
+                    hp,
+                    stats: {
+                        attack: parseInt(document.getElementById("attack").value),
+                        defense: parseInt(document.getElementById("defense").value),
+                        speed: parseInt(document.getElementById("speed").value)
+                    },
+                    damage: document.getElementById("damage").value,
+                    goldReward: parseInt(document.getElementById("goldReward").value),
+                    xpReward: parseInt(document.getElementById("xpReward").value),
+                    ability: document.getElementById("ability").value,
+                    loot: { common: commonLoot, rare: rareLoot }
+                };
+                entries.enemies[key] = entry;
+                tempLoot = { common: [], rare: [] };
+            } else if (type === "item") {
+                const effectValue = parseInt(document.getElementById("effectValue").value);
+                if (effectValue < 0) { alert("Effect value cannot be negative!"); return; }
+                entry = {
+                    name,
+                    effect: document.getElementById("effect").value,
+                    effectValue,
+                    customEffect: document.getElementById("customEffect")?.value.trim(),
+                    price: parseInt(document.getElementById("price").value),
+                    sellPrice: document.getElementById("sellPrice").value ? parseInt(document.getElementById("sellPrice").value) : undefined
+                };
+                entries.items[key] = entry;
+            } else if (type === "equipment") {
+                const equipType = document.getElementById("equipType").value;
+                entry = {
+                    name,
+                    type: equipType,
+                    attack: parseInt(document.getElementById("attack").value),
+                    defense: parseInt(document.getElementById("defense").value),
+                    speed: parseInt(document.getElementById("speed").value),
+                    damage: equipType === "weapon" ? document.getElementById("damage").value : undefined,
+                    price: parseInt(document.getElementById("price").value)
+                };
+                entries.equipment[key] = entry;
+            }
+
+            updateEntriesList();
+            generateBtn.disabled = false;
+            exportBtn.disabled = false;
+            formContainer.querySelectorAll("input:not([type='number']), select").forEach(el => el.value = "");
+            if (type === "enemy") {
+                document.getElementById("lootChance").value = "0";
+                updateLootList();
+            }
+        }
+
+        function updateEntriesList() {
+            entriesList.innerHTML = "";
+            for (const [type, collection] of Object.entries(entries)) {
+                for (const [key, entry] of Object.entries(collection)) {
+                    const div = document.createElement("div");
+                    div.className = "entry";
+                    div.innerHTML = `<strong>${type}: ${entry.name}</strong> <button onclick="editEntry('${type}', '${key}')">Edit</button>`;
+                    entriesList.appendChild(div);
+                }
+            }
+        }
+
+        function editEntry(type, key) {
+            const entry = entries[type][key];
+            typeSelect.value = type;
+            renderForm(type);
+            formContainer.style.display = "block";
+            document.getElementById("name").value = entry.name;
+            if (type === "enemy") {
+                document.getElementById("hp").value = entry.hp;
+                document.getElementById("attack").value = entry.stats.attack;
+                document.getElementById("defense").value = entry.stats.defense;
+                document.getElementById("speed").value = entry.stats.speed;
+                document.getElementById("damage").value = entry.damage;
+                document.getElementById("goldReward").value = entry.goldReward;
+                document.getElementById("xpReward").value = entry.xpReward;
+                document.getElementById("ability").value = entry.ability;
+                document.getElementById("abilityDesc").value = enemyAbilities[entry.ability];
+                tempLoot = { common: entry.loot.common.slice(), rare: entry.loot.rare.slice() };
+                updateLootList();
+            } else if (type === "item") {
+                document.getElementById("effect").value = entry.effect;
+                document.getElementById("effectValue").value = entry.effectValue;
+                if (entry.effect === "custom") document.getElementById("customEffect").value = entry.customEffect;
+                document.getElementById("price").value = entry.price;
+                if (entry.sellPrice) document.getElementById("sellPrice").value = entry.sellPrice;
+            } else if (type === "equipment") {
+                document.getElementById("equipType").value = entry.type;
+                document.getElementById("attack").value = entry.attack;
+                document.getElementById("defense").value = entry.defense;
+                document.getElementById("speed").value = entry.speed;
+                if (entry.damage) document.getElementById("damage").value = entry.damage;
+                document.getElementById("price").value = entry.price;
+            }
+            delete entries[type][key];
+            updateEntriesList();
+        }
+
+        function generateCode() {
+            let code = "";
+            if (Object.keys(entries.enemies).length) {
+                code += "const enemies = {\n" + Object.entries(entries.enemies).map(([key, e]) => 
+                    `    ${key}: {\n` +
+                    `        name: "${e.name}",\n` +
+                    `        hp: ${e.hp},\n` +
+                    `        stats: { attack: ${e.stats.attack}, defense: ${e.stats.defense}, speed: ${e.stats.speed} },\n` +
+                    `        goldReward: ${e.goldReward},\n` +
+                    `        xpReward: ${e.xpReward},\n` +
+                    `        image: "/assets/img_folder/enemies/${key}.jpg",\n` +
+                    `        damage: "${e.damage}",\n` +
+                    `        ability: "${e.ability}",\n` +
+                    `        loot: { common: [${e.loot.common.map(l => `{ item: "${l.item}", chance: ${l.chance} }`).join(", ")}], rare: [${e.loot.rare.map(l => `{ item: "${l.item}", chance: ${l.chance} }`).join(", ")}] }\n` +
+                    `    }`).join(",\n") + "\n};\n\n";
+            }
+            if (Object.keys(entries.items).length) {
+                code += "const items = {\n" + Object.entries(entries.items).map(([key, i]) => {
+                    let effectCode = "";
+                    switch (i.effect) {
+                        case "heal": effectCode = `(user) => { user.hp = Math.min(100, user.hp + ${i.effectValue}); return \`\${user.playerName} uses ${i.name}, restoring ${i.effectValue} HP!\`; }`; break;
+                        case "damage": effectCode = `(user, target) => { const dmg = ${i.effectValue}; target.hp -= dmg; return \`\${user.playerName} uses ${i.name}, dealing ${i.effectValue} damage!\`; }`; break;
+                        case "poison": effectCode = `(user, target) => { target.effects.poison = { turns: ${i.effectValue}, damage: 2 }; return \`\${user.playerName} uses ${i.name}—\${target.name} is poisoned!\`; }`; break;
+                        case "sharpen": effectCode = `(user) => { user.effects.sharpen = { turns: ${i.effectValue}, bonus: 2 }; return \`\${user.playerName} uses ${i.name} (+2 attack for ${i.effectValue} turns)!\`; }`; break;
+                        case "trap": effectCode = `(user, target) => { target.effects.trap = { turns: ${i.effectValue} }; target.stats.speed = 0; return \`\${user.playerName} uses ${i.name}—\${target.name} is trapped!\`; }`; break;
+                        case "blind": effectCode = `(user, target) => { target.effects.blind = { turns: ${i.effectValue} }; return \`\${user.playerName} uses ${i.name}—\${target.name} is blinded!\`; }`; break;
+                        case "stun": effectCode = `(user, target) => { target.effects.stun = { turns: ${i.effectValue} }; return \`\${user.playerName} uses ${i.name}—\${target.name} is stunned!\`; }`; break;
+                        case "speed": effectCode = `(user) => { user.effects.speed = { turns: ${i.effectValue}, bonus: ${i.effectValue} }; return \`\${user.playerName} uses ${i.name} (+${i.effectValue} speed for ${i.effectValue} turns)!\`; }`; break;
+                        case "custom": effectCode = `() => "${i.customEffect || "No effect in combat."}"`; break;
+                    }
+                    return `    ${key}: {\n` +
+                        `        effect: ${effectCode},\n` +
+                        `        price: ${i.price}${i.sellPrice !== undefined ? `, sellPrice: ${i.sellPrice}` : ""}\n` +
+                        `    }`;
+                }).join(",\n") + "\n};\n\n";
+            }
+            if (Object.keys(entries.equipment).length) {
+                code += "const equipment = {\n" + Object.entries(entries.equipment).map(([key, e]) => 
+                    `    ${key}: {\n` +
+                    `        type: "${e.type}",\n` +
+                    (e.damage ? `        damage: "${e.damage}",\n` : "") +
+                    `        attack: ${e.attack},\n` +
+                    `        defense: ${e.defense},\n` +
+                    `        speed: ${e.speed},\n` +
+                    `        price: ${e.price}\n` +
+                    `    }`).join(",\n") + "\n};\n";
+            }
+            output.value = code.trim();
+        }
+
+        function exportToFile() {
+            generateCode();
+            const blob = new Blob([output.value], { type: "application/javascript" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "banditsBaneCustomData.js";
+            link.click();
+        }
+    </script>
+</body>
+</html>
