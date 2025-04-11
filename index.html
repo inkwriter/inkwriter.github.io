@@ -3,74 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Jake Sexton</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Abel&display=swap" rel="stylesheet">
+    <title>Jake Sexton | Remote Web & Game Developer</title>
+    <meta name="description" content="Portfolio of Jake Sexton, a JavaScript developer specializing in web and indie game development.">
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC&family=Abel&display=swap" rel="stylesheet">
     <link href="css_folder/style.css" rel="stylesheet">
 </head>
 <body>
     <div class="sticky-nav-container">
-        <nav class="clearfix">
-            <div>
-                <button id="hamburgerBtn">&#9776;</button>
-                <ul id="primaryNav" class="hidden"> <!-- Apply the "hidden" class here -->
-                    <li class="active"><a href="index.html">Home</a></li>
-                    <li><a href="#Projects">Projects</a></li>
-                    <li><a href="#Contact">Contact</a></li>
-                    <li><a href="/pages/vDay.html">VDay</a></li>
-                </ul>
-            </div>
+        <nav>
+            <button id="hamburgerBtn">☰</button>
+            <ul id="primaryNav">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li><a href="#Projects">Projects</a></li>
+                <li><a href="#Contact">Contact</a></li>
+                <li><a href="/pages/vDay.html">VDay</a></li>
+            </ul>
         </nav>
     </div>
     <div class="hero-image">
         <div class="hero-text">
-            <h1>"The earth has music for those who listen." - Reginald Holmes</h1>
+            <h1>Jake Sexton</h1>
+            <p>Remote Web & Game Developer</p>
         </div>
-        <section>
-            <div>
-              <img class="clouds" src="img_folder/cloud.png" alt="Cloud Image">
-              <img class="cloud1" src="img_folder/cloud.png" alt="Cloud Image">
-              <img class="cloud2" src="img_folder/cloud.png" alt="Cloud Image">
-              <img class="cloud3" src="img_folder/cloud.png" alt="Cloud Image">
-            </div>
-        </section>
+        <div>
+            <img class="clouds" src="img_folder/cloud.png" alt="Cloud">
+            <img class="cloud1" src="img_folder/cloud.png" alt="Cloud">
+            <img class="cloud2" src="img_folder/cloud.png" alt="Cloud">
+        </div>
     </div>
     <main>
         <div class="mainContent">
-            <div id="intro" class="introMedium">
-                <img class="dot" src="img_folder/Jake.png">
-                <p>Greetings, fellow travelers. I'm Jake, a web developer and cybersecurity 
-                    enthusiast who takes pleasure in unraveling the mysteries of the digital 
-                    world, as well as exploring the hidden wonders of creation. I live in 
-                    a small town in Eastern Kentucky. </p>
-            </div>
-            <h2  id="Projects">Projects</h2>
-            <div>
-                <div class="projectImg"><a href="about.html"><img class="project" src="img_folder/goblins.png"></a>
+            <section id="intro" class="introMedium">
+                <img class="dot" src="img_folder/Jake.png" alt="Jake Sexton">
+                <p>Hi, I’m Jake—a JavaScript developer from Eastern Kentucky passionate about web and game development. I build interactive experiences like my RPG ‘Bandits Bane,’ inspired by the idea that “The earth has music for those who listen” (Reginald Holmes). Seeking remote roles to craft digital stories and solutions.</p>
+            </section>
+            <section id="skills">
+                <h2>Skills</h2>
+                <ul class="skills-list">
+                    <li>JavaScript (Vanilla)</li>
+                    <li>Game Logic</li>
+                    <li>DOM Manipulation</li>
+                    <li>HTML/CSS (Flexbox)</li>
+                    <li>LocalStorage</li>
+                    <li>Git/GitHub</li>
+                </ul>
+            </section>
+            <section id="Projects">
+                <h2>Projects</h2>
+                <div class="project-card">
+                    <h3>Goblins</h3>
+                    <a href="/goblins/index.html"><img class="project" src="img_folder/goblins.png" alt="Goblins Game"></a>
+                    <p>A choose-your-own-adventure demo with JS choice trees and responsive flexbox.</p>
+                    <a href="https://inkwriter.github.io/goblins" target="_blank" class="project-link">Play Demo</a>
+                    <a href="https://github.com/inkwriter/goblins" target="_blank" class="project-link">View Code</a>
                 </div>
-                <p>Goblins is a choose your own adventure game demo. 
-                        It features the game itself and an About page.
-                         It uses flex box to keep the page responsive. 
-                         Basic javascript is used to handle the hamburger
-                          button, roll for damage on the About page, and
-                           to act as a choice tree with the decisions made on the Home page.
-                </p>
-                <br>
-                <div class="projectImg"><a href="banditsBaneIndex.html"><img class="project" src="img_folder/village.jpeg"></a></div>
-            </div>
-            <br>
-            <h2>Contact</h2>
-            <div id="Contact">
-                <br>
-                <button class="mailto-button" onclick="location.href='mailto:jacobbsexton@gmail.com';">Connect with me</button>
-                <img src="img_folder/IMG_9498.PNG">
-            </div>
+                <div class="project-card">
+                    <h3>Bandits Bane</h3>
+                    <a href="/banditsBaneIndex.html"><img class="project" src="img_folder/village.jpeg" alt="Bandits Bane"></a>
+                    <p>A text-based RPG with combat, inventory, and local storage, built with JavaScript.</p>
+                    <a href="https://inkwriter.github.io/banditsBaneIndex.html" target="_blank" class="project-link">Play Demo</a>
+                    <a href="https://github.com/inkwriter/bandits-bane" target="_blank" class="project-link">View Code</a>
+                </div>
+            </section>
+            <section id="Contact">
+                <h2>Contact</h2>
+                <p>Reach out for remote opportunities!</p>
+                <a href="mailto:jacobbsexton@gmail.com" class="mailto-button">Email Me</a>
+                <a href="https://github.com/inkwriter" target="_blank" class="mailto-button">GitHub</a>
+            </section>
         </div>
     </main>
     <footer>
-        <!-- <p>&copy; 2023 YourWebsiteName</p> -->
+        <p>&copy; 2025 Jake Sexton</p>
     </footer>
     <script src="js_folder/main.js"></script>
 </body>
