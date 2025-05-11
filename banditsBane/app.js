@@ -170,7 +170,7 @@ const enemies = {
         stats: { attack: 15, defense: 1, speed: 9 },
         goldReward: 1000,
         xpReward: 50,
-        image: "assets/img_folder/enemies/hoshithesloth.jpg",
+        image: "assets/img_folder/enemies/hoshiTheSloth.jpg",
         damage: "1d10",
         weapon: "dagger",
         abilities: [
@@ -195,7 +195,7 @@ const enemies = {
         stats: { attack: 6, defense: 15, speed: 9 },
         goldReward: 1000,
         xpReward: 50,
-        image: "assets/img_folder/enemies/valontheimmortal.jpg",
+        image: "assets/img_folder/enemies/valonTheImmortal.jpg",
         damage: "1d10",
         weapon: "longsword",
         abilities: [
@@ -211,7 +211,7 @@ const enemies = {
         stats: { attack: 10, defense: 1, speed: 15 },
         goldReward: 1000,
         xpReward: 50,
-        image: "assets/img_folder/enemies/dirtydave.jpg",
+        image: "assets/img_folder/enemies/dirtyDave.jpg",
         damage: "1d10",
         weapon: "dagger",
         abilities: [
