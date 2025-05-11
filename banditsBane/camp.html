@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  </head>
+  <body>
+    <div class="game-screen">
+      <div class="stats">
+        <div class="stats-left">
+          <span id="playerName"></span>
+          <p>XP: <span id="xp">0/100</span></p>
+          <p>HP: <span id="hp">100</span></p>
+          <p>Weapon: <span id="equippedWeapon">None</span></p> 
+          <p>Armor: <span id="equippedArmor">None</span></p>  
+          <div class="stats-dropdown">
+            <button class="stats-btn">STATS</button>
+            <div class="stats-list">
+              <p>Attack: <span id="att">0</span></p>
+              <p>Defense: <span id="def">0</span></p>
+              <p>Speed: <span id="spd">0</span></p>
+            </div>
+          </div>
+        </div>
+        <div class="stats-left">
+          <p>lvl <span id="level">1</span></p>
+          <p>Gold: <span id="gold">0</span></p>
+          <div class="inventory-dropdown">
+            <button class="inventory-button">INV</button>
+            <div class="inventory-list" id="inventoryList">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <img src="assets/img_folder/backgrounds/campfire2.jpeg" id="camp">
+      </div>
+      <div id="actionBox" class="hidden"> 
+        <p id="actionText"></p>
+      </div>
+      <div class="buttons">
+        <a href="exploration.html">
+          <button id="exploreBtn">EXPLORE</button>
+        </a>
+        <a href="shop.html">
+          <button id="shopBtn">SHOP</button>
+        </a>
+        <button id="shortRestBtn">SHORT REST</button>
+        <button id="equipBtn">EQUIP</button> 
+        <a href="banditKing.html">
+          <button id="bossBattleBtn" class="hidden" onclick="startBossBattle()">BOSS BATTLE</button>
+        </a>
+      </div>
+      <div id="equipMenu" class="hidden"></div> 
+      <p id="discovered" class="hidden">You have discovered the bandit's camp!</p>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

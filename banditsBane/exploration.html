@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Forest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+  </head>
+  <body>
+    <div class="game-screen">
+      <div class="stats">
+        <div class="stats-left">
+          <span id="playerName"></span>
+          <p>XP: <span id="xp">0/100</span></p>
+          <p>HP: <span id="hp">100</span></p>
+          <div class="health-bar-container">
+            <div class="health-bar" id="player-health"></div>
+          </div>
+          <div class="stats-dropdown">
+            <button class="stats-btn">STATS</button>
+            <div class="stats-list">
+              <p>Attack: <span id="att">1</span></p>
+              <p>Defense: <span id="def">1</span></p>
+              <p>Speed: <span id="spd">1</span></p>
+            </div>
+          </div>
+        </div>
+        <div class="stats-left">
+          <p>lvl <span id="level">1</span></p>
+          <p>Gold: <span id="gold">0</span></p>
+          <div class="inventory-dropdown">
+            <button class="inventory-button">INV</button>
+            <div class="inventory-list" id="inventoryList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="combat-container hidden" id="combat-container">
+        <div class="enemyHP">
+          <p><span id="enemyName">Enemy</span> HP: <span id="enemyHP">20</span></p>
+          <div class="health-bar-container">
+            <div class="health-bar" id="enemy-health"></div>
+          </div>
+        </div>
+        <div>
+          <img src="assets/img_folder/enemies/bandit.jpeg" alt="Enemy" id="banditEnemy" class="hidden">
+        </div>
+        <div id="combatMenu" class="hidden" style="margin: 10px;">
+          <!-- Dynamically populated with Attack, Item, Run options -->
+        </div>
+      </div>
+
+      <div id="actionBox" class="hidden" style="height: 150px; overflow-y: auto;">
+        <p id="actionText"></p>
+      </div>
+      <div class="afterCombatBtns">
+        <button id="forestBtn" class="forestBtn">FOREST</button>
+        <button id="mountainBtn" class="mountainBtn hidden">MOUNTAIN</button>
+        <button id="swampBtn" class="swampBtn hidden">SWAMP</button>
+        <button id="kingBtn" class="hidden">THE BANDIT KING</button>
+        <button id="campBtn" class="hidden">RETURN TO CAMP</button>
+      </div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

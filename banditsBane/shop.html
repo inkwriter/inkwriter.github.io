@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop - Bandit's Bane</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+  </head>
+  <body>
+    <div class="game-screen">
+      <div class="stats">
+        <div class="stats-left">
+          <p><span id="playerName">Unknown</span></p>
+          <p>XP: <span id="xp">0/100</span></p>
+          <p>HP: <span id="hp">20</span></p>
+          <div class="stats-dropdown">
+            <button class="stats-btn">STATS</button>
+            <div class="stats-list">
+              <p>Attack: <span id="att">0</span></p>
+              <p>Defense: <span id="def">0</span></p>
+              <p>Speed: <span id="spd">0</span></p>
+            </div>
+          </div>
+        </div>
+        <div class="stats-right">
+          <p>Lvl <span id="level">1</span></p>
+          <p>Gold: <span id="gold">100</span></p>
+          <div class="inventory-dropdown">
+            <button class="inventory-button">INV</button>
+            <div class="inventory-list" id="inventoryList"></div>
+          </div>
+        </div>
+      </div>
+      <div class="shop-image">
+        <img src="assets/img_folder/backgrounds/shop.jpeg" id="shop" alt="Shop Background">
+      </div>
+      <div id="actionBox" style="height: 150px; overflow-y: auto;"></div>
+      <div id="shopContainer">
+        <div class="shop-tabs">
+          <button id="weaponTab" class="shop-tab active" data-tab="weaponList">Weapons</button>
+          <button id="armorTab" class="shop-tab" data-tab="armorList">Armor</button>
+          <button id="useableTab" class="shop-tab" data-tab="useableList">Useable</button>
+          <button id="sellTab" class="shop-tab" data-tab="sellList">Sell</button>
+        </div>
+        <div id="shopMenus">
+          <div id="weaponList" class="shop-list"></div>
+          <div id="armorList" class="shop-list hidden"></div>
+          <div id="useableList" class="shop-list hidden"></div>
+          <div id="sellList" class="shop-list hidden"></div>
+        </div>
+      </div>
+      <div class="buttons">
+        <button id="backBtn">Back to Camp</button>
+      </div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
