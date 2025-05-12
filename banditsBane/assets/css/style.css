@@ -603,7 +603,6 @@ a button {
     color: white;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     text-align: center;
     font-size: 1.5rem;
@@ -937,9 +936,19 @@ a button {
 }
 
 .feedback-form iframe {
-    border: 2px solid #ffd670; /* Gold border to match buttons */
-    border-radius: 5px;
-    background-color: #283618; /* Dark green background to match inventory dropdown */
+    border: 2px solid #ffd670; /* Existing style */
+    border-radius: 5px; /* Existing style */
+    background-color: #283618; /* Existing style */
+    width: 100%; /* Full width of the container */
+    max-width: 100%; /* Prevent overflow */
+    height: 600px; /* Default height for desktop */
+    display: block; /* Ensure block-level for proper margins */
+    box-sizing: border-box; /* Include border in width calculations */
+}
+
+iframe {
+    height: 500px;
+    width: 400px;
 }
 
 @keyframes victoryGlow {
@@ -1049,8 +1058,23 @@ a button {
         height: 350px; /* Keep it a square */
     }
 
+    .feedback-form {
+        width: 100%;
+        max-width: 100%; /* Ensure container doesn't exceed viewport */
+        padding: 0 10px; /* Add small padding for edges */
+    }
+
     .feedback-form iframe {
-        height: 600px; /* Reduce height on smaller screens */
+        height: 800px; /* Taller height for mobile to show more form content */
+        min-height: 500px; /* Minimum height to ensure usability */
+        max-height: 90vh; /* Limit to 90% of viewport height to avoid overflow */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
+
+    #gameOverScreen {
+        padding: 20px; /* Add padding to prevent content from touching edges */
+        overflow-y: auto; /* Allow scrolling if content overflows */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
 }
 
