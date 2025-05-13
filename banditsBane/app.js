@@ -135,7 +135,7 @@ const enemies = {
     trickster: {
         name: "Trickster",
         hp: 8,
-        stats: { attack: 1, speed: 7, defense: 1 },
+        stats: { attack: 7, speed: 10, defense: 1 },
         goldReward: 20,
         xpReward: 80,
         image: "assets/img_folder/enemies/trickster.jpg",
@@ -151,7 +151,7 @@ const enemies = {
     bountyHunter: {
         name: "Bounty Hunter",
         hp: 20,
-        stats: { attack: 4, speed: 4, defense: 3 },
+        stats: { attack: 6, speed: 4, defense: 7 },
         goldReward: 25,
         xpReward: 35,
         image: "assets/img_folder/enemies/bountyHunter.jpg",
@@ -1538,12 +1538,7 @@ function gameOver() {
     setTimeout(() => (window.location.href = "gameover.html"), 2000);
 }
 
-// ============================================================================
-// EVENT LISTENERS
-// ============================================================================
-// ============================================================================
-// EVENT LISTENERS
-// ============================================================================
+
 // ============================================================================
 // EVENT LISTENERS
 // ============================================================================
@@ -1563,7 +1558,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 showAction("You cannot return to camp while in combat!");
                 return;
             }
-            showAction("You trek back to the safety of camp.");
+            //showAction("You trek back to the safety of camp.");
             localStorage.setItem("lastActionMessage", "You’ve returned to camp from the forest.");
             savePlayerData();
             setTimeout(() => {
@@ -1770,7 +1765,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 setTimeout(() => {
                     console.log("Redirecting to camp.html from exploration.html"); // Debug
                     window.location.href = "camp.html";
-                }, 1000);
+                }, 3000);
             });
         } else {
             console.error("campBtn not found in exploration.html");
