@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Jake Sexton</title>
+    <meta name="description" content="Portfolio of Jake Sexton, a JavaScript developer specializing in web and indie game development.">
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC&family=Abel&display=swap" rel="stylesheet">
+    <link href="css_folder/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="sticky-nav-container">
+        <nav>
+            <button id="hamburgerBtn">☰</button>
+            <ul id="primaryNav">
+                <li><a href="index.html">Home</a></li>
+                <li class="active"><a href="projects.html">Projects</a></li>
+            </ul>
+        </nav>
+    </div>
+    <main>
+        <section id="Projects">
+            <h2>Projects</h2>
+            <div class="project-grid">
+                <div class="project-card">
+                    <a href="/goblins/index.html"><img class="project" src="img_folder/Mist.jpg" alt="Goblins Game"></a>
+                    <h3>Goblins</h3>
+                    <p>A choose-your-own-adventure demo with JS choice trees and responsive flexbox.</p>
+                </div>
+                <div class="project-card">
+                    <a href="/banditsBane/index.html"><img class="project" src="img_folder/village.jpeg" alt="Bandits Bane"></a>
+                    <h3>Bandits Bane</h3>
+                    <p>A text-based RPG with combat, inventory, and local storage, built with JavaScript.</p>
+                </div>
+                <!-- Add new projects here with the same .project-card structure -->
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="social-links">
+            <a href="mailto:jacobbsexton@gmail.com" class="social-button" aria-label="Email Jake Sexton">
+                <img src="img_folder/gmail.svg" alt="Email Icon" class="social-icon">
+            </a>
+            <a href="https://github.com/inkwriter" target="_blank" class="social-button" aria-label="GitHub Profile">
+                <img src="img_folder/github.svg" alt="GitHub Icon" class="social-icon">
+            </a>
+            <a href="https://www.linkedin.com/in/jacobbsexton/" target="_blank" class="social-button" aria-label="LinkedIn Profile">
+                <img src="img_folder/linkedin.svg" alt="LinkedIn Icon" class="social-icon">
+            </a>
+        </div>
+    </footer>
+    <script src="js_folder/main.js"></script>
+</body>
+</html>

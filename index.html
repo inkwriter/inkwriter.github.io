@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Jake Sexton | Remote Web & Game Developer</title>
+    <title>Jake Sexton</title>
     <meta name="description" content="Portfolio of Jake Sexton, a JavaScript developer specializing in web and indie game development.">
     <link href="https://fonts.googleapis.com/css2?family=Amatic+SC&family=Abel&display=swap" rel="stylesheet">
     <link href="css_folder/style.css" rel="stylesheet">
@@ -14,9 +14,7 @@
             <button id="hamburgerBtn">☰</button>
             <ul id="primaryNav">
                 <li class="active"><a href="index.html">Home</a></li>
-                <li><a href="#Projects">Projects</a></li>
-                <li><a href="#Contact">Contact</a></li>
-                <li><a href="/pages/vDay.html">VDay</a></li>
+                <li><a href="projects.html">Projects</a></li>
             </ul>
         </nav>
     </div>
@@ -34,44 +32,43 @@
         <div class="mainContent">
             <section id="intro" class="introMedium">
                 <img class="dot" src="img_folder/Jake.png" alt="Jake Sexton">
-                <p>Greetings, fellow travelers. I'm Jake, a web developer and cybersecurity 
-                    enthusiast who takes pleasure in unraveling the mysteries of the digital 
+                <div class="name"><h1>Jake Sexton</h1>
+                <p>Web Developer</p></div>
+                <div class="bio"><p>Greetings, fellow travelers. I'm Jake, a web developer and cybersecurity 
+                    cybersecurity enthusiast who takes pleasure in unraveling the mysteries of the digital 
                     world, as well as exploring the hidden wonders of creation. I live in 
-                    a small town in Eastern Kentucky.</p>
+                    a small town in Eastern Kentucky.</p></div>
             </section>
             <section id="skills">
-                <h2>Skills</h2>
-                <ul class="skills-list">
-                    <li>JavaScript (Vanilla)</li>
-                    <li>Game Logic</li>
-                    <li>DOM Manipulation</li>
-                    <li>HTML/CSS (Flexbox)</li>
-                    <li>LocalStorage</li>
-                    <li>Git/GitHub</li>
-                </ul>
-            </section>
-            <section id="Projects">
-                <h2>Projects</h2>
-                <div class="project-card">
-                    <h3>Goblins</h3>
-                    <a href="/goblins/index.html"><img class="project" src="img_folder/goblins.png" alt="Goblins Game"></a>
-                    <p>A choose-your-own-adventure demo with JS choice trees and responsive flexbox.</p>
-                </div>
-                <div class="project-card">
-                    <h3>Bandits Bane</h3>
-                    <a href="/banditsBane/index.html"><img class="project" src="img_folder/village.jpeg" alt="Bandits Bane"></a>
-                    <p>A text-based RPG with combat, inventory, and local storage, built with JavaScript.</p>
-                </div>
-            </section>
-            <section id="Contact">
-                <h2>Contact</h2>
-                <p>Reach out for remote opportunities!</p>
-                <a href="mailto:jacobbsexton@gmail.com" class="mailto-button">Email Me</a>
-                <a href="https://github.com/inkwriter" target="_blank" class="mailto-button">GitHub</a>
-            </section>
-        </div>
+    <h2>Skills</h2>
+    <ul class="skills-list">
+        <li class="skill-item">
+            <img src="/img_folder/javascript.svg" alt="JavaScript Icon" class="skill-icon">
+            <span>JavaScript</span>
+        </li>
+        <li class="skill-item">
+            <img src="/img_folder/css.svg" alt="CSS Icon" class="skill-icon">
+            <span>CSS (Flexbox)</span>
+        </li>
+        <li class="skill-item">
+            <img src="/img_folder/html5.svg" alt="HTML Icon" class="skill-icon">
+            <span>HTML</span>
+        </li>
+    </ul>
+</section>
     </main>
     <footer>
+        <div class="social-links">
+            <a href="mailto:jacobbsexton@gmail.com" class="social-button" aria-label="Email Jake Sexton">
+                <img src="img_folder/gmail.svg" alt="Email Icon" class="social-icon">
+            </a>
+            <a href="https://github.com/inkwriter" target="_blank" class="social-button" aria-label="GitHub Profile">
+                <img src="img_folder/github.svg" alt="GitHub Icon" class="social-icon">
+            </a>
+            <a href="https://www.linkedin.com/in/jacobbsexton/" target="_blank" class="social-button" aria-label="LinkedIn Profile">
+                <img src="img_folder/linkedin.svg" alt="LinkedIn Icon" class="social-icon">
+            </a>
+        </div>
     </footer>
     <script src="js_folder/main.js"></script>
 </body>
