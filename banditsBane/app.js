@@ -23,7 +23,7 @@ let gameState = {
         { name: "shortSword", quantity: 1 },
         { name: "poisonVial", quantity: 1 }
     ],
-    equipped: { weapon: null, armor: null },
+    equipped: { weapon: null, helmet: null, chest: null, legs: null, boots: null },
     ability: null,
     abilityCooldown: 0,
     poisonStacks: [],
@@ -248,8 +248,26 @@ const boss = {
 };
 
 const equipment = {
-    shortSword: { type: "weapon", boxtype: "weapon", damage: "1d6", attack: 1, defense: 0, speed: 0, price: 20 },
-    longsword: { type: "weapon", boxtype: "weapon", damage: "1d8", attack: 2, defense: 0, speed: -1, price: 30 },
+    shortSword: { 
+        type: "weapon", 
+        boxtype: "weapon", 
+        damage: "1d6", 
+        attack: 1, 
+        defense: 0, 
+        speed: 0, 
+        price: 20, 
+        description: "A lightweight sword, perfect for quick strikes."
+    },
+    longsword: { 
+        type: "weapon", 
+        boxtype: "weapon", 
+        damage: "1d8", 
+        attack: 2, 
+        defense: 0, 
+        speed: -1, 
+        price: 30, 
+        description: "A heavy blade that deals significant damage."
+    },
     dagger: { 
         type: "weapon", 
         boxtype: "weapon", 
@@ -258,13 +276,118 @@ const equipment = {
         defense: 0, 
         speed: 2, 
         price: 15, 
-        bleedChance: 30 
+        bleedChance: 30, 
+        description: "A small blade with a chance to cause bleeding."
     },
-    bow: { type: "weapon", boxtype: "weapon", damage: "1d6", attack: 1, defense: 0, speed: 1, price: 25 },
-    leatherArmor: { type: "armor", boxtype: "armor", attack: 0, defense: 2, speed: 0, price: 30 },
-    chainmail: { type: "armor", boxtype: "armor", attack: 0, defense: 4, speed: -1, price: 50 },
-    plateArmor: { type: "armor", boxtype: "armor", attack: 0, defense: 6, speed: -2, price: 80 },
-    swiftBoots: { type: "armor", boxtype: "armor", attack: 0, defense: 0, speed: 3, price: 40 }
+    bow: { 
+        type: "weapon", 
+        boxtype: "weapon", 
+        damage: "1d6", 
+        attack: 1, 
+        defense: 0, 
+        speed: 1, 
+        price: 25, 
+        description: "A ranged weapon for precise attacks."
+    },
+    leatherHelmet: { 
+        type: "helmet", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 1, 
+        speed: 0, 
+        price: 15, 
+        description: "A light helmet made of tanned leather."
+    },
+    leatherChest: { 
+        type: "chest", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 2, 
+        speed: 0, 
+        price: 25, 
+        description: "Flexible leather armor for the torso."
+    },
+    leatherLegs: { 
+        type: "legs", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 1, 
+        speed: 0, 
+        price: 20, 
+        description: "Leather greaves for leg protection."
+    },
+    leatherBoots: { 
+        type: "boots", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 0, 
+        speed: 1, 
+        price: 15, 
+        description: "Sturdy leather boots that enhance mobility."
+    },
+    chainHelmet: { 
+        type: "helmet", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 2, 
+        speed: -1, 
+        price: 30, 
+        description: "A chainmail coif offering solid protection."
+    },
+    chainChest: { 
+        type: "chest", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 4, 
+        speed: -1, 
+        price: 50, 
+        description: "Heavy chainmail armor for the chest."
+    },
+    chainLegs: { 
+        type: "legs", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 2, 
+        speed: -1, 
+        price: 35, 
+        description: "Chainmail leggings for enhanced defense."
+    },
+    swiftBoots: { 
+        type: "boots", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 0, 
+        speed: 3, 
+        price: 40, 
+        description: "Enchanted boots that greatly increase speed."
+    },
+    plateHelmet: { 
+        type: "helmet", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 3, 
+        speed: -2, 
+        price: 50, 
+        description: "A heavy plate helm for maximum protection."
+    },
+    plateChest: { 
+        type: "chest", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 6, 
+        speed: -2, 
+        price: 80, 
+        description: "Bulky plate armor for the torso."
+    },
+    plateLegs: { 
+        type: "legs", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 3, 
+        speed: -2, 
+        price: 60, 
+        description: "Plate greaves for superior defense."
+    }
 };
 
 const items = {
@@ -273,7 +396,8 @@ const items = {
             user.hp = Math.min(MAX_HP, user.hp + 15);
             return `${user.playerName} uses a Healing Potion, restoring 15 HP!`;
         },
-        price: 10
+        price: 10,
+        description: "Restores 15 HP when used."
     },
     bomb: {
         effect: (user, target) => {
@@ -281,7 +405,8 @@ const items = {
             target.hp -= dmg;
             return `${user.playerName} throws a Bomb, dealing ${dmg} damage!`;
         },
-        price: 20
+        price: 20,
+        description: "Deals 2d6 damage to an enemy."
     },
     poisonDart: {
         effect: (user, target) => {
@@ -291,7 +416,8 @@ const items = {
             }
             return `${user.playerName} fires a Poison Dart, but ${target.name} is already at max poison stacks!`;
         },
-        price: 15
+        price: 15,
+        description: "Applies one poison stack to an enemy."
     },
     poisonVial: {
         effect: (user, target) => {
@@ -304,14 +430,16 @@ const items = {
             }
             return `${user.playerName} throws a Poison Vial, but ${target.name} is already at max poison stacks!`;
         },
-        price: 25
+        price: 25,
+        description: "Applies up to two poison stacks to an enemy."
     },
     sharpeningStone: {
         effect: (user) => {
             user.sharpenTurns = 3;
             return `${user.playerName} uses a Sharpening Stone (+2 attack for 3 turns)!`;
         },
-        price: 10
+        price: 10,
+        description: "Increases attack by 2 for 3 turns."
     },
     bearTrap: {
         effect: (user, target) => {
@@ -319,17 +447,29 @@ const items = {
             target.stats.speed = 0;
             return `${user.playerName} sets a Bear Trap—${target.name} is immobilized!`;
         },
-        price: 25
+        price: 25,
+        description: "Immobilizes an enemy for 2 turns."
     },
     pocketSand: {
         effect: (user, target) => {
             target.blindTurns = 1;
             return `${user.playerName} tosses Pocket Sand—${target.name} is distracted!`;
         },
-        price: 5
+        price: 5,
+        description: "Distracts an enemy for 1 turn."
     },
-    wolfPelt: { effect: () => "A pelt from a wolf—good for trading.", price: 0, sellPrice: 8 },
-    rareGem: { effect: () => "A valuable gemstone—rare and precious.", price: 0, sellPrice: 50 },
+    wolfPelt: { 
+        effect: () => "A pelt from a wolf—good for trading.", 
+        price: 0, 
+        sellPrice: 8, 
+        description: "A wolf pelt, valuable for trading."
+    },
+    rareGem: { 
+        effect: () => "A valuable gemstone—rare and precious.", 
+        price: 0, 
+        sellPrice: 50, 
+        description: "A rare gemstone, highly valuable."
+    },
     throwingKnife: {
         effect: (user, target) => {
             const dmg = rollDamage("1d4");
@@ -341,7 +481,8 @@ const items = {
             return `${user.playerName} throws a Throwing Knife for ${dmg} damage, but ${target.name} is already at max bleed stacks!`;
         },
         price: 20,
-        sellPrice: 10
+        sellPrice: 10,
+        description: "Deals 1d4 damage and may cause bleeding."
     }
 };
 
@@ -387,12 +528,12 @@ const enemyAbilities = {
     disarm: (user, target) => {
         if (rollDice(100) <= 10 && target.equipped.weapon) {
             const weapon = target.equipped.weapon;
-            target.stats.attack -= weapon.attack;
-            target.stats.defense -= weapon.defense;
-            target.stats.speed -= weapon.speed;
+            target.stats.attack -= equipment[weapon].attack;
+            target.stats.defense -= equipment[weapon].defense;
+            target.stats.speed -= equipment[weapon].speed;
             target.equipped.weapon = null;
-            addToInventory(weapon.name);
-            return `${user.name} disarms you, dropping your ${weapon.name}!`;
+            addToInventory(weapon);
+            return `${user.name} disarms you, dropping your ${formatItemName(weapon)}!`;
         }
         return `${user.name} tries to disarm you but fails!`;
     },
@@ -559,19 +700,23 @@ function loadPlayerData() {
             ];
         }
         if (!gameState.equipped) {
-            gameState.equipped = { weapon: null, armor: null };
+            gameState.equipped = {
+                weapon: null,
+                helmet: null,
+                chest: null,
+                arms: null,
+                legs: null,
+                boots: null
+            };
         }
         if (gameState.class && classes[gameState.class]) {
             const baseStats = { ...classes[gameState.class].stats };
-            if (gameState.equipped.weapon) {
-                baseStats.attack += gameState.equipped.weapon.attack || 0;
-                baseStats.defense += gameState.equipped.weapon.defense || 0;
-                baseStats.speed += gameState.equipped.weapon.speed || 0;
-            }
-            if (gameState.equipped.armor) {
-                baseStats.attack += gameState.equipped.armor.attack || 0;
-                baseStats.defense += gameState.equipped.armor.defense || 0;
-                baseStats.speed += gameState.equipped.armor.speed || 0;
+            for (const slot in gameState.equipped) {
+                if (gameState.equipped[slot]) {
+                    baseStats.attack += gameState.equipped[slot].attack || 0;
+                    baseStats.defense += gameState.equipped[slot].defense || 0;
+                    baseStats.speed += gameState.equipped[slot].speed || 0;
+                }
             }
             gameState.stats = baseStats;
             const levelBonusCount = gameState.level - 1;
@@ -592,10 +737,13 @@ function calculateAC(entity) {
     const baseAC = entity.baseAC || 10;
     const speedBonus = Math.floor(((entity.stats.speed || 0) + (entity.speedBonus || 0)) / 3);
     const defenseBonus = Math.floor((entity.stats.defense || 0) / 2);
-    const equipBonus =
-        (entity.equipped?.weapon?.defense || 0) +
-        (entity.equipped?.armor?.defense || 0) +
-        (entity.evadeTurns > 0 ? 2 : 0);
+    let equipBonus = 0;
+    for (const slot in entity.equipped) {
+        if (entity.equipped[slot]) {
+            equipBonus += entity.equipped[slot].defense || 0;
+        }
+    }
+    equipBonus += entity.evadeTurns > 0 ? 2 : 0;
     const ac = baseAC + speedBonus + defenseBonus + equipBonus;
     console.log(`${entity.playerName || entity.name || "Player"} AC: ${ac}`);
     return ac;
@@ -624,15 +772,6 @@ function removeFromInventory(itemName, amount = 1) {
     return false;
 }
 
-function useItem(itemName, user, target) {
-    const item = items[itemName];
-    if (!item || !removeFromInventory(itemName)) return null;
-    const effectMessage =
-        typeof item.effect === "function" ? item.effect(user, target || user) : item.effect;
-    updateUI();
-    return effectMessage;
-}
-
 function equipItem(itemName, type) {
     const item = equipment[itemName];
     if (!item || !removeFromInventory(itemName)) {
@@ -640,7 +779,8 @@ function equipItem(itemName, type) {
         return false;
     }
 
-    const current = gameState.equipped[type];
+    const slot = item.type; // Use type (e.g., weapon, helmet, chest, arms, legs, boots)
+    const current = gameState.equipped[slot];
     if (current) {
         gameState.stats.attack -= current.attack || 0;
         gameState.stats.defense -= current.defense || 0;
@@ -649,7 +789,7 @@ function equipItem(itemName, type) {
         showAction(`Unequipped ${formatItemName(current.name)}.`);
     }
 
-    gameState.equipped[type] = { name: itemName, ...item };
+    gameState.equipped[slot] = { name: itemName, ...item };
     gameState.stats.attack += item.attack || 0;
     gameState.stats.defense += item.defense || 0;
     gameState.stats.speed += item.speed || 0;
@@ -661,10 +801,10 @@ function equipItem(itemName, type) {
     return true;
 }
 
-function unequipItem(type) {
-    const current = gameState.equipped[type];
+function unequipItem(slot) {
+    const current = gameState.equipped[slot];
     if (!current) {
-        showAction(`No ${type} equipped to unequip!`);
+        showAction(`No ${slot} equipped to unequip!`);
         return;
     }
 
@@ -672,12 +812,21 @@ function unequipItem(type) {
     gameState.stats.defense -= current.defense || 0;
     gameState.stats.speed -= current.speed || 0;
     addToInventory(current.name);
-    gameState.equipped[type] = null;
+    gameState.equipped[slot] = null;
     showAction(`Unequipped ${formatItemName(current.name)}.`);
     console.log("After unequipItem:", gameState.equipped);
 
     savePlayerData();
     updateUI();
+}
+
+function useItem(itemName, user, target) {
+    const item = items[itemName];
+    if (!item || !removeFromInventory(itemName)) return null;
+    const effectMessage =
+        typeof item.effect === "function" ? item.effect(user, target || user) : item.effect;
+    updateUI();
+    return effectMessage;
 }
 
 // ============================================================================
@@ -771,96 +920,55 @@ function showEquipMenu() {
         return;
     }
 
-    const weapons = gameState.inventory.filter(item => equipment[item.name]?.type === "weapon");
-    const armors = gameState.inventory.filter(item => equipment[item.name]?.type === "armor");
+    const slots = ["weapon", "helmet", "chest", "arms", "legs", "boots"];
+    let menuHTML = `<h3>Equip Items</h3>`;
 
-    if (!gameState.equipped) {
-        gameState.equipped = { weapon: null, armor: null };
-    }
+    slots.forEach(slot => {
+        const itemsInSlot = gameState.inventory.filter(item => equipment[item.name]?.type === slot);
+        menuHTML += `
+            <div class="equip-section">
+                <h4>${slot.charAt(0).toUpperCase() + slot.slice(1)} (Equipped: ${
+                    gameState.equipped[slot] && gameState.equipped[slot].name
+                        ? formatItemName(gameState.equipped[slot].name)
+                        : "None"
+                })</h4>
+                ${
+                    itemsInSlot.length > 0
+                        ? itemsInSlot
+                              .map(item => {
+                                  const stats = equipment[item.name];
+                                  const isEquipped =
+                                      gameState.equipped[slot] &&
+                                      gameState.equipped[slot].name === item.name;
+                                  return `
+                                    <p>
+                                        ${formatItemName(item.name)} (${item.quantity})
+                                        <br><span class="item-description">${stats.description}</span>
+                                        <br><span class="stat-preview">
+                                            [A:${stats.attack || 0} D:${stats.defense || 0} S:${stats.speed || 0}${
+                                                stats.bleedChance ? ` Bleed:${stats.bleedChance}%` : ""
+                                            }]
+                                        </span>
+                                        <button class="equipBtn" data-item="${item.name}" data-type="${slot}" ${
+                                            isEquipped ? "disabled" : ""
+                                        }>
+                                            ${isEquipped ? "Equipped" : "Equip"}
+                                        </button>
+                                        ${
+                                            isEquipped
+                                                ? `<button class="unequipBtn" data-item="${item.name}" data-type="${slot}">Unequip</button>`
+                                                : ""
+                                        }
+                                    </p>`;
+                              })
+                              .join("")
+                        : `<p>No ${slot} items available</p>`
+                }
+            </div>`;
+    });
 
-    equipMenu.innerHTML = `
-        <h3>Equip Items</h3>
-        <div class="equip-section">
-            <h4>Weapons (Equipped: ${
-                gameState.equipped.weapon && gameState.equipped.weapon.name
-                    ? formatItemName(gameState.equipped.weapon.name)
-                    : "None"
-            })</h4>
-            ${
-                weapons.length > 0
-                    ? weapons
-                          .map(item => {
-                              const stats = equipment[item.name];
-                              const isEquipped =
-                                  gameState.equipped.weapon &&
-                                  gameState.equipped.weapon.name === item.name;
-                              return `
-                        <p>
-                            ${formatItemName(item.name)} (${item.quantity})
-                            <span class="stat-preview">
-                                [A:${stats.attack || 0} D:${stats.defense || 0} S:${
-                                    stats.speed || 0
-                                }]${
-                                    stats.bleedChance ? ` Bleed:${stats.bleedChance}%` : ""
-                                }
-                            </span>
-                            <button class="equipBtn" data-item="${item.name}" data-type="weapon" ${
-                                isEquipped ? "disabled" : ""
-                            }>
-                                ${isEquipped ? "Equipped" : "Equip"}
-                            </button>
-                            ${
-                                isEquipped
-                                    ? `<button class="unequipBtn" data-item="${item.name}" data-type="weapon">Unequip</button>`
-                                    : ""
-                            }
-                        </p>`;
-                          })
-                          .join("")
-                    : "<p>No weapons available</p>"
-            }
-        </div>
-        <div class="equip-section">
-            <h4>Armor (Equipped: ${
-                gameState.equipped.armor && gameState.equipped.armor.name
-                    ? formatItemName(gameState.equipped.armor.name)
-                    : "None"
-            })</h4>
-            ${
-                armors.length > 0
-                    ? armors
-                          .map(item => {
-                              const stats = equipment[item.name];
-                              const isEquipped =
-                                  gameState.equipped.armor &&
-                                  gameState.equipped.armor.name === item.name;
-                              return `
-                        <p>
-                            ${formatItemName(item.name)} (${item.quantity})
-                            <span class="stat-preview">
-                                [A:${stats.attack || 0} D:${stats.defense || 0} S:${
-                                    stats.speed || 0
-                                }]
-                            </span>
-                            <button class="equipBtn" data-item="${item.name}" data-type="armor" ${
-                                isEquipped ? "disabled" : ""
-                            }>
-                                ${isEquipped ? "Equipped" : "Equip"}
-                            </button>
-                            ${
-                                isEquipped
-                                    ? `<button class="unequipBtn" data-item="${item.name}" data-type="armor">Unequip</button>`
-                                    : ""
-                            }
-                        </p>`;
-                          })
-                          .join("")
-                    : "<p>No armor available</p>"
-            }
-        </div>
-        <button id="backBtn">Back</button>
-    `;
-
+    menuHTML += `<button id="backBtn">Back</button>`;
+    equipMenu.innerHTML = menuHTML;
     equipMenu.classList.remove("hidden");
 
     document.querySelectorAll(".equipBtn").forEach(btn => {
@@ -874,9 +982,8 @@ function showEquipMenu() {
 
     document.querySelectorAll(".unequipBtn").forEach(btn => {
         btn.addEventListener("click", () => {
-            const itemName = btn.dataset.item;
-            const type = btn.dataset.type;
-            unequipItem(type);
+            const slot = btn.dataset.type;
+            unequipItem(slot);
             showEquipMenu();
         });
     });
@@ -890,6 +997,32 @@ function showEquipMenu() {
     }
 
     console.log("showEquipMenu - gameState.equipped:", gameState.equipped);
+}
+
+function showGearMenu() {
+    const gearMenu = document.getElementById("gearMenu");
+    const gearList = document.getElementById("gearList");
+    if (!gearMenu || !gearList) {
+        console.error("Gear menu or list not found");
+        return;
+    }
+
+    const slots = ["weapon", "helmet", "chest", "arms", "legs", "boots"];
+    gearList.innerHTML =
+        slots
+            .map(slot => {
+                const item = gameState.equipped[slot];
+                return `
+                    <p>
+                        ${slot.charAt(0).toUpperCase() + slot.slice(1)}: ${
+                            item ? formatItemName(item.name) : "None"
+                        }
+                        ${item ? `<br><span class="item-description">${item.description}</span> <br><span class="stat-preview">[A:${item.attack || 0} D:${item.defense || 0} S:${item.speed || 0}${item.bleedChance ? ` Bleed:${item.bleedChance}%` : ""}]</span>` : ""}
+                    </p>`;
+            })
+            .join("") || "<p>No gear equipped.</p>";
+
+    gearMenu.classList.toggle("hidden");
 }
 
 // ============================================================================
@@ -939,7 +1072,6 @@ function updateShopUI() {
     const useableList = document.getElementById("useableList");
     const sellList = document.getElementById("sellList");
 
-    // Clear existing content to prevent duplication
     if (weaponList) weaponList.innerHTML = "";
     if (armorList) armorList.innerHTML = "";
     if (useableList) useableList.innerHTML = "";
@@ -947,13 +1079,19 @@ function updateShopUI() {
 
     // Populate weapon list
     if (weaponList) {
-        const weapons = Object.keys(equipment).filter(item => equipment[item].boxtype === "weapon");
+        const weapons = Object.keys(equipment).filter(item => equipment[item].type === "weapon");
         weaponList.innerHTML =
             weapons.length > 0
                 ? weapons
                       .map(item => {
                           const data = equipment[item];
-                          return `<p>${formatItemName(item)}: ${data.price} Gold <button class="buyBtn" data-item="${item}" data-price="${data.price}">Buy</button></p>`;
+                          return `
+                            <p>
+                                ${formatItemName(item)}: ${data.price} Gold
+                                <br><span class="item-description">${data.description}</span>
+                                <br>[A:${data.attack || 0} D:${data.defense || 0} S:${data.speed || 0}${data.bleedChance ? ` Bleed:${data.bleedChance}%` : ""}]
+                                <button class="buyBtn" data-item="${item}" data-price="${data.price}">Buy</button>
+                            </p>`;
                       })
                       .join("")
                 : "<p>No weapons available.</p>";
@@ -967,7 +1105,13 @@ function updateShopUI() {
                 ? armors
                       .map(item => {
                           const data = equipment[item];
-                          return `<p>${formatItemName(item)}: ${data.price} Gold <button class="buyBtn" data-item="${item}" data-price="${data.price}">Buy</button></p>`;
+                          return `
+                            <p>
+                                ${formatItemName(item)}: ${data.price} Gold
+                                <br><span class="item-description">${data.description}</span>
+                                <br>[A:${data.attack || 0} D:${data.defense || 0} S:${data.speed || 0}]
+                                <button class="buyBtn" data-item="${item}" data-price="${data.price}">Buy</button>
+                            </p>`;
                       })
                       .join("")
                 : "<p>No armor available.</p>";
@@ -981,7 +1125,12 @@ function updateShopUI() {
                 ? consumables
                       .map(item => {
                           const data = items[item];
-                          return `<p>${formatItemName(item)}: ${data.price} Gold <button class="buyBtn" data-item="${item}" data-price="${data.price}">Buy</button></p>`;
+                          return `
+                            <p>
+                                ${formatItemName(item)}: ${data.price} Gold
+                                <br><span class="item-description">${data.description}</span>
+                                <button class="buyBtn" data-item="${item}" data-price="${data.price}">Buy</button>
+                            </p>`;
                       })
                       .join("")
                 : "<p>No consumables available.</p>";
@@ -1000,7 +1149,12 @@ function updateShopUI() {
                                   : data.price !== undefined
                                   ? Math.floor(data.price / 2)
                                   : 1;
-                          return `<p>${formatItemName(item.name)} (${item.quantity}): ${sellPrice} Gold <button class="sellBtn" data-item="${item.name}" data-price="${sellPrice}">Sell</button></p>`;
+                          return `
+                            <p>
+                                ${formatItemName(item.name)} (${item.quantity}): ${sellPrice} Gold
+                                <br><span class="item-description">${data.description || "No description available."}</span>
+                                <button class="sellBtn" data-item="${item.name}" data-price="${sellPrice}">Sell</button>
+                            </p>`;
                       })
                       .join("")
                 : "<p>No items to sell.</p>";
@@ -1008,16 +1162,17 @@ function updateShopUI() {
 
     // Attach event listeners for buy buttons
     document.querySelectorAll(".buyBtn").forEach(btn => {
-        btn.removeEventListener("click", handleBuyClick); // Prevent duplicate listeners
+        btn.removeEventListener("click", handleBuyClick);
         btn.addEventListener("click", handleBuyClick);
     });
 
     // Attach event listeners for sell buttons
     document.querySelectorAll(".sellBtn").forEach(btn => {
-        btn.removeEventListener("click", handleSellClick); // Prevent duplicate listeners
+        btn.removeEventListener("click", handleSellClick);
         btn.addEventListener("click", handleSellClick);
     });
 }
+
 
 // Helper functions for buy/sell clicks
 function handleBuyClick(event) {
@@ -1038,6 +1193,8 @@ function handleSellClick(event) {
         showAction("Error: Invalid item!");
     }
 }
+
+
 
 // ============================================================================
 // COMBAT FUNCTIONS
