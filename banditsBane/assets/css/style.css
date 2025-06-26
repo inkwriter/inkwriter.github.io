@@ -954,39 +954,39 @@ a button {
 }
 
 .gear-dropdown {
-    margin-top: 10px;
+    position: relative;
+    display: inline-block;
 }
 
 .gear-btn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 3px;
+    background-color: #283618;
+    color: #d9f99d;
+    border: 1px solid #d9f99d;
+    padding: 5px;
     cursor: pointer;
-    font-family: 'Alegreya', serif;
-    font-size: 1em;
+    border-radius: 25%;
+    height: 30px;
+    width: 60px;
+    font-family: 'Open Sans', sans-serif;
 }
 
 .gear-btn:hover {
-    background-color: #45a049;
+    background-color: #2d6a4f;
 }
 
 .gear-list {
     display: none;
-    background-color: rgba(0, 0, 0, 0.9);
-    color: #fff;
+    position: absolute;
+    background-color: #283618;
+    color: #d9f99d;
+    border: 1px solid #d9f99d;
     padding: 10px;
-    border-radius: 5px;
-    margin-top: 5px;
-    max-height: 200px;
-    overflow-y: auto;
+    z-index: 1;
+    top: 100%;
+    left: 0; /* Align with left edge of gear-btn */
+    min-width: 100px; /* Ensure sufficient width */
 }
 
-.gear-list p {
-    margin: 5px 0;
-    font-size: 0.9em;
-}
 
 .gear-list .set-bonus {
     color: #ffd700; /* Gold color for set bonus */
@@ -995,6 +995,15 @@ a button {
 
 .gear-dropdown.active .gear-list {
     display: block;
+}
+
+.gear-dropdown:hover .gear-list {
+    display: block;
+}
+
+.gear-list p {
+    margin: 5px 0;
+    font-size: 14px;
 }
 
 iframe {

@@ -387,6 +387,100 @@ const equipment = {
         speed: -2, 
         price: 60, 
         description: "Plate greaves for superior defense."
+    },
+    leatherArms: { 
+        type: "arms", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 1, 
+        speed: 0, 
+        price: 15, 
+        description: "Light leather bracers for arm protection."
+    },
+    chainArms: { 
+        type: "arms", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 2, 
+        speed: -1, 
+        price: 30, 
+        description: "Chainmail vambraces offering sturdy arm defense."
+    },
+    plateArms: { 
+        type: "arms", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 3, 
+        speed: -2, 
+        price: 50, 
+        description: "Heavy plate gauntlets for superior arm protection."
+    },
+    spikedBracers: { 
+        type: "arms", 
+        boxtype: "armor", 
+        attack: 1, 
+        defense: 1, 
+        speed: 0, 
+        price: 25, 
+        description: "Leather bracers with metal spikes, useful for counterattacks."
+    },
+    shield: { 
+        type: "weapon", 
+        boxtype: "weapon", 
+        damage: "1d4", 
+        attack: 0, 
+        defense: 2, 
+        speed: -1, 
+        price: 30, 
+        description: "A sturdy wooden shield, good for blocking and bashing."
+    },
+    battleAxe: { 
+        type: "weapon", 
+        boxtype: "weapon", 
+        damage: "1d10", 
+        attack: 3, 
+        defense: 0, 
+        speed: -2, 
+        price: 40, 
+        bleedChance: 20, 
+        description: "A heavy axe that cleaves through armor, with a chance to cause bleeding."
+    },
+    crossbow: { 
+        type: "weapon", 
+        boxtype: "weapon", 
+        damage: "1d8", 
+        attack: 2, 
+        defense: 0, 
+        speed: 0, 
+        price: 35, 
+        description: "A powerful ranged weapon with high accuracy."
+    },
+    paddedCloak: { 
+        type: "chest", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 1, 
+        speed: 1, 
+        price: 20, 
+        description: "A thick cloak offering light protection and mobility."
+    },
+    ironBoots: { 
+        type: "boots", 
+        boxtype: "armor", 
+        attack: 1, 
+        defense: 1, 
+        speed: -1, 
+        price: 25, 
+        description: "Reinforced boots for kicking and stability."
+    },
+    scoutCap: { 
+        type: "helmet", 
+        boxtype: "armor", 
+        attack: 0, 
+        defense: 0, 
+        speed: 2, 
+        price: 20, 
+        description: "A lightweight cap designed for quick movement."
     }
 };
 
@@ -675,8 +769,15 @@ function formatItemName(itemName) {
 }
 
 function rollDamage(damageString) {
+    if (!damageString || typeof damageString !== "string") {
+        console.warn("Invalid damageString, using default 1d4:", damageString);
+        return rollDice(4); // Default to 1d4 if undefined or invalid
+    }
     const match = damageString.match(/(\d+)d(\d+)/);
-    if (!match) return rollDice(4);
+    if (!match) {
+        console.warn("Damage string format invalid, using default 1d4:", damageString);
+        return rollDice(4); // Default to 1d4 if format is wrong
+    }
     const [_, numDice, sides] = match;
     return Array.from({ length: parseInt(numDice) }, () => rollDice(parseInt(sides))).reduce((a, b) => a + b, 0);
 }
@@ -772,52 +873,73 @@ function removeFromInventory(itemName, amount = 1) {
     return false;
 }
 
-function equipItem(itemName, type) {
-    const item = equipment[itemName];
-    if (!item || !removeFromInventory(itemName)) {
-        showAction(`Cannot equip ${formatItemName(itemName)} - not in inventory!`);
-        return false;
+function equipItem(item, slot) {
+    if (!item || !slot) {
+        console.error("Invalid item or slot:", item, slot);
+        return;
     }
-
-    const slot = item.type; // Use type (e.g., weapon, helmet, chest, arms, legs, boots)
-    const current = gameState.equipped[slot];
-    if (current) {
-        gameState.stats.attack -= current.attack || 0;
-        gameState.stats.defense -= current.defense || 0;
-        gameState.stats.speed -= current.speed || 0;
-        addToInventory(current.name);
-        showAction(`Unequipped ${formatItemName(current.name)}.`);
+    const validSlots = ["weapon", "head", "chest", "arms", "legs", "boots"];
+    if (!validSlots.includes(slot)) {
+        console.error("Unsupported slot:", slot);
+        return;
     }
-
-    gameState.equipped[slot] = { name: itemName, ...item };
-    gameState.stats.attack += item.attack || 0;
-    gameState.stats.defense += item.defense || 0;
-    gameState.stats.speed += item.speed || 0;
-    showAction(`Equipped ${formatItemName(itemName)}.`);
-    console.log("Equipped:", gameState.equipped);
-
+    // Unequip current item in slot, return to inventory
+    if (gameState.equipped[slot]) {
+        const currentItem = gameState.equipped[slot];
+        const inventoryItem = gameState.inventory.find(i => i.name === currentItem.name);
+        if (inventoryItem) {
+            inventoryItem.quantity = (inventoryItem.quantity || 0) + 1;
+        } else {
+            gameState.inventory.push({ name: currentItem.name, quantity: 1, type: currentItem.type });
+        }
+    }
+    // Equip new item
+    const equipmentData = equipment[item.name];
+    gameState.equipped[slot] = { 
+        name: item.name, 
+        type: item.type, 
+        attack: equipmentData.attack || 0,
+        defense: equipmentData.defense || 0,
+        speed: equipmentData.speed || 0
+    };
+    // Remove from inventory
+    const inventoryItem = gameState.inventory.find(i => i.name === item.name);
+    if (inventoryItem) {
+        inventoryItem.quantity -= 1;
+        if (inventoryItem.quantity <= 0) {
+            gameState.inventory = gameState.inventory.filter(i => i.name !== item.name);
+        }
+    }
     savePlayerData();
     updateUI();
-    return true;
+    updateGearList();
+    // Only call showEquipMenu in camp.html
+    if (window.location.pathname.includes("camp.html")) {
+        showEquipMenu();
+    }
 }
 
 function unequipItem(slot) {
-    const current = gameState.equipped[slot];
-    if (!current) {
-        showAction(`No ${slot} equipped to unequip!`);
+    if (!["weapon", "head", "chest", "arms", "legs", "boots"].includes(slot)) {
+        console.error("Invalid slot:", slot);
         return;
     }
-
-    gameState.stats.attack -= current.attack || 0;
-    gameState.stats.defense -= current.defense || 0;
-    gameState.stats.speed -= current.speed || 0;
-    addToInventory(current.name);
-    gameState.equipped[slot] = null;
-    showAction(`Unequipped ${formatItemName(current.name)}.`);
-    console.log("After unequipItem:", gameState.equipped);
-
-    savePlayerData();
-    updateUI();
+    const currentItem = gameState.equipped[slot];
+    if (currentItem) {
+        const inventoryItem = gameState.inventory.find(i => i.name === currentItem.name);
+        if (inventoryItem) {
+            inventoryItem.quantity = (inventoryItem.quantity || 0) + 1;
+        } else {
+            gameState.inventory.push({ name: currentItem.name, quantity: 1, type: currentItem.type });
+        }
+        gameState.equipped[slot] = null;
+        savePlayerData();
+        updateUI();
+        updateGearList();
+        if (window.location.pathname.includes("camp.html")) {
+            showEquipMenu();
+        }
+    }
 }
 
 function useItem(itemName, user, target) {
@@ -833,6 +955,7 @@ function useItem(itemName, user, target) {
 // UI FUNCTIONS
 // ============================================================================
 function updateUI() {
+    const page = window.location.pathname;
     const elements = {
         playerName: document.getElementById("playerName"),
         xp: document.getElementById("xp"),
@@ -843,32 +966,18 @@ function updateUI() {
         att: document.getElementById("att"),
         def: document.getElementById("def"),
         spd: document.getElementById("spd"),
-        equippedWeapon: document.getElementById("equippedWeapon"),
-        equippedArmor: document.getElementById("equippedArmor"),
         enemyName: document.getElementById("enemyName"),
         enemyHP: document.getElementById("enemyHP")
     };
 
-    if (elements.playerName) elements.playerName.textContent = gameState.playerName;
-    if (elements.xp) elements.xp.textContent = `${gameState.xp}/${LEVEL_UP_XP}`;
-    if (elements.hp) elements.hp.textContent = gameState.hp;
-    if (elements.level) elements.level.textContent = gameState.level;
-    if (elements.gold) elements.gold.textContent = gameState.gold;
-    if (elements.att) elements.att.textContent = gameState.stats.attack;
-    if (elements.def) elements.def.textContent = gameState.stats.defense;
-    if (elements.spd) elements.spd.textContent = gameState.stats.speed;
-    if (elements.equippedWeapon) {
-        elements.equippedWeapon.textContent =
-            gameState.equipped && gameState.equipped.weapon && gameState.equipped.weapon.name
-                ? formatItemName(gameState.equipped.weapon.name)
-                : "None";
-    }
-    if (elements.equippedArmor) {
-        elements.equippedArmor.textContent =
-            gameState.equipped && gameState.equipped.armor && gameState.equipped.armor.name
-                ? formatItemName(gameState.equipped.armor.name)
-                : "None";
-    }
+    if (elements.playerName) elements.playerName.textContent = gameState.playerName || "Hero";
+    if (elements.xp) elements.xp.textContent = `${gameState.xp || 0}/${LEVEL_UP_XP || 100}`;
+    if (elements.hp) elements.hp.textContent = `${gameState.hp || 0}/${gameState.maxHp || 100}`;
+    if (elements.level) elements.level.textContent = gameState.level || 1;
+    if (elements.gold) elements.gold.textContent = gameState.gold || 0;
+    if (elements.att) elements.att.textContent = (gameState.stats && gameState.stats.attack) || 0;
+    if (elements.def) elements.def.textContent = (gameState.stats && gameState.stats.defense) || 0;
+    if (elements.spd) elements.spd.textContent = (gameState.stats && gameState.stats.speed) || 0;
     if (elements.inventoryList) {
         elements.inventoryList.innerHTML =
             gameState.inventory.length === 0
@@ -883,8 +992,8 @@ function updateUI() {
     console.log("UI update - Equipped:", gameState.equipped);
 
     if (combatState.active && combatState.currentEnemy) {
-        if (elements.enemyName) elements.enemyName.textContent = combatState.currentEnemy.name;
-        if (elements.enemyHP) elements.enemyHP.textContent = combatState.currentEnemy.hp;
+        if (elements.enemyName) elements.enemyName.textContent = combatState.currentEnemy.name || "Unknown";
+        if (elements.enemyHP) elements.enemyHP.textContent = combatState.currentEnemy.hp || 0;
         const enemyHealthBar = document.getElementById("enemy-health");
         if (enemyHealthBar) {
             const enemyKey = combatState.currentEnemy.enemyType || combatState.currentEnemy.name.toLowerCase();
@@ -898,6 +1007,18 @@ function updateUI() {
             enemyHealthBar.style.width = `${hpPercent}%`;
         }
     }
+
+    // Update gearList for camp.html, shop.html, ambush.html, exploration.html
+    if (
+        page.includes("camp.html") ||
+        page.includes("shop.html") ||
+        page.includes("ambush.html") ||
+        page.includes("exploration.html")
+    ) {
+        updateGearList();
+    }
+
+    savePlayerData(); // From previous unload fix
 }
 
 function showAction(text) {
@@ -916,135 +1037,118 @@ function showAction(text) {
 function showEquipMenu() {
     const equipMenu = document.getElementById("equipMenu");
     if (!equipMenu) {
-        console.error("Equip menu not found");
+        console.error("equipMenu not found");
         return;
     }
-
-    const slots = ["weapon", "helmet", "chest", "arms", "legs", "boots"];
-    let menuHTML = `<h3>Equip Items</h3>`;
-
-    slots.forEach(slot => {
-        const itemsInSlot = gameState.inventory.filter(item => equipment[item.name]?.type === slot);
-        menuHTML += `
-            <div class="equip-section">
-                <h4>${slot.charAt(0).toUpperCase() + slot.slice(1)} (Equipped: ${
-                    gameState.equipped[slot] && gameState.equipped[slot].name
-                        ? formatItemName(gameState.equipped[slot].name)
-                        : "None"
-                })</h4>
-                ${
-                    itemsInSlot.length > 0
-                        ? itemsInSlot
-                              .map(item => {
-                                  const stats = equipment[item.name];
-                                  const isEquipped =
-                                      gameState.equipped[slot] &&
-                                      gameState.equipped[slot].name === item.name;
-                                  return `
-                                    <p>
-                                        ${formatItemName(item.name)} (${item.quantity})
-                                        <br><span class="item-description">${stats.description}</span>
-                                        <br><span class="stat-preview">
-                                            [A:${stats.attack || 0} D:${stats.defense || 0} S:${stats.speed || 0}${
-                                                stats.bleedChance ? ` Bleed:${stats.bleedChance}%` : ""
-                                            }]
-                                        </span>
-                                        <button class="equipBtn" data-item="${item.name}" data-type="${slot}" ${
-                                            isEquipped ? "disabled" : ""
-                                        }>
-                                            ${isEquipped ? "Equipped" : "Equip"}
-                                        </button>
-                                        ${
-                                            isEquipped
-                                                ? `<button class="unequipBtn" data-item="${item.name}" data-type="${slot}">Unequip</button>`
-                                                : ""
-                                        }
-                                    </p>`;
-                              })
-                              .join("")
-                        : `<p>No ${slot} items available</p>`
-                }
-            </div>`;
-    });
-
-    menuHTML += `<button id="backBtn">Back</button>`;
-    equipMenu.innerHTML = menuHTML;
     equipMenu.classList.remove("hidden");
-
-    document.querySelectorAll(".equipBtn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const itemName = btn.dataset.item;
-            const type = btn.dataset.type;
-            equipItem(itemName, type);
-            showEquipMenu();
-        });
-    });
-
-    document.querySelectorAll(".unequipBtn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const slot = btn.dataset.type;
-            unequipItem(slot);
-            showEquipMenu();
-        });
-    });
-
-    const backBtn = document.getElementById("backBtn");
-    if (backBtn) {
-        backBtn.addEventListener("click", () => {
-            equipMenu.classList.add("hidden");
-            showAction("You’re back at camp.");
-        });
-    }
-
-    console.log("showEquipMenu - gameState.equipped:", gameState.equipped);
+    const slots = ["weapon", "head", "chest", "arms", "legs", "boots"];
+    equipMenu.innerHTML = `
+        <h3>Equip Items</h3>
+        ${slots
+            .map(slot => {
+                const equippedItem = gameState.equipped[slot];
+                const availableItems = gameState.inventory.filter(item => item.type === slot || (slot === "head" && item.type === "helmet"));
+                return `
+                    <div class="equip-section">
+                        <h4>${slot.charAt(0).toUpperCase() + slot.slice(1)}</h4>
+                        <p>Equipped: ${equippedItem && equippedItem.name ? formatItemName(equippedItem.name) : "None"}
+                            ${equippedItem ? `<button onclick="unequipItem('${slot}')">Unequip</button>` : ""}
+                        </p>
+                        ${availableItems.length > 0 ? availableItems
+                            .map(item => `
+                                <p>${formatItemName(item.name)} (x${item.quantity})
+                                    <button onclick="equipItem({ name: '${item.name}', type: '${item.type}' }, '${slot}')">Equip</button>
+                                </p>
+                            `).join("") : "<p>No items available.</p>"}
+                    </div>
+                `;
+            })
+            .join("")}
+        <button id="backBtn" onclick="equipMenu.classList.add('hidden')">Back</button>
+    `;
 }
 
-function showGearMenu() {
-    const gearMenu = document.getElementById("gearMenu");
+function toggleGearMenu() {
     const gearList = document.getElementById("gearList");
-    if (!gearMenu || !gearList) {
-        console.error("Gear menu or list not found");
+    if (!gearList) {
+        console.error("gearList not found");
         return;
     }
 
-    const slots = ["weapon", "helmet", "chest", "arms", "legs", "boots"];
-    gearList.innerHTML =
-        slots
+    if (gearList.classList.contains("hidden")) {
+        const slots = ["weapon", "helmet", "chest", "arms", "legs", "boots"];
+        gearList.innerHTML = slots
             .map(slot => {
                 const item = gameState.equipped[slot];
-                return `
-                    <p>
-                        ${slot.charAt(0).toUpperCase() + slot.slice(1)}: ${
-                            item ? formatItemName(item.name) : "None"
-                        }
-                        ${item ? `<br><span class="item-description">${item.description}</span> <br><span class="stat-preview">[A:${item.attack || 0} D:${item.defense || 0} S:${item.speed || 0}${item.bleedChance ? ` Bleed:${item.bleedChance}%` : ""}]</span>` : ""}
-                    </p>`;
+                return `<p>${slot.charAt(0).toUpperCase() + slot.slice(1)}: ${item ? formatItemName(item.name) : "None"}</p>`;
             })
-            .join("") || "<p>No gear equipped.</p>";
+            .join("");
+        gearList.classList.remove("hidden");
+    } else {
+        gearList.classList.add("hidden");
+    }
+}
 
-    gearMenu.classList.toggle("hidden");
+function updateGearList() {
+    const gearList = document.getElementById("gearList");
+    if (!gearList) {
+        console.error("gearList not found");
+        return;
+    }
+    const slots = ["weapon", "head", "chest", "arms", "legs", "boots"];
+    gearList.innerHTML = slots
+        .map(slot => {
+            const item = gameState.equipped[slot];
+            return `<p>${slot.charAt(0).toUpperCase() + slot.slice(1)}: ${item && item.name ? formatItemName(item.name) : "None"}</p>`;
+        })
+        .join("");
+    console.log("gearList updated:", gearList.innerHTML);
 }
 
 // ============================================================================
 // SHOP FUNCTIONS
 // ============================================================================
-function handleBuyItem(itemName, price) {
-    if (gameState.gold >= price) {
-        gameState.gold -= price;
-        if (equipment[itemName]) {
-            equipItem(itemName, equipment[itemName].type)
-                ? showAction(`Equipped ${formatItemName(itemName)}!`)
-                : addToInventory(itemName);
-        } else {
-            addToInventory(itemName);
-        }
-        showAction(`Bought ${formatItemName(itemName)} for ${price} Gold!`);
-        savePlayerData();
-        updateUI();
-        updateShopUI();
-    } else {
+function handleBuyItem(itemName, cost) {
+    if (gameState.gold < cost) {
         showAction("Not enough gold!");
+        return;
     }
+    gameState.gold -= cost;
+    let item, source;
+    // Check equipment for gear
+    if (equipment[itemName]) {
+        item = equipment[itemName];
+        source = "equipment";
+    }
+    // Check items for consumables
+    else if (items[itemName]) {
+        item = items[itemName];
+        source = "items";
+    } else {
+        console.error("Item not found in equipment or items:", itemName);
+        showAction("Error: Item not found.");
+        return;
+    }
+    const inventoryItem = gameState.inventory.find(i => i.name === itemName);
+    if (inventoryItem) {
+        inventoryItem.quantity = (inventoryItem.quantity || 0) + 1;
+    } else {
+        gameState.inventory.push({ name: itemName, quantity: 1, type: item.type || "consumable" });
+    }
+    showAction(`Purchased ${formatItemName(itemName)}!`);
+    // Auto-equip only for equipment items
+    if (source === "equipment") {
+        const validSlots = ["weapon", "head", "chest", "arms", "legs", "boots"];
+        const slot = item.type === "helmet" ? "head" : item.type;
+        if (validSlots.includes(slot)) {
+            equipItem({ name: itemName, type: item.type }, slot);
+        } else {
+            console.warn("Item type not equippable:", item.type);
+        }
+    }
+    savePlayerData();
+    updateUI();
+    updateShopUI();
 }
 
 function handleSellItem(itemName) {
@@ -1432,29 +1536,24 @@ function showItemMenu() {
 }
 
 function playerAttack() {
-    const enemy = combatState.currentEnemy;
-    const hitChance = rollDice(20) + gameState.stats.attack + (gameState.feintBonus || 0);
-    const enemyAC = calculateAC(enemy);
-    let message = "";
-
-    if (hitChance >= enemyAC) {
-        const weapon = gameState.equipped.weapon || { damage: "1d4" };
-        let damage = rollDamage(weapon.damage) + gameState.stats.attack + (gameState.sharpenTurns > 0 ? 2 : 0);
-        damage = Math.max(0, damage - (enemy.blockBonus || 0));
-        enemy.hp -= damage;
-        message = `You hit ${enemy.name} for ${damage} damage!`;
-        if (weapon.bleedChance && rollDice(100) <= weapon.bleedChance && enemy.bleedStacks.length < 3) {
-            enemy.bleedStacks.push({ damage: 3, turns: 3 });
-            message += ` ${enemy.name} is bleeding (${enemy.bleedStacks.length}/3)!`;
-        }
-    } else {
-        message = `Your attack misses ${enemy.name}!`;
+    if (!combatState.active || !combatState.currentEnemy) {
+        console.error("No active combat or enemy");
+        return;
     }
-
-    showAction(message);
-    combatState.turn = "enemy";
+    const weapon = gameState.equipped.weapon;
+    const damageString = weapon && equipment[weapon.name] ? equipment[weapon.name].damage : null;
+    const baseDamage = rollDamage(damageString); // Pass weapon damage or null
+    const totalDamage = baseDamage + (gameState.stats.attack || 0);
+    combatState.currentEnemy.hp -= totalDamage;
+    combatState.currentEnemy.hp = Math.max(0, combatState.currentEnemy.hp);
+    
+    showAction(`${gameState.playerName} attacks for ${totalDamage} damage!`);
+    if (combatState.currentEnemy.hp <= 0) {
+        endCombat(true); // Player wins
+    } else {
+        enemyTurn();
+    }
     updateUI();
-    checkCombatStatus();
 }
 
 function enemyTurn() {
@@ -1715,7 +1814,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 showAction("You cannot return to camp while in combat!");
                 return;
             }
-            //showAction("You trek back to the safety of camp.");
             localStorage.setItem("lastActionMessage", "You’ve returned to camp from the forest.");
             savePlayerData();
             setTimeout(() => {
@@ -1855,7 +1953,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         } else {
-            console.error("shortRestBtn not found in camp.html. Check button ID.");
+            console.error("shortRestBtn not found in camp.html");
         }
     } else if (page.includes("exploration.html")) {
         console.log("Setting up exploration.html listeners"); // Debug
@@ -1877,7 +1975,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else if (roll <= 18) {
                     enemyType = "bountyHunter";
                 } else if (roll === 19) {
-                    const specialRoll = rollDice(3); // Use rollDice(3) for 1–3
+                    const specialRoll = rollDice(3);
                     enemyType = [
                         "valonTheImmortal",
                         "dirtyDave",
@@ -1894,20 +1992,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("Starting battle with enemyType:", enemyType);
                 startBattle(enemyType);
             });
-
-                } else {
-                    console.error("forestBtn not found in exploration.html");
-                }
-                const kingBtn = document.getElementById("kingBtn");
-                if (kingBtn && gameState.level >= 5) {
-                    kingBtn.classList.remove("hidden");
-                    kingBtn.addEventListener("click", () => {
-                        showAction("You face the Bandit King!");
-                        savePlayerData();
-                        startBattle("banditKing");
-                    });
-                }
-                // Direct listener for campBtn as backup
+        } else {
+            console.error("forestBtn not found in exploration.html");
+        }
+        const kingBtn = document.getElementById("kingBtn");
+        if (kingBtn && gameState.level >= 5) {
+            kingBtn.classList.remove("hidden");
+            kingBtn.addEventListener("click", () => {
+                showAction("You face the Bandit King!");
+                savePlayerData();
+                startBattle("banditKing");
+            });
+        }
         const campBtn = document.getElementById("campBtn");
         if (campBtn) {
             campBtn.addEventListener("click", () => {
@@ -1927,7 +2023,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             console.error("campBtn not found in exploration.html");
         }
-        // Debug: Check for campBtn
         setTimeout(() => {
             const campBtnCheck = document.getElementById("campBtn");
             if (!campBtnCheck) {
@@ -1950,7 +2045,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (targetList) targetList.classList.remove("hidden");
             });
         });
-        // Debug: Check for backBtn and returnBtn
         setTimeout(() => {
             const backBtn = document.getElementById("backBtn");
             const returnBtn = document.getElementById("returnBtn");
@@ -1979,7 +2073,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 ? "Victory! You have defeated the Bandit King and saved the forest!"
                 : "Defeat... The forest remains under the Bandit King's control.";
         }
-        // Debug: Check for restartBtn
         setTimeout(() => {
             const restartBtn = document.getElementById("restartBtn");
             if (!restartBtn) {
@@ -1999,7 +2092,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (playerNameEl) {
             playerNameEl.textContent = localStorage.getItem("playerName") || "Hero";
         }
-        // Debug: Check for restartBtnVictory
         setTimeout(() => {
             const restartBtn = document.getElementById("restartBtn");
             if (!restartBtn) {
@@ -2025,12 +2117,11 @@ document.addEventListener("DOMContentLoaded", () => {
             enemyType = "bountyHunter";
         }
         if (!enemyType) {
-            console.error("No enemyType set for roll:", roll); // Debug
+            console.error("No enemyType set for roll:", roll);
             enemyType = "bandit"; // Fallback
         }
         console.log("Starting battle with enemyType:", enemyType); // Debug
         startBattle(enemyType);
-        // Debug: Check for campBtn
         setTimeout(() => {
             const campBtn = document.getElementById("campBtn");
             if (!campBtn) {
@@ -2042,7 +2133,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Cleanup event listener on page unload to prevent memory leaks
-    window.addEventListener("unload", () => {
-        document.removeEventListener("click", handleButtonClick);
+    // Replace at line ~2032
+    window.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+            savePlayerData();
+        }
     });
 });
