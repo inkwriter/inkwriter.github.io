@@ -789,18 +789,76 @@ function savePlayerData() {
     console.log("Game saved");
 }
 
+function resetGame() {
+    // Reset gameState to default values
+    gameState = {
+        playerName: "",
+        class: "",
+        level: 1,
+        xp: 0,
+        nextLevelXp: 100,
+        gold: 0,
+        stats: {
+            hp: 20,
+            maxhp: 20,
+            attack: 1,
+            defense: 1,
+            speed: 1,
+            critChance: 5
+        },
+        inventory: [],
+        equipped: {
+            weapon: null,
+            head: null,
+            chest: null,
+            arms: null,
+            legs: null,
+            boots: null
+        },
+        forestKills: 0,
+        bossKills: 0
+    };
+
+    // Reset combatState
+    combatState = {
+        active: false,
+        currentEnemy: null,
+        turn: "player"
+    };
+
+    // Clear all relevant localStorage keys
+    localStorage.removeItem("playerData");
+    localStorage.removeItem("lastActionMessage"); // Clear any additional keys
+    // Add other keys if used, e.g., localStorage.removeItem("someOtherKey");
+
+    // Do NOT call savePlayerData here, as it would save the reset state unnecessarily
+}
+
+// Event listener for restartBtn
+const restartBtn = document.getElementById("restartBtn");
+if (restartBtn) {
+    restartBtn.addEventListener("click", () => {
+        resetGame();
+        // Ensure reset is complete before redirecting
+        setTimeout(() => {
+            window.location.href = "index.html"; // Redirect to starting page
+        }, 100); // Small delay to ensure localStorage operations complete
+    });
+}
+
 function loadPlayerData() {
     const savedData = localStorage.getItem("gameState");
     if (savedData) {
         gameState = JSON.parse(savedData);
+        console.log("Loaded gameState:", JSON.stringify(gameState, null, 2));
+
+        // Validate inventory
         if (!Array.isArray(gameState.inventory)) {
-            gameState.inventory = [
-                { name: "healingPotion", quantity: 2 },
-                { name: "shortSword", quantity: 1 },
-                { name: "poisonVial", quantity: 1 }
-            ];
+            gameState.inventory = [];
         }
-        if (!gameState.equipped) {
+
+        // Validate equipped items
+        if (!gameState.equipped || typeof gameState.equipped !== "object") {
             gameState.equipped = {
                 weapon: null,
                 helmet: null,
@@ -809,29 +867,90 @@ function loadPlayerData() {
                 legs: null,
                 boots: null
             };
+        } else {
+            // Ensure equipped weapon is valid
+            if (gameState.equipped.weapon && !equipment[gameState.equipped.weapon.name]) {
+                console.warn("Invalid equipped weapon, resetting:", gameState.equipped.weapon);
+                gameState.equipped.weapon = null;
+            }
         }
+
+        // Validate stats and health
+        if (!gameState.stats || typeof gameState.stats !== "object") {
+            gameState.stats = {
+                hp: 20,
+                maxHp: 20,
+                attack: 1,
+                defense: 1,
+                speed: 1,
+                critChance: 5
+            };
+        } else {
+            gameState.hp = Math.max(1, gameState.hp || 20); // Use gameState.hp directly
+            gameState.maxHp = Math.max(1, gameState.maxHp || 20);
+            if (gameState.hp > gameState.maxHp) {
+                gameState.hp = gameState.maxHp;
+            }
+        }
+
+        // Validate class and apply stats
         if (gameState.class && classes[gameState.class]) {
-            const baseStats = { ...classes[gameState.class].stats };
+            const classData = classes[gameState.class];
+            let baseStats = {
+                attack: classData.stats.attack || 0,
+                defense: classData.stats.defense || 0,
+                speed: classData.stats.speed || 0
+            };
+
+            // Apply equipment bonuses
             for (const slot in gameState.equipped) {
-                if (gameState.equipped[slot]) {
+                if (gameState.equipped[slot] && equipment[gameState.equipped[slot].name]) {
                     baseStats.attack += gameState.equipped[slot].attack || 0;
                     baseStats.defense += gameState.equipped[slot].defense || 0;
                     baseStats.speed += gameState.equipped[slot].speed || 0;
                 }
             }
-            gameState.stats = baseStats;
-            const levelBonusCount = gameState.level - 1;
-            const bonuses = classes[gameState.class].levelUpBonuses;
-            gameState.stats.attack += levelBonusCount * bonuses.attack;
-            gameState.stats.defense += levelBonusCount * bonuses.defense;
-            gameState.stats.speed += levelBonusCount * bonuses.speed;
-            gameState.ability = classes[gameState.class].ability;
+
+            // Apply level-up bonuses
+            const levelBonusCount = Math.max(0, gameState.level - 1);
+            const bonuses = classData.levelUpBonuses || { attack: 0, defense: 0, speed: 0 };
+            baseStats.attack += levelBonusCount * bonuses.attack;
+            baseStats.defense += levelBonusCount * bonuses.defense;
+            baseStats.speed += levelBonusCount * bonuses.speed;
+
+            // Update stats, preserving hp and maxHp
+            gameState.stats = {
+                ...baseStats,
+                hp: gameState.hp,
+                maxHp: gameState.maxHp,
+                critChance: gameState.stats.critChance || 5
+            };
+
+            gameState.ability = classData.ability;
         }
-        if (!gameState.bleedStacks) gameState.bleedStacks = [];
-        if (!gameState.poisonStacks) gameState.poisonStacks = [];
-        if (!gameState.abilityCooldown) gameState.abilityCooldown = 0;
+
+        gameState.bleedStacks = gameState.bleedStacks || [];
+        gameState.poisonStacks = gameState.poisonStacks || [];
+        gameState.abilityCooldown = gameState.abilityCooldown || 0;
+    } else {
+        console.log("No saved data, using default gameState:", JSON.stringify(gameState, null, 2));
+        // Ensure default stats if no saved data
+        if (!gameState.stats) {
+            gameState.stats = {
+                hp: 20,
+                maxHp: 20,
+                attack: 1,
+                defense: 1,
+                speed: 1,
+                critChance: 5
+            };
+        }
+        gameState.hp = gameState.stats.hp;
+        gameState.maxHp = gameState.stats.maxHp;
     }
-    console.log("Loaded stats:", gameState.stats);
+
+    updateUI();
+    console.log("Final loaded stats:", gameState.stats);
 }
 
 function calculateAC(entity) {
@@ -1540,22 +1659,27 @@ function playerAttack() {
         console.error("No active combat or enemy");
         return;
     }
-    const weapon = gameState.equipped.weapon;
-    const damageString = weapon && equipment[weapon.name] ? equipment[weapon.name].damage : null;
-    const baseDamage = rollDamage(damageString); // Pass weapon damage or null
+    const weapon = gameState.equipped?.weapon;
+    let damageString = "1d4"; // Default damage if no weapon or invalid
+    if (weapon && equipment[weapon.name]?.damage) {
+        damageString = equipment[weapon.name].damage;
+    } else {
+        console.warn("No valid weapon equipped or weapon lacks damage, using default 1d4:", weapon);
+    }
+    const baseDamage = rollDamage(damageString);
     const totalDamage = baseDamage + (gameState.stats.attack || 0);
     combatState.currentEnemy.hp -= totalDamage;
     combatState.currentEnemy.hp = Math.max(0, combatState.currentEnemy.hp);
     
     showAction(`${gameState.playerName} attacks for ${totalDamage} damage!`);
     if (combatState.currentEnemy.hp <= 0) {
-        endCombat(true); // Player wins
+        endCombat(true);
     } else {
+        combatState.turn = "enemy";
         enemyTurn();
     }
     updateUI();
 }
-
 function enemyTurn() {
     if (!combatState.active || !combatState.currentEnemy) return;
 
