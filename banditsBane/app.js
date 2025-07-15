@@ -44,6 +44,12 @@ const classes = {
     warrior: {
         stats: { attack: 5, defense: 3, speed: 1 },
         levelUpBonuses: { attack: 2, defense: 1, speed: 0 },
+        gold: 100,
+    inventory: [
+        { name: "healingPotion", quantity: 2 },
+        { name: "shortSword", quantity: 1 },
+        { name: "poisonVial", quantity: 1 }
+    ],
         ability: {
             name: "Cleave",
             cooldown: 2,
@@ -57,6 +63,12 @@ const classes = {
     rogue: {
         stats: { attack: 3, defense: 1, speed: 5 },
         levelUpBonuses: { attack: 1, defense: 0, speed: 2 },
+        gold: 100,
+    inventory: [
+        { name: "healingPotion", quantity: 2 },
+        { name: "shortSword", quantity: 1 },
+        { name: "poisonVial", quantity: 1 }
+    ],
         ability: {
             name: "Backstab",
             cooldown: 2,
@@ -70,6 +82,12 @@ const classes = {
     guardian: {
         stats: { attack: 3, defense: 5, speed: 1 },
         levelUpBonuses: { attack: 1, defense: 2, speed: 0 },
+        gold: 100,
+    inventory: [
+        { name: "healingPotion", quantity: 2 },
+        { name: "shortSword", quantity: 1 },
+        { name: "poisonVial", quantity: 1 }
+    ],
         ability: {
             name: "Shield Bash",
             cooldown: 2,
@@ -1680,6 +1698,7 @@ function playerAttack() {
     }
     updateUI();
 }
+
 function enemyTurn() {
     if (!combatState.active || !combatState.currentEnemy) return;
 
@@ -1998,6 +2017,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     gameState.stats = { ...classes.warrior.stats };
                     gameState.ability = classes.warrior.ability;
                     gameState.playerName = "Torin Blackthorne";
+                    gameState.gold = classes.warrior.gold; // Add this line
+                    gameState.inventory = [...classes.warrior.inventory];
                     savePlayerData();
                     setTimeout(() => window.location.href = "camp.html", 1000);
                 });
@@ -2009,6 +2030,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     gameState.stats = { ...classes.rogue.stats };
                     gameState.ability = classes.rogue.ability;
                     gameState.playerName = "Lira Swiftblade";
+                    gameState.gold = classes.rogue.gold; // Add this line
+                    gameState.inventory = [...classes.rogue.inventory];
                     savePlayerData();
                     setTimeout(() => window.location.href = "camp.html", 1000);
                 });
@@ -2020,6 +2043,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     gameState.stats = { ...classes.guardian.stats };
                     gameState.ability = classes.guardian.ability;
                     gameState.playerName = "Thane Ironwall";
+                    gameState.gold = classes.guardian.gold; // Add this line
+                    gameState.inventory = [...classes.guardian.inventory];
                     savePlayerData();
                     setTimeout(() => window.location.href = "camp.html", 1000);
                 });

@@ -1056,7 +1056,7 @@ iframe {
         justify-content: space-around;
     }
 
-    .stats-btn, .inventory-button {
+    .stats-btn, .inventory-button, .gear-btn {
         height: 30px;
         width: 70px;
     }
@@ -1138,12 +1138,10 @@ iframe {
     }
 
     .gear-btn {
-        font-size: 0.8em;
         padding: 4px 8px;
     }
     .gear-list {
         font-size: 0.8em;
-        max-height: 150px;
     }
 }
 
@@ -1180,7 +1178,7 @@ iframe {
         justify-content: space-between;
     }
 
-    .stats-btn, .inventory-button {
+    .stats-btn, .inventory-button, .gear-btn {
         height: 40px;
         width: 80px;
     }
