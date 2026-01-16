@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preventative Maintenance</title>
+  <link rel="stylesheet" href="pm.css" />
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Preventative Maintenance</h1>
+  </header>
+
+  <div class="form-header">
+    <label>
+      Store Name
+      <input type="text" id="storeName" required />
+    </label>
+    <label>
+      Date
+      <input type="date" id="date" required />
+    </label>
+  </div>
+
+  <div id="checklistContainer"></div>
+
+  <div class="inventory-section">
+    <div class="inventory-header">Equipment Tracking</div>
+    <div class="inventory-content">
+      <table class="inventory-table" id="inventoryTable">
+        <thead>
+          <tr>
+            <th style="width: 35%">Name</th>
+            <th style="width: 15%">##</th>
+            <th style="width: 40%">Notes</th>
+            <th style="width: 10%"></th>
+          </tr>
+        </thead>
+        <tbody id="inventoryBody">
+          <tr>
+            <td class="inv-name-label">EBT Machine</td>
+            <td><input type="text" class="inv-number" placeholder="" /></td>
+            <td><input type="text" class="inv-notes" placeholder="" /></td>
+          </tr>
+          <tr>
+            <td class="inv-name-label">Incomm</td>
+            <td><input type="text" class="inv-number" placeholder="" /></td>
+            <td><input type="text" class="inv-notes" placeholder="" /></td>
+          </tr>
+          <tr>
+            <td class="inv-name-label">Check Machine</td>
+            <td><input type="text" class="inv-number" placeholder="" /></td>
+            <td><input type="text" class="inv-notes" placeholder="" /></td>
+          </tr>
+          <tr>
+            <td class="inv-name-label">Handhelds</td>
+            <td><input type="text" class="inv-number" placeholder="" /></td>
+            <td><input type="text" class="inv-notes" placeholder="" /></td>
+          </tr>
+          <tr>
+            <td class="inv-name-label">Bases (Handhelds)</td>
+            <td><input type="text" class="inv-number" placeholder="" /></td>
+            <td><input type="text" class="inv-notes" placeholder="" /></td>
+          </tr>
+          <tr>
+            <td class="inv-name-label">Yealink Phones</td>
+            <td><input type="text" class="inv-number" placeholder="" /></td>
+            <td><input type="text" class="inv-notes" placeholder="" /></td>
+          </tr>
+          <tr>
+            <td class="inv-name-label">Acumera</td>
+            <td><input type="text" class="inv-number" placeholder="" /></td>
+            <td><input type="text" class="inv-notes" placeholder="" /></td>
+          </tr>
+          <tr>
+            <td class="inv-name-label">Switches</td>
+            <td><input type="text" class="inv-number" placeholder="" /></td>
+            <td><input type="text" class="inv-notes" placeholder="" /></td>
+          </tr>
+          <tr>
+            <td class="inv-name-label">Western Union</td>
+            <td><input type="text" class="inv-number" placeholder="" /></td>
+            <td><input type="text" class="inv-notes" placeholder="" /></td>
+          </tr>
+          <tr>
+            <td class="inv-name-label">Printers</td>
+            <td><input type="text" class="inv-number" placeholder="" /></td>
+            <td><input type="text" class="inv-notes" placeholder="" /></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="add-row-btn" onclick="addInventoryRow()">+ Add Row</button>
+    </div>
+  </div>
+
+  <div class="signature-section">
+    <button class="signature-button" id="openSignature">
+      Manager Signature
+    </button>
+    <div class="signature-status" id="signatureStatus">Not signed</div>
+    <button class="generate-button" id="generatePdf">Generate PDF</button>
+  </div>
+
+  <div class="signature-modal" id="signatureModal">
+    <div class="modal-header">
+      <span>Sign Below</span>
+      <button class="close-btn" id="closeModal">×</button>
+    </div>
+    <div class="signature-canvas-container">
+      <canvas id="signatureCanvas"></canvas>
+    </div>
+    <div class="modal-buttons">
+      <button class="clear-btn" id="clearSignature">Clear</button>
+      <button class="save-btn" id="saveSignature">Save & Close</button>
+    </div>
+  </div>
+
+  <script src="pm.js"></script>
+</body>
+</html>
