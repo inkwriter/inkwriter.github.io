@@ -251,14 +251,12 @@ document.getElementById('generatePdf').addEventListener('click', async () => {
     const number = row.querySelector('.inv-number').value;
     const notes = row.querySelector('.inv-notes').value;
     
-    if (number || notes) {
-      checkNewPage();
-      hasInventory = true;
-      page.drawText(`${name}`, { x: leftMargin, y: yPos, size: 10, font });
-      page.drawText(`${number}`, { x: leftMargin + 180, y: yPos, size: 10, font });
-      page.drawText(`${notes}`, { x: leftMargin + 230, y: yPos, size: 9, font });
-      yPos -= lineHeight;
-    }
+    // Always show inventory items (even if just showing "1")
+    checkNewPage();
+    page.drawText(`${name}`, { x: leftMargin, y: yPos, size: 10, font });
+    page.drawText(`${number}`, { x: leftMargin + 180, y: yPos, size: 10, font });
+    page.drawText(`${notes}`, { x: leftMargin + 230, y: yPos, size: 9, font });
+    yPos -= lineHeight;
   });
 
   // Signature
