@@ -2,10 +2,10 @@
 const checklistData = {
   "Office": [
     { id: "hardware", label: "Check Hardware" },
-    { id: "computer", label: "Computer" },
+    { id: "computer", label: "Computer model" },
     { id: "printer", label: "Printer can print and scan, no paper jams" },
     { id: "printerIP", label: "Verify that printer is using IP instead of WSD" },
-    { id: "switch", label: "Switch" },
+    { id: "switch", label: "# of Switches" },
     { id: "keyboard", label: "Keyboard / Mouse" },
     { id: "monitor", label: "Check for damage Monitor" },
     { id: "ringcentral", label: "Check RingCentral in Teams" },
@@ -23,7 +23,7 @@ const checklistData = {
     { id: "fd150", label: "FD150" },
     { id: "incomm", label: "Incomm" },
     { id: "reader", label: "Check Reader" },
-    { id: "fcSwitches", label: "Switches" },
+    { id: "fcSwitches", label: "# of Switches" },
     { id: "chownow", label: "ChowNow / Lula" },
     { id: "fcDeadCables", label: "Dead Ethernet Cables" },
     { id: "passport", label: "Passport version and document" },
