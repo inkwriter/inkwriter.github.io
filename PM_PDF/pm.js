@@ -27,7 +27,8 @@ const checklistData = {
     { id: "chownow", label: "ChowNow / Lula" },
     { id: "fcDeadCables", label: "Dead Ethernet Cables" },
     { id: "passport", label: "Passport version and document" },
-    { id: "deliPrinter", label: "Deli Printer" },
+    { id: "deliPrinter", label: "Deli Printer - Check physical damage, run test print, verify quality" },
+    { id: "deliTablet", label: "Deli Tablet - Check charging, updates, condition, and printer connection" },
     { id: "concerns", label: "Manager concerns" }
   ]
 };
