@@ -1,18 +1,18 @@
 // Checklist data structure
 const checklistData = {
   "Office": [
-    { id: "hardware", label: "Check Hardware i.e. RAM, etc." },
-    { id: "computer", label: "Computer model" },
-    { id: "printer", label: "Printer model, can print and scan, no paper jams" },
+    { id: "hardware", label: "Check Hardware" },
+    { id: "computer", label: "Computer" },
+    { id: "printer", label: "Printer can print and scan, no paper jams" },
     { id: "printerIP", label: "Verify that printer is using IP instead of WSD" },
-    { id: "switch", label: "# of Switches" },
+    { id: "switch", label: "Switch" },
     { id: "keyboard", label: "Keyboard / Mouse" },
-    { id: "monitor", label: "Check for damage and model Monitor" },
+    { id: "monitor", label: "Check for damage Monitor" },
     { id: "ringcentral", label: "Check RingCentral in Teams" },
     { id: "ethernet", label: "Check Ethernet Clips/Cable" },
     { id: "handheld", label: "Clean Boot Handheld and Authorize it" },
     { id: "sfc", label: "SFC" },
-    { id: "updates", label: "Check for Windows and Dell Updates" },
+    { id: "updates", label: "Updates" },
     { id: "battery", label: "Check Battery Back Up" },
     { id: "usbEthernet", label: "Check USB/Ethernet x:\\\\10.5.48.2\\xmlgateway" },
     { id: "unauthorized", label: "Check for unauthorized devices" },
@@ -23,7 +23,7 @@ const checklistData = {
     { id: "fd150", label: "FD150" },
     { id: "incomm", label: "Incomm" },
     { id: "reader", label: "Check Reader" },
-    { id: "fcSwitches", label: "# of Switches" },
+    { id: "fcSwitches", label: "Switches" },
     { id: "chownow", label: "ChowNow / Lula" },
     { id: "fcDeadCables", label: "Dead Ethernet Cables" },
     { id: "passport", label: "Passport version and document" },
@@ -143,9 +143,9 @@ document.getElementById('saveSignature').addEventListener('click', () => {
 // PDF Generation
 document.getElementById('generatePdf').addEventListener('click', async () => {
   const storeName = document.getElementById('storeName').value;
-  const date = document.getElementById('date').value;
+  const dateInput = document.getElementById('date').value;
 
-  if (!storeName || !date) {
+  if (!storeName || !dateInput) {
     alert('Please fill in Store Name and Date');
     return;
   }
@@ -154,6 +154,14 @@ document.getElementById('generatePdf').addEventListener('click', async () => {
     alert('Please add a manager signature');
     return;
   }
+
+  // Format date as "Month Day, Year"
+  const dateObj = new Date(dateInput + 'T00:00:00');
+  const formattedDate = dateObj.toLocaleDateString('en-US', { 
+    month: 'long', 
+    day: 'numeric', 
+    year: 'numeric' 
+  });
 
   const { PDFDocument, rgb, StandardFonts } = PDFLib;
   const pdfDoc = await PDFDocument.create();
@@ -177,7 +185,7 @@ document.getElementById('generatePdf').addEventListener('click', async () => {
   // Store info
   page.drawText(`Store Name: ${storeName}`, { x: leftMargin, y: yPos, size: 12, font });
   yPos -= 20;
-  page.drawText(`Date: ${date}`, { x: leftMargin, y: yPos, size: 12, font });
+  page.drawText(`Date: ${formattedDate}`, { x: leftMargin, y: yPos, size: 12, font });
   yPos -= 30;
 
   // Function to add new page if needed
@@ -245,7 +253,6 @@ document.getElementById('generatePdf').addEventListener('click', async () => {
   yPos -= lineHeight;
   
   const inventoryRows = document.querySelectorAll('#inventoryBody tr');
-  let hasInventory = false;
   
   inventoryRows.forEach(row => {
     const name = row.querySelector('.inv-name-label').textContent;
@@ -295,7 +302,7 @@ document.getElementById('generatePdf').addEventListener('click', async () => {
   // Create download link
   const link = document.createElement('a');
   link.href = url;
-  link.download = `PM_${storeName.replace(/\s+/g, '_')}_${date}.pdf`;
+  link.download = `PM_${storeName.replace(/\s+/g, '_')}_${dateInput}.pdf`;
   
   // For mobile browsers, open in new tab if download doesn't work
   if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
