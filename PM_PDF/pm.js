@@ -28,7 +28,8 @@ const checklistData = {
     { id: "fcDeadCables", label: "Dead Ethernet Cables" },
     { id: "passport", label: "Passport version and document" },
     { id: "deliPrinter", label: "Deli Printer - Check physical damage, run test print, verify quality" },
-    { id: "deliTablet", label: "Deli Tablet - Check charging, updates, condition, and printer connection" },
+    { id: "storeTablet", label: "Store Tablet - Check charging, updates, condition, and printer connection" },
+    { id: "phoneGateway", label: "Check Yealink Gateway" },
     { id: "concerns", label: "Manager concerns" }
   ]
 };
