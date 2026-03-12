@@ -141,7 +141,31 @@ document.getElementById('saveSignature').addEventListener('click', () => {
   modal.classList.remove('active');
 });
 
-// PDF Generation
+// ─── PDF Generation ───────────────────────────────────────────────────────────
+
+/**
+ * Word-wrap a string to fit within maxWidth using the given font and fontSize.
+ * Returns an array of lines.
+ */
+function wrapText(text, font, fontSize, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let current = '';
+
+  for (const word of words) {
+    const test = current ? `${current} ${word}` : word;
+    const width = font.widthOfTextAtSize(test, fontSize);
+    if (width > maxWidth && current !== '') {
+      lines.push(current);
+      current = word;
+    } else {
+      current = test;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
 document.getElementById('generatePdf').addEventListener('click', async () => {
   const storeName = document.getElementById('storeName').value;
   const dateInput = document.getElementById('date').value;
@@ -169,120 +193,161 @@ document.getElementById('generatePdf').addEventListener('click', async () => {
   let page = pdfDoc.addPage([612, 792]); // Letter size
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  
-  let yPos = 750;
+
   const leftMargin = 50;
+  const rightMargin = 50;
+  const pageWidth = 612;
+  const usableWidth = pageWidth - leftMargin - rightMargin;
   const lineHeight = 15;
+  let yPos = 750;
 
-  // Title
-  page.drawText('Preventative Maintenance', {
-    x: leftMargin,
-    y: yPos,
-    size: 18,
-    font: boldFont
-  });
-  yPos -= 30;
-
-  // Store info
-  page.drawText(`Store Name: ${storeName}`, { x: leftMargin, y: yPos, size: 12, font });
-  yPos -= 20;
-  page.drawText(`Date: ${formattedDate}`, { x: leftMargin, y: yPos, size: 12, font });
-  yPos -= 30;
-
-  // Function to add new page if needed
-  function checkNewPage() {
-    if (yPos < 100) {
+  // ── Helper: add new page if too close to bottom ──
+  function checkNewPage(neededSpace = 20) {
+    if (yPos < neededSpace + 50) {
       page = pdfDoc.addPage([612, 792]);
       yPos = 750;
     }
   }
 
-  // Iterate through sections
-  for (const [sectionName, items] of Object.entries(checklistData)) {
-    checkNewPage();
-    
-    // Section header
-    page.drawText(sectionName, {
-      x: leftMargin,
-      y: yPos,
-      size: 14,
-      font: boldFont
-    });
-    yPos -= 20;
-
-    // Items
-    for (const item of items) {
-      checkNewPage();
-      
-      const checkbox = document.getElementById(item.id);
-      const comment = document.getElementById(`${item.id}-comment`).value;
-      
-      // Checkbox
-      const checkmark = checkbox.checked ? '[X]' : '[ ]';
-      page.drawText(checkmark, { x: leftMargin, y: yPos, size: 12, font });
-      
-      // Label
-      page.drawText(item.label, { x: leftMargin + 20, y: yPos, size: 10, font });
-      yPos -= lineHeight;
-      
-      // Comment if exists
-      if (comment.trim()) {
-        const lines = comment.split('\n');
-        for (const line of lines) {
-          checkNewPage();
-          page.drawText(`    ${line}`, { x: leftMargin + 20, y: yPos, size: 9, font: font });
-          yPos -= 12;
-        }
-      }
-      
-      yPos -= 5;
+  // ── Helper: draw wrapped text, returns nothing (advances yPos) ──
+  function drawWrapped(text, x, startFont, fontSize, maxWidth, indent = 0) {
+    const lines = wrapText(text, startFont, fontSize, maxWidth);
+    for (let i = 0; i < lines.length; i++) {
+      checkNewPage(fontSize + 4);
+      page.drawText(lines[i], { x: x + (i > 0 ? indent : 0), y: yPos, size: fontSize, font: startFont });
+      yPos -= (fontSize + 4);
     }
-    
-    yPos -= 10;
   }
 
-  // Equipment Tracking Table
-  checkNewPage();
-  yPos -= 10;
+  // ── Title ──
+  page.drawText('Preventative Maintenance', {
+    x: leftMargin, y: yPos, size: 18, font: boldFont
+  });
+  yPos -= 30;
+
+  page.drawText(`Store Name: ${storeName}`, { x: leftMargin, y: yPos, size: 12, font });
+  yPos -= 20;
+  page.drawText(`Date: ${formattedDate}`, { x: leftMargin, y: yPos, size: 12, font });
+  yPos -= 30;
+
+  // ── Checklist sections ──
+  for (const [sectionName, items] of Object.entries(checklistData)) {
+    checkNewPage(30);
+
+    // Section header
+    page.drawText(sectionName, { x: leftMargin, y: yPos, size: 14, font: boldFont });
+    yPos -= 22;
+
+    for (const item of items) {
+      checkNewPage(20);
+
+      const checkbox = document.getElementById(item.id);
+      const comment = document.getElementById(`${item.id}-comment`).value;
+      const checkmark = checkbox.checked ? '[X]' : '[ ]';
+
+      // Draw checkbox mark
+      page.drawText(checkmark, { x: leftMargin, y: yPos, size: 11, font });
+
+      // Draw label with word wrap — max width shrinks by checkbox offset (25px)
+      const labelX = leftMargin + 25;
+      const labelMaxWidth = usableWidth - 25;
+      const labelLines = wrapText(item.label, font, 10, labelMaxWidth);
+
+      for (let i = 0; i < labelLines.length; i++) {
+        if (i > 0) checkNewPage(14);
+        page.drawText(labelLines[i], { x: labelX, y: yPos, size: 10, font });
+        yPos -= 14;
+      }
+
+      // Comment lines
+      if (comment.trim()) {
+        const commentIndentX = labelX + 10;
+        const commentMaxWidth = usableWidth - 35;
+        const rawLines = comment.split('\n');
+        for (const rawLine of rawLines) {
+          if (!rawLine.trim()) continue;
+          const wrapped = wrapText(rawLine, font, 9, commentMaxWidth);
+          for (const wl of wrapped) {
+            checkNewPage(13);
+            page.drawText(wl, { x: commentIndentX, y: yPos, size: 9, font });
+            yPos -= 13;
+          }
+        }
+      }
+
+      yPos -= 4; // small gap between items
+    }
+
+    yPos -= 10; // gap between sections
+  }
+
+  // ── Equipment Tracking Table ──
+  checkNewPage(40);
+  yPos -= 5;
   page.drawText('Equipment Tracking', { x: leftMargin, y: yPos, size: 14, font: boldFont });
   yPos -= 20;
-  
-  // Table headers
-  page.drawText('Name', { x: leftMargin, y: yPos, size: 10, font: boldFont });
-  page.drawText('##', { x: leftMargin + 180, y: yPos, size: 10, font: boldFont });
-  page.drawText('Notes', { x: leftMargin + 230, y: yPos, size: 10, font: boldFont });
+
+  // Column X positions
+  const col1X = leftMargin;
+  const col2X = leftMargin + 200;
+  const col3X = leftMargin + 250;
+  const col3MaxWidth = pageWidth - rightMargin - col3X;
+
+  // Header row
+  page.drawText('Name', { x: col1X, y: yPos, size: 10, font: boldFont });
+  page.drawText('##',   { x: col2X, y: yPos, size: 10, font: boldFont });
+  page.drawText('Notes',{ x: col3X, y: yPos, size: 10, font: boldFont });
   yPos -= lineHeight;
-  
+
   const inventoryRows = document.querySelectorAll('#inventoryBody tr');
-  
+
   inventoryRows.forEach(row => {
-    const name = row.querySelector('.inv-name-label').textContent;
+    // Fixed rows use a plain td; custom rows use an input inside the td
+    const nameCell = row.querySelector('.inv-name-label');
+    const nameInput = nameCell.querySelector('input');
+    const name  = nameInput ? nameInput.value.trim() : nameCell.textContent.trim();
     const number = row.querySelector('.inv-number').value;
-    const notes = row.querySelector('.inv-notes').value;
-    
-    // Always show inventory items (even if just showing "1")
-    checkNewPage();
-    page.drawText(`${name}`, { x: leftMargin, y: yPos, size: 10, font });
-    page.drawText(`${number}`, { x: leftMargin + 180, y: yPos, size: 10, font });
-    page.drawText(`${notes}`, { x: leftMargin + 230, y: yPos, size: 9, font });
-    yPos -= lineHeight;
+    const notes  = row.querySelector('.inv-notes').value;
+
+    checkNewPage(lineHeight + 4);
+
+    // Name — wrap if needed (max width up to col2)
+    const nameLines = wrapText(name, font, 10, col2X - col1X - 5);
+    for (let i = 0; i < nameLines.length; i++) {
+      if (i > 0) checkNewPage(lineHeight);
+      page.drawText(nameLines[i], { x: col1X, y: yPos, size: 10, font });
+      if (i === 0) {
+        // Draw ## and Notes on first line only
+        page.drawText(number, { x: col2X, y: yPos, size: 10, font });
+        // Wrap notes
+        const noteLines = wrapText(notes, font, 9, col3MaxWidth);
+        if (noteLines.length > 0) {
+          page.drawText(noteLines[0], { x: col3X, y: yPos, size: 9, font });
+          for (let n = 1; n < noteLines.length; n++) {
+            yPos -= lineHeight;
+            checkNewPage(lineHeight);
+            page.drawText(noteLines[n], { x: col3X, y: yPos, size: 9, font });
+          }
+        }
+      }
+      yPos -= lineHeight;
+    }
   });
 
-  // Signature
-  checkNewPage();
-  yPos -= 30;
+  // ── Signature ──
+  checkNewPage(100);
+  yPos -= 20;
   page.drawText('Manager Signature:', { x: leftMargin, y: yPos, size: 12, font: boldFont });
   yPos -= 15;
-  
-  // Draw a line for signature
+
   page.drawLine({
     start: { x: leftMargin, y: yPos },
-    end: { x: leftMargin + 300, y: yPos },
+    end:   { x: leftMargin + 300, y: yPos },
     thickness: 1,
     color: rgb(0, 0, 0)
   });
   yPos -= 10;
-  
+
   if (!signaturePad.isEmpty()) {
     const signatureImage = signaturePad.toDataURL('image/png');
     const pngImage = await pdfDoc.embedPng(signatureImage);
@@ -295,28 +360,23 @@ document.getElementById('generatePdf').addEventListener('click', async () => {
     });
   }
 
-  // Save PDF
+  // ── Save & Download ──
   const pdfBytes = await pdfDoc.save();
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
-  
-  // Create download link
+
   const link = document.createElement('a');
   link.href = url;
   link.download = `PM_${storeName.replace(/\s+/g, '_')}_${dateInput}.pdf`;
-  
-  // For mobile browsers, open in new tab if download doesn't work
+
   if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
     link.target = '_blank';
   }
-  
+
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  
-  // Show success message
+
   alert('PDF generated! Check your downloads folder or tap "Open in..." to save.');
-  
-  // Clean up
   setTimeout(() => URL.revokeObjectURL(url), 100);
 });
