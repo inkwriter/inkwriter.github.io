@@ -213,6 +213,23 @@ header h1 {
   background: #1e7e34;
 }
 
+.reset-button {
+  width: 100%;
+  padding: 0.85rem;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.reset-button:active {
+  background: #545b62;
+}
+
 .signature-modal {
   display: none;
   position: fixed;

@@ -83,7 +83,188 @@ for (const [sectionName, items] of Object.entries(checklistData)) {
   container.appendChild(section);
 }
 
-// Inventory table functions
+// ─── Autosave / Load / Reset ──────────────────────────────────────────────────
+
+const SAVE_KEY = 'pm_autosave';
+let autosaveTimer = null;
+
+function collectFormState() {
+  const state = {
+    storeName: document.getElementById('storeName').value,
+    date: document.getElementById('date').value,
+    checklist: {},
+    inventory: [],
+    signatureData: hasSignature && !signaturePad.isEmpty() ? signaturePad.toDataURL('image/png') : null,
+  };
+
+  // Checklist items
+  for (const [, items] of Object.entries(checklistData)) {
+    for (const item of items) {
+      const cb = document.getElementById(item.id);
+      const ta = document.getElementById(`${item.id}-comment`);
+      state.checklist[item.id] = {
+        checked: cb ? cb.checked : false,
+        comment: ta ? ta.value : '',
+      };
+    }
+  }
+
+  // Inventory rows
+  document.querySelectorAll('#inventoryBody tr').forEach(row => {
+    const nameCell = row.querySelector('.inv-name-label');
+    const nameInput = nameCell.querySelector('input');
+    state.inventory.push({
+      name: nameInput ? nameInput.value : nameCell.textContent.trim(),
+      isCustom: !!nameInput,
+      number: row.querySelector('.inv-number').value,
+      notes: row.querySelector('.inv-notes').value,
+    });
+  });
+
+  return state;
+}
+
+function saveFormState() {
+  const state = collectFormState();
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    console.log('[PM Autosave] ✅ Saved at', new Date().toLocaleTimeString(), state);
+  } catch (e) {
+    console.error('[PM Autosave] ❌ Save failed:', e);
+  }
+}
+
+function scheduleSave() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    saveFormState();
+  }, 800); // debounce: saves 800ms after last change
+}
+
+function loadFormState() {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (!raw) {
+    console.log('[PM Autosave] No saved state found.');
+    return;
+  }
+
+  let state;
+  try {
+    state = JSON.parse(raw);
+    console.log('[PM Autosave] 📂 Loaded saved state:', state);
+  } catch (e) {
+    console.error('[PM Autosave] ❌ Failed to parse saved state:', e);
+    return;
+  }
+
+  if (state.storeName) document.getElementById('storeName').value = state.storeName;
+  if (state.date) document.getElementById('date').value = state.date;
+
+  // Restore checklist
+  for (const [id, val] of Object.entries(state.checklist || {})) {
+    const cb = document.getElementById(id);
+    const ta = document.getElementById(`${id}-comment`);
+    if (cb) cb.checked = val.checked;
+    if (ta) ta.value = val.comment;
+  }
+
+  // Restore inventory — rebuild custom rows, fill fixed rows
+  const tbody = document.getElementById('inventoryBody');
+  const fixedRows = Array.from(tbody.querySelectorAll('tr'));
+  let fixedIndex = 0;
+
+  (state.inventory || []).forEach(inv => {
+    if (!inv.isCustom && fixedIndex < fixedRows.length) {
+      const row = fixedRows[fixedIndex++];
+      row.querySelector('.inv-number').value = inv.number;
+      row.querySelector('.inv-notes').value = inv.notes;
+    } else if (inv.isCustom) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="inv-name-label"><input type="text" placeholder="Item name" style="width:100%; border:none; padding:0.5rem;" value="${inv.name}" /></td>
+        <td><input type="text" class="inv-number" value="${inv.number}" /></td>
+        <td><input type="text" class="inv-notes" value="${inv.notes}" /></td>
+        <td><button class="delete-row-btn" onclick="deleteRow(this)">×</button></td>
+      `;
+      tbody.appendChild(row);
+    }
+  });
+
+  // Restore signature
+  if (state.signatureData) {
+    const img = new Image();
+    img.onload = () => {
+      setTimeout(() => {
+        signaturePad.fromDataURL(state.signatureData);
+        hasSignature = true;
+        document.getElementById('signatureStatus').textContent = '✓ Signed (restored)';
+        document.getElementById('signatureStatus').classList.add('signed');
+        console.log('[PM Autosave] ✍️ Signature restored.');
+      }, 200);
+    };
+    img.src = state.signatureData;
+  }
+
+  console.log('[PM Autosave] ✅ Form restore complete.');
+}
+
+function resetForm() {
+  if (!confirm('Reset the form? This will clear all data and remove the saved draft.')) return;
+
+  // Clear header fields
+  document.getElementById('storeName').value = '';
+  document.getElementById('date').valueAsDate = new Date();
+
+  // Clear checklist
+  for (const [, items] of Object.entries(checklistData)) {
+    for (const item of items) {
+      const cb = document.getElementById(item.id);
+      const ta = document.getElementById(`${item.id}-comment`);
+      if (cb) cb.checked = false;
+      if (ta) ta.value = '';
+    }
+  }
+
+  // Reset inventory: remove custom rows, clear fixed row fields
+  const tbody = document.getElementById('inventoryBody');
+  Array.from(tbody.querySelectorAll('tr')).forEach(row => {
+    if (row.querySelector('.inv-name-label input')) {
+      row.remove(); // custom row
+    } else {
+      row.querySelector('.inv-number').value = '1';
+      row.querySelector('.inv-notes').value = '';
+    }
+  });
+
+  // Clear signature
+  signaturePad.clear();
+  hasSignature = false;
+  document.getElementById('signatureStatus').textContent = 'Not signed';
+  document.getElementById('signatureStatus').classList.remove('signed');
+
+  // Clear localStorage
+  localStorage.removeItem(SAVE_KEY);
+  console.log('[PM Autosave] 🗑️ Form reset. LocalStorage cleared.');
+}
+
+// Attach autosave listeners to all relevant inputs
+function attachAutosaveListeners() {
+  const targets = [
+    document.getElementById('storeName'),
+    document.getElementById('date'),
+  ];
+  targets.forEach(el => el && el.addEventListener('input', scheduleSave));
+
+  document.querySelectorAll('.comment-box').forEach(ta => ta.addEventListener('input', scheduleSave));
+  document.getElementById('inventoryBody').addEventListener('input', scheduleSave);
+
+  console.log('[PM Autosave] 👂 Listeners attached.');
+}
+
+attachAutosaveListeners();
+loadFormState();
+
+// ─── Inventory table functions ────────────────────────────────────────────────
 function addInventoryRow() {
   const tbody = document.getElementById('inventoryBody');
   const row = document.createElement('tr');
@@ -94,12 +275,16 @@ function addInventoryRow() {
     <td><button class="delete-row-btn" onclick="deleteRow(this)">×</button></td>
   `;
   tbody.appendChild(row);
+  scheduleSave();
+  console.log('[PM Autosave] ➕ Inventory row added.');
 }
 
 function deleteRow(btn) {
   const tbody = document.getElementById('inventoryBody');
   if (tbody.children.length > 1) {
     btn.closest('tr').remove();
+    scheduleSave();
+    console.log('[PM Autosave] ➖ Inventory row deleted.');
   } else {
     alert('Must have at least one row');
   }
@@ -137,6 +322,8 @@ document.getElementById('saveSignature').addEventListener('click', () => {
     hasSignature = true;
     document.getElementById('signatureStatus').textContent = '✓ Signed';
     document.getElementById('signatureStatus').classList.add('signed');
+    saveFormState(); // save immediately on signature
+    console.log('[PM Autosave] ✍️ Signature saved and state persisted.');
   }
   modal.classList.remove('active');
 });
