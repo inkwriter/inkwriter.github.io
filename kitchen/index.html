@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#3d2b1f">
+<title>Kitchen Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Source+Sans+3:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:       #faf6f0;
+    --parchment:   #f0e8d8;
+    --warm-tan:    #d4b896;
+    --bark:        #8b6348;
+    --espresso:    #3d2b1f;
+    --moss:        #5a6e3a;
+    --moss-light:  #dde8cc;
+    --rust:        #b04a2a;
+    --rust-light:  #f5ddd6;
+    --amber:       #c47d1e;
+    --amber-light: #faebd0;
+    --text:        #2a1e14;
+    --muted:       #7a6050;
+    --border:      #d4b896;
+    --shadow:      0 2px 12px rgba(61,43,31,.08);
+    --r:  12px;
+    --rs: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100dvh;
+    padding-bottom: 90px;
+  }
+
+  /* Header */
+  header {
+    background: var(--espresso);
+    padding: 1rem 1.25rem 0;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-top {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding-bottom: .75rem;
+  }
+  .app-title {
+    font-family: 'Lora', serif;
+    font-size: 1.25rem; font-weight: 600;
+    color: var(--parchment);
+  }
+  .app-sub { font-size: .72rem; color: var(--warm-tan); opacity: .8; }
+
+  .add-btn {
+    background: var(--bark); border: none; color: var(--parchment);
+    width: 40px; height: 40px; border-radius: 50%;
+    font-size: 1.5rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .add-btn:active { background: var(--warm-tan); }
+
+  /* Tabs */
+  .tabs { display: flex; }
+  .tab {
+    flex: 1; padding: .6rem .25rem;
+    background: transparent; border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--warm-tan);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: .85rem; cursor: pointer;
+    transition: color .15s, border-color .15s;
+    text-align: center;
+  }
+  .tab.active { color: var(--parchment); border-bottom-color: var(--warm-tan); font-weight: 500; }
+
+  /* Search */
+  .search-wrap {
+    padding: .75rem 1.25rem;
+    background: var(--parchment);
+    border-bottom: 1px solid var(--border);
+  }
+  .search-input {
+    width: 100%; padding: .55rem .75rem;
+    background: var(--cream); border: 1px solid var(--border);
+    border-radius: var(--rs);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: .9rem; color: var(--text); outline: none;
+  }
+  .search-input:focus { border-color: var(--bark); }
+  .search-input::placeholder { color: var(--muted); }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex; gap: 8px;
+    padding: .6rem 1.25rem;
+    background: var(--parchment);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .stats-bar::-webkit-scrollbar { display: none; }
+  .pill {
+    display: flex; align-items: center; gap: 5px;
+    padding: .25rem .7rem; border-radius: 20px;
+    font-size: .75rem; font-weight: 500; white-space: nowrap; flex-shrink: 0;
+  }
+  .pill-total    { background: var(--espresso); color: var(--parchment); }
+  .pill-expired  { background: #f5d6d6; color: #8b1a1a; }
+  .pill-expiring { background: var(--amber-light); color: var(--amber); }
+  .pill-low      { background: var(--rust-light); color: var(--rust); }
+
+  /* List */
+  .item-list { padding: .75rem 1.25rem; display: flex; flex-direction: column; gap: 8px; }
+
+  .empty {
+    text-align: center; padding: 3rem 1rem; color: var(--muted);
+  }
+  .empty-icon { font-size: 2.5rem; margin-bottom: .75rem; opacity: .5; }
+  .empty p { font-size: .95rem; line-height: 1.6; }
+
+  /* Item card */
+  .card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--r); padding: .85rem 1rem;
+    display: flex; gap: 12px; align-items: flex-start;
+    box-shadow: var(--shadow); cursor: pointer;
+  }
+  .card:active { box-shadow: none; }
+  .card.s-expired { border-left: 3px solid #c0392b; }
+  .card.s-soon    { border-left: 3px solid var(--amber); }
+  .card.s-low     { border-left: 3px solid var(--rust); }
+
+  .card-icon {
+    width: 40px; height: 40px; border-radius: var(--rs);
+    background: var(--parchment);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem; flex-shrink: 0;
+  }
+  .card-body { flex: 1; min-width: 0; }
+  .card-name {
+    font-family: 'Lora', serif; font-size: 1rem; font-weight: 500;
+    margin-bottom: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+  .card-notes { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+  .card-arrow { color: var(--warm-tan); font-size: .9rem; align-self: center; flex-shrink: 0; }
+
+  .tag {
+    font-size: .72rem; padding: 2px 8px;
+    border-radius: 12px; font-weight: 500;
+  }
+  .tag-qty     { background: var(--parchment); color: var(--muted); }
+  .tag-ok      { background: var(--moss-light); color: var(--moss); }
+  .tag-week    { background: var(--amber-light); color: var(--amber); }
+  .tag-soon    { background: var(--amber-light); color: #8a5400; }
+  .tag-expired { background: #f5d6d6; color: #8b1a1a; }
+  .tag-low     { background: var(--rust-light); color: var(--rust); }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--espresso);
+    display: flex; border-top: 1px solid rgba(255,255,255,.08);
+    z-index: 100;
+  }
+  .nav-link {
+    flex: 1; padding: .7rem .25rem .55rem;
+    background: transparent; border: none;
+    color: var(--warm-tan);
+    font-family: 'Source Sans 3', sans-serif; font-size: .7rem;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    text-decoration: none; transition: color .15s;
+  }
+  .nav-link.active, .nav-link:hover { color: var(--parchment); }
+  .nav-icon { font-size: 1.2rem; }
+
+  /* Modal */
+  .backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.5); z-index: 200;
+    align-items: flex-end;
+  }
+  .backdrop.open { display: flex; }
+  .modal {
+    background: var(--cream); width: 100%;
+    max-height: 92dvh; border-radius: var(--r) var(--r) 0 0;
+    overflow-y: auto; padding: 1.25rem;
+    animation: up .2s ease;
+  }
+  @keyframes up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .modal-handle {
+    width: 40px; height: 4px; background: var(--border);
+    border-radius: 2px; margin: 0 auto 1.25rem;
+  }
+  .modal-title {
+    font-family: 'Lora', serif; font-size: 1.15rem; font-weight: 600;
+    margin-bottom: 1.25rem; color: var(--espresso);
+  }
+
+  /* Form */
+  .fg { margin-bottom: 1rem; }
+  .fg label {
+    display: block; font-size: .78rem; font-weight: 500;
+    color: var(--muted); text-transform: uppercase;
+    letter-spacing: .06em; margin-bottom: .35rem;
+  }
+  .fg input, .fg select {
+    width: 100%; padding: .65rem .85rem;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--rs);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1rem; color: var(--text); outline: none;
+    -webkit-appearance: none; appearance: none;
+  }
+  .fg input:focus, .fg select:focus { border-color: var(--bark); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .check-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: .65rem .85rem; background: #fff;
+    border: 1px solid var(--border); border-radius: var(--rs);
+    cursor: pointer; font-size: .95rem;
+  }
+  .check-row input { width: auto; }
+
+  /* Emoji picker */
+  .emoji-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+    margin-bottom: 1rem;
+  }
+  .eo {
+    aspect-ratio: 1; background: #fff;
+    border: 1px solid var(--border); border-radius: var(--rs);
+    font-size: 1.3rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .eo.sel { background: var(--parchment); border-color: var(--bark); }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; margin-top: 1.25rem; }
+  .btn {
+    flex: 1; padding: .75rem; border-radius: var(--rs);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1rem; font-weight: 500; cursor: pointer; border: none;
+  }
+  .btn:active { opacity: .8; }
+  .btn-primary { background: var(--espresso); color: var(--parchment); }
+  .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-danger  { background: var(--rust-light); color: var(--rust); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <div class="app-title">Kitchen Inventory</div>
+      <div class="app-sub" id="loc-label">Fridge</div>
+    </div>
+    <button class="add-btn" onclick="openAdd()" aria-label="Add item">+</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-loc="fridge"  onclick="switchTab('fridge')">🧊 Fridge</button>
+    <button class="tab"        data-loc="freezer" onclick="switchTab('freezer')">❄️ Freezer</button>
+    <button class="tab"        data-loc="pantry"  onclick="switchTab('pantry')">🧺 Pantry</button>
+  </div>
+</header>
+
+<div class="search-wrap">
+  <input class="search-input" id="search" type="text" placeholder="Search items…" oninput="render()" autocomplete="off">
+</div>
+<div class="stats-bar" id="stats"></div>
+<div class="item-list" id="list"></div>
+
+<!-- Modal -->
+<div class="backdrop" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Add Item</div>
+
+    <div class="fg"><label>Icon</label><div class="emoji-grid" id="emoji-grid"></div></div>
+
+    <div class="fg">
+      <label>Name *</label>
+      <input type="text" id="f-name" placeholder="e.g. Whole milk" autocomplete="off">
+    </div>
+
+    <div class="row2">
+      <div class="fg">
+        <label>Quantity</label>
+        <input type="text" id="f-qty" placeholder="e.g. 1 gallon">
+      </div>
+      <div class="fg">
+        <label>Location</label>
+        <select id="f-loc">
+          <option value="fridge">Fridge</option>
+          <option value="freezer">Freezer</option>
+          <option value="pantry">Pantry</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>Expiration Date</label>
+      <input type="date" id="f-exp">
+    </div>
+
+    <div class="fg">
+      <label class="check-row" for="f-low">
+        <input type="checkbox" id="f-low">
+        <span>⚠️ Mark as low stock</span>
+      </label>
+    </div>
+
+    <div class="fg">
+      <label>Notes</label>
+      <input type="text" id="f-notes" placeholder="Optional notes">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost"  onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" id="del-btn" onclick="deleteItem()" style="display:none">Delete</button>
+      <button class="btn btn-primary" onclick="saveItem()">Save</button>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-link active" href="index.html"><span class="nav-icon">🥫</span>Inventory</a>
+  <a class="nav-link"        href="meals.html"><span class="nav-icon">🍽️</span>Meals</a>
+</nav>
+
+<script src="data.js"></script>
+<script>
+const EMOJIS = ['🥩','🐔','🐟','🥚','🧀','🥛','🧈','🥦','🥕','🍎','🍋','🧅','🧄','🍅','🫚','🧂','🍞','🥫','🌾','🫘','🍝','🍚','🥜','🧃','🫙','🥤','🍷','🛢️','🫐','🍓','🧁','🍖','🌽','🫑','🥬'];
+
+let tab    = 'fridge';
+let editId = null;
+let emoji  = '🥫';
+
+function buildEmojiGrid() {
+  document.getElementById('emoji-grid').innerHTML =
+    EMOJIS.map(e => `<button class="eo${e===emoji?' sel':''}" onclick="pickEmoji('${e}')">${e}</button>`).join('');
+}
+
+function pickEmoji(e) {
+  emoji = e;
+  document.querySelectorAll('.eo').forEach(b => b.classList.toggle('sel', b.textContent === e));
+}
+
+function switchTab(loc) {
+  tab = loc;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.loc === loc));
+  document.getElementById('loc-label').textContent = loc.charAt(0).toUpperCase() + loc.slice(1);
+  document.getElementById('f-loc').value = loc;
+  document.getElementById('search').value = '';
+  render();
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let items = KitchenData.getItemsByLocation(tab);
+  if (q) items = items.filter(i =>
+    i.name.toLowerCase().includes(q) || (i.notes || '').toLowerCase().includes(q)
+  );
+
+  // Stats (always from full tab, not filtered)
+  const all      = KitchenData.getItemsByLocation(tab);
+  const expired  = all.filter(i => KitchenData.getExpirationStatus(i.expDate) === 'expired').length;
+  const expiring = all.filter(i => ['soon','week'].includes(KitchenData.getExpirationStatus(i.expDate))).length;
+  const low      = all.filter(i => i.lowStock).length;
+  let stats = `<div class="pill pill-total">${all.length} item${all.length !== 1 ? 's' : ''}</div>`;
+  if (expired)  stats += `<div class="pill pill-expired">🚫 ${expired} expired</div>`;
+  if (expiring) stats += `<div class="pill pill-expiring">⏰ ${expiring} expiring</div>`;
+  if (low)      stats += `<div class="pill pill-low">⚠️ ${low} low stock</div>`;
+  document.getElementById('stats').innerHTML = stats;
+
+  const listEl = document.getElementById('list');
+
+  if (!items.length) {
+    const icon = tab === 'fridge' ? '🧊' : tab === 'freezer' ? '❄️' : '🧺';
+    listEl.innerHTML = `<div class="empty">
+      <div class="empty-icon">${icon}</div>
+      <p>${q ? 'No items match your search.' : 'Nothing here yet.<br>Tap + to add your first item.'}</p>
+    </div>`;
+    return;
+  }
+
+  const order = { expired: 0, soon: 1, week: 2, ok: 3, none: 4 };
+  items.sort((a, b) => {
+    const diff = order[KitchenData.getExpirationStatus(a.expDate)] - order[KitchenData.getExpirationStatus(b.expDate)];
+    return diff !== 0 ? diff : a.name.localeCompare(b.name);
+  });
+
+  listEl.innerHTML = items.map(item => {
+    const status = KitchenData.getExpirationStatus(item.expDate);
+    const cardCls = status === 'expired' ? 's-expired' : status === 'soon' ? 's-soon' : item.lowStock ? 's-low' : '';
+
+    let expTag = '';
+    if (item.expDate) {
+      const tagCls = { expired: 'tag-expired', soon: 'tag-soon', week: 'tag-week', ok: 'tag-ok' }[status] || 'tag-ok';
+      const prefix = status === 'expired' ? '🚫 Exp ' : status === 'soon' ? '⚠️ Exp ' : '📅 ';
+      expTag = `<span class="tag ${tagCls}">${prefix}${KitchenData.formatExpDate(item.expDate)}</span>`;
+    }
+
+    return `<div class="card ${cardCls}" onclick="openEdit('${item.id}')">
+      <div class="card-icon">${item.emoji || '🥫'}</div>
+      <div class="card-body">
+        <div class="card-name">${KitchenData.esc(item.name)}</div>
+        <div class="card-meta">
+          ${item.qty ? `<span class="tag tag-qty">${KitchenData.esc(item.qty)}</span>` : ''}
+          ${expTag}
+          ${item.lowStock ? `<span class="tag tag-low">⚠️ Low</span>` : ''}
+        </div>
+        ${item.notes ? `<div class="card-notes">${KitchenData.esc(item.notes)}</div>` : ''}
+      </div>
+      <div class="card-arrow">›</div>
+    </div>`;
+  }).join('');
+}
+
+function openAdd() {
+  editId = null; emoji = '🥫';
+  document.getElementById('modal-title').textContent = 'Add Item';
+  document.getElementById('del-btn').style.display = 'none';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-qty').value = '';
+  document.getElementById('f-loc').value = tab;
+  document.getElementById('f-exp').value = '';
+  document.getElementById('f-low').checked = false;
+  document.getElementById('f-notes').value = '';
+  buildEmojiGrid();
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 300);
+}
+
+function openEdit(id) {
+  const item = KitchenData.getInventory().find(i => i.id === id);
+  if (!item) return;
+  editId = id; emoji = item.emoji || '🥫';
+  document.getElementById('modal-title').textContent = 'Edit Item';
+  document.getElementById('del-btn').style.display = 'block';
+  document.getElementById('f-name').value = item.name;
+  document.getElementById('f-qty').value = item.qty || '';
+  document.getElementById('f-loc').value = item.location;
+  document.getElementById('f-exp').value = item.expDate || '';
+  document.getElementById('f-low').checked = !!item.lowStock;
+  document.getElementById('f-notes').value = item.notes || '';
+  buildEmojiGrid();
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal')) return;
+  document.getElementById('modal').classList.remove('open');
+}
+
+function saveItem() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { document.getElementById('f-name').focus(); return; }
+
+  const data = {
+    name,
+    emoji,
+    qty:      document.getElementById('f-qty').value.trim(),
+    location: document.getElementById('f-loc').value,
+    expDate:  document.getElementById('f-exp').value,
+    lowStock: document.getElementById('f-low').checked,
+    notes:    document.getElementById('f-notes').value.trim(),
+  };
+
+  if (editId) KitchenData.updateItem(editId, data);
+  else        KitchenData.addItem(data);
+
+  tab = data.location;
+  document.getElementById('modal').classList.remove('open');
+  switchTab(tab);
+}
+
+function deleteItem() {
+  if (!editId || !confirm('Delete this item?')) return;
+  KitchenData.deleteItem(editId);
+  document.getElementById('modal').classList.remove('open');
+  render();
+}
+
+switchTab('fridge');
+</script>
+</body>
+</html>

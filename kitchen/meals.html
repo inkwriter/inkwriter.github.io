@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#3d2b1f">
+<title>Meals & Recipes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Source+Sans+3:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:       #faf6f0;
+    --parchment:   #f0e8d8;
+    --warm-tan:    #d4b896;
+    --bark:        #8b6348;
+    --espresso:    #3d2b1f;
+    --moss:        #5a6e3a;
+    --moss-light:  #dde8cc;
+    --rust:        #b04a2a;
+    --rust-light:  #f5ddd6;
+    --amber:       #c47d1e;
+    --amber-light: #faebd0;
+    --text:        #2a1e14;
+    --muted:       #7a6050;
+    --border:      #d4b896;
+    --shadow:      0 2px 12px rgba(61,43,31,.08);
+    --r:  12px;
+    --rs: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100dvh;
+    padding-bottom: 90px;
+  }
+
+  /* Header */
+  header {
+    background: var(--espresso);
+    padding: 1rem 1.25rem 0;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-top {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding-bottom: .75rem;
+  }
+  .app-title {
+    font-family: 'Lora', serif;
+    font-size: 1.25rem; font-weight: 600;
+    color: var(--parchment);
+  }
+  .add-btn {
+    background: var(--bark); border: none; color: var(--parchment);
+    width: 40px; height: 40px; border-radius: 50%;
+    font-size: 1.5rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .add-btn:active { background: var(--warm-tan); }
+
+  /* Tabs */
+  .tabs { display: flex; }
+  .tab {
+    flex: 1; padding: .6rem .25rem;
+    background: transparent; border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--warm-tan);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: .85rem; cursor: pointer;
+    transition: color .15s, border-color .15s;
+    text-align: center;
+  }
+  .tab.active { color: var(--parchment); border-bottom-color: var(--warm-tan); font-weight: 500; }
+
+  /* Match banner */
+  .banner {
+    background: var(--moss-light);
+    border-bottom: 1px solid #b8d09a;
+    padding: .8rem 1.25rem;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 12px;
+  }
+  .banner-text { font-size: .85rem; color: var(--moss); line-height: 1.4; }
+  .banner-text strong { display: block; font-size: .95rem; font-weight: 500; }
+  .banner-btn {
+    background: var(--moss); border: none; color: #fff;
+    padding: .4rem .8rem; border-radius: var(--rs);
+    font-size: .8rem; cursor: pointer; white-space: nowrap;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+
+  /* Content */
+  .content { padding: .75rem 1.25rem; display: flex; flex-direction: column; gap: 10px; }
+
+  .empty {
+    text-align: center; padding: 3rem 1rem; color: var(--muted);
+  }
+  .empty-icon { font-size: 2.5rem; margin-bottom: .75rem; opacity: .5; }
+  .empty p { font-size: .95rem; line-height: 1.6; }
+
+  /* Recipe card */
+  .recipe-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--r); padding: .9rem 1rem;
+    box-shadow: var(--shadow); cursor: pointer;
+  }
+  .recipe-card:active { box-shadow: none; }
+  .recipe-header {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 10px; margin-bottom: 6px;
+  }
+  .recipe-name {
+    font-family: 'Lora', serif; font-size: 1rem; font-weight: 500; line-height: 1.3;
+  }
+  .badge {
+    flex-shrink: 0; font-size: .72rem; font-weight: 500;
+    padding: 3px 10px; border-radius: 12px; white-space: nowrap;
+  }
+  .b-100  { background: var(--moss-light); color: var(--moss); }
+  .b-hi   { background: var(--amber-light); color: var(--amber); }
+  .b-lo   { background: var(--rust-light); color: var(--rust); }
+  .b-none { background: var(--parchment); color: var(--muted); }
+
+  .ing-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
+  .ing {
+    font-size: .72rem; padding: 2px 8px; border-radius: 10px;
+  }
+  .ing-have    { background: var(--moss-light); color: var(--moss); }
+  .ing-missing { background: var(--rust-light); color: var(--rust); }
+  .recipe-time { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--espresso);
+    display: flex; border-top: 1px solid rgba(255,255,255,.08);
+    z-index: 100;
+  }
+  .nav-link {
+    flex: 1; padding: .7rem .25rem .55rem;
+    background: transparent; border: none;
+    color: var(--warm-tan);
+    font-family: 'Source Sans 3', sans-serif; font-size: .7rem;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    text-decoration: none; transition: color .15s;
+  }
+  .nav-link.active, .nav-link:hover { color: var(--parchment); }
+  .nav-icon { font-size: 1.2rem; }
+
+  /* Modals */
+  .backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.5); z-index: 200;
+    align-items: flex-end;
+  }
+  .backdrop.open { display: flex; }
+  .modal {
+    background: var(--cream); width: 100%;
+    max-height: 92dvh; border-radius: var(--r) var(--r) 0 0;
+    overflow-y: auto; padding: 1.25rem;
+    animation: up .2s ease;
+  }
+  @keyframes up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .modal-handle {
+    width: 40px; height: 4px; background: var(--border);
+    border-radius: 2px; margin: 0 auto 1.25rem;
+  }
+  .modal-title {
+    font-family: 'Lora', serif; font-size: 1.15rem; font-weight: 600;
+    margin-bottom: 1.25rem; color: var(--espresso);
+  }
+
+  /* Form */
+  .fg { margin-bottom: 1rem; }
+  .fg label {
+    display: block; font-size: .78rem; font-weight: 500;
+    color: var(--muted); text-transform: uppercase;
+    letter-spacing: .06em; margin-bottom: .35rem;
+  }
+  .fg input, .fg textarea {
+    width: 100%; padding: .65rem .85rem;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--rs);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1rem; color: var(--text); outline: none;
+    -webkit-appearance: none; appearance: none;
+  }
+  .fg textarea { resize: vertical; min-height: 80px; }
+  .fg input:focus, .fg textarea:focus { border-color: var(--bark); }
+  .helper { font-size: .75rem; color: var(--muted); margin-top: .25rem; }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; margin-top: 1.25rem; }
+  .btn {
+    flex: 1; padding: .75rem; border-radius: var(--rs);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1rem; font-weight: 500; cursor: pointer; border: none;
+  }
+  .btn:active { opacity: .8; }
+  .btn-primary { background: var(--espresso); color: var(--parchment); }
+  .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-danger  { background: var(--rust-light); color: var(--rust); }
+
+  /* View modal content */
+  .big-match {
+    text-align: center; padding: 1rem;
+    background: var(--parchment); border-radius: var(--rs); margin-bottom: 1rem;
+  }
+  .big-pct { font-size: 2rem; font-weight: 600; font-family: 'Lora', serif; }
+  .big-lbl { font-size: .8rem; color: var(--muted); }
+  .section-lbl {
+    font-size: .75rem; font-weight: 500; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .06em;
+    margin: 1rem 0 .5rem;
+  }
+  .ing-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: .5rem; }
+  .instructions { font-size: .95rem; line-height: 1.7; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="app-title">Meals & Recipes</div>
+    <button class="add-btn" onclick="openAdd()" aria-label="Add recipe">+</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-v="match" onclick="switchView('match')">✅ Can Make</button>
+    <button class="tab"        data-v="all"   onclick="switchView('all')">📖 All Recipes</button>
+  </div>
+</header>
+
+<div class="banner">
+  <div class="banner-text">
+    <strong id="banner-head">Loading…</strong>
+    <span id="banner-sub"></span>
+  </div>
+  <button class="banner-btn" onclick="render()">Refresh</button>
+</div>
+
+<div class="content" id="content"></div>
+
+<!-- Edit modal -->
+<div class="backdrop" id="edit-modal" onclick="closeEdit(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="edit-title">Add Recipe</div>
+
+    <div class="fg">
+      <label>Recipe Name *</label>
+      <input type="text" id="r-name" placeholder="e.g. Chicken Stir Fry" autocomplete="off">
+    </div>
+
+    <div class="fg">
+      <label>Ingredients (one per line) *</label>
+      <textarea id="r-ings" placeholder="chicken breast&#10;soy sauce&#10;garlic&#10;broccoli" rows="5"></textarea>
+      <p class="helper">Use the same names as your inventory for best matching.</p>
+    </div>
+
+    <div class="fg">
+      <label>Cook Time</label>
+      <input type="text" id="r-time" placeholder="e.g. 30 min">
+    </div>
+
+    <div class="fg">
+      <label>Instructions (optional)</label>
+      <textarea id="r-instructions" placeholder="Step by step…" rows="4"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost"   onclick="closeEdit()">Cancel</button>
+      <button class="btn btn-danger"  id="r-del" onclick="deleteRecipe()" style="display:none">Delete</button>
+      <button class="btn btn-primary" onclick="saveRecipe()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- View modal -->
+<div class="backdrop" id="view-modal" onclick="closeView(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="view-content"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost"   onclick="closeView()">Close</button>
+      <button class="btn btn-primary" onclick="switchToEdit()">Edit</button>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-link"        href="index.html"><span class="nav-icon">🥫</span>Inventory</a>
+  <a class="nav-link active" href="meals.html"><span class="nav-icon">🍽️</span>Meals</a>
+</nav>
+
+<script src="data.js"></script>
+<script>
+let view      = 'match';
+let editId    = null;
+let viewId    = null;
+
+function switchView(v) {
+  view = v;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.v === v));
+  render();
+}
+
+function render() {
+  const matched = KitchenData.matchRecipes();
+  const recipes = KitchenData.getRecipes();
+
+  // Banner
+  const canMake = matched.filter(r => r.score === 100).length;
+  const close   = matched.filter(r => r.score >= 50 && r.score < 100).length;
+  document.getElementById('banner-head').textContent =
+    recipes.length === 0 ? 'No recipes saved yet' :
+    canMake > 0 ? `${canMake} recipe${canMake !== 1 ? 's' : ''} ready to make` : 'No complete matches';
+  document.getElementById('banner-sub').textContent =
+    close > 0 ? ` · ${close} close match${close !== 1 ? 'es' : ''}` : '';
+
+  const list = view === 'match' ? matched.filter(r => r.score > 0) : matched;
+  const el   = document.getElementById('content');
+
+  if (!recipes.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📖</div><p>No recipes yet.<br>Tap + to add your first one.</p></div>`;
+    return;
+  }
+  if (view === 'match' && !list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🤷</div><p>None of your recipes can be made<br>with your current inventory.<br>Check the All Recipes tab.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(r => {
+    const cls   = r.score === 100 ? 'b-100' : r.score >= 60 ? 'b-hi' : r.score > 0 ? 'b-lo' : 'b-none';
+    const label = r.score === 100 ? '✓ Ready' : r.score > 0 ? `${r.score}% match` : 'Missing items';
+    const haves = (r.matched || []).slice(0, 4).map(i => `<span class="ing ing-have">${KitchenData.esc(i)}</span>`).join('');
+    const miss  = (r.missing || []).slice(0, 3).map(i => `<span class="ing ing-missing">− ${KitchenData.esc(i)}</span>`).join('');
+    return `<div class="recipe-card" onclick="openView('${r.id}')">
+      <div class="recipe-header">
+        <div class="recipe-name">${KitchenData.esc(r.name)}</div>
+        <span class="badge ${cls}">${label}</span>
+      </div>
+      <div class="ing-tags">${haves}${miss}</div>
+      ${r.cookTime ? `<div class="recipe-time">⏱ ${KitchenData.esc(r.cookTime)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Edit modal ─────────────────────────────────────────────────────────────
+
+function openAdd() {
+  editId = null;
+  document.getElementById('edit-title').textContent = 'Add Recipe';
+  document.getElementById('r-del').style.display = 'none';
+  document.getElementById('r-name').value = '';
+  document.getElementById('r-ings').value = '';
+  document.getElementById('r-time').value = '';
+  document.getElementById('r-instructions').value = '';
+  document.getElementById('edit-modal').classList.add('open');
+  setTimeout(() => document.getElementById('r-name').focus(), 300);
+}
+
+function closeEdit(e) {
+  if (e && e.target !== document.getElementById('edit-modal')) return;
+  document.getElementById('edit-modal').classList.remove('open');
+}
+
+function saveRecipe() {
+  const name = document.getElementById('r-name').value.trim();
+  if (!name) { document.getElementById('r-name').focus(); return; }
+  const ingredients = document.getElementById('r-ings').value
+    .split('\n').map(s => s.trim()).filter(Boolean);
+  if (!ingredients.length) { document.getElementById('r-ings').focus(); return; }
+
+  const data = {
+    name, ingredients,
+    cookTime:     document.getElementById('r-time').value.trim(),
+    instructions: document.getElementById('r-instructions').value.trim(),
+  };
+
+  if (editId) KitchenData.updateRecipe(editId, data);
+  else        KitchenData.addRecipe(data);
+
+  document.getElementById('edit-modal').classList.remove('open');
+  render();
+}
+
+function deleteRecipe() {
+  if (!editId || !confirm('Delete this recipe?')) return;
+  KitchenData.deleteRecipe(editId);
+  document.getElementById('edit-modal').classList.remove('open');
+  render();
+}
+
+// ── View modal ─────────────────────────────────────────────────────────────
+
+function openView(id) {
+  const r = KitchenData.matchRecipes().find(rec => rec.id === id);
+  if (!r) return;
+  viewId = id;
+
+  const pctCls = r.score === 100 ? 'b-100' : r.score >= 60 ? 'b-hi' : 'b-lo';
+  const haves  = (r.matched || []).map(i => `<span class="ing ing-have">${KitchenData.esc(i)}</span>`).join('');
+  const miss   = (r.missing || []).map(i => `<span class="ing ing-missing">− ${KitchenData.esc(i)}</span>`).join('');
+
+  document.getElementById('view-content').innerHTML = `
+    <div class="modal-title">${KitchenData.esc(r.name)}</div>
+    <div class="big-match">
+      <div class="big-pct ${pctCls}">${r.score}%</div>
+      <div class="big-lbl">${r.score === 100 ? 'All ingredients on hand!' : `${r.missing.length} ingredient${r.missing.length !== 1 ? 's' : ''} missing`}</div>
+    </div>
+    ${r.cookTime ? `<div style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem">⏱ ${KitchenData.esc(r.cookTime)}</div>` : ''}
+    <div class="section-lbl">Ingredients you have</div>
+    <div class="ing-list">${haves || '<span style="font-size:.85rem;color:var(--muted)">None in inventory</span>'}</div>
+    ${r.missing.length ? `<div class="section-lbl">Still need</div><div class="ing-list">${miss}</div>` : ''}
+    ${r.instructions ? `<div class="section-lbl">Instructions</div><div class="instructions">${KitchenData.esc(r.instructions)}</div>` : ''}
+  `;
+  document.getElementById('view-modal').classList.add('open');
+}
+
+function closeView(e) {
+  if (e && e.target !== document.getElementById('view-modal')) return;
+  document.getElementById('view-modal').classList.remove('open');
+}
+
+function switchToEdit() {
+  if (!viewId) return;
+  const r = KitchenData.getRecipes().find(rec => rec.id === viewId);
+  if (!r) return;
+  editId = viewId;
+  document.getElementById('view-modal').classList.remove('open');
+  document.getElementById('edit-title').textContent = 'Edit Recipe';
+  document.getElementById('r-del').style.display = 'block';
+  document.getElementById('r-name').value = r.name;
+  document.getElementById('r-ings').value = (r.ingredients || []).join('\n');
+  document.getElementById('r-time').value = r.cookTime || '';
+  document.getElementById('r-instructions').value = r.instructions || '';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+render();
+</script>
+</body>
+</html>
