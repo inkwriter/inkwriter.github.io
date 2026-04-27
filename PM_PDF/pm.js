@@ -30,7 +30,7 @@ const checklistData = {
     { id: "deliPrinter", label: "Deli Printer - Check physical damage, run test print, verify quality" },
     { id: "storeTablet", label: "Store Tablet - Check charging, updates, condition, and printer connection" },
     { id: "phoneGateway", label: "Check Yealink Gateway" },
-    { id: "concerns", label: "Manager concerns" }
+    { id: "concerns", label: "Concerns" }
   ]
 };
 
@@ -363,7 +363,7 @@ document.getElementById('generatePdf').addEventListener('click', async () => {
   }
 
   if (!hasSignature) {
-    alert('Please add a manager signature');
+    alert('Please add a witness signature');
     return;
   }
 
@@ -524,7 +524,7 @@ document.getElementById('generatePdf').addEventListener('click', async () => {
   // ── Signature ──
   checkNewPage(100);
   yPos -= 20;
-  page.drawText('Manager Signature:', { x: leftMargin, y: yPos, size: 12, font: boldFont });
+  page.drawText('Witness Signature:', { x: leftMargin, y: yPos, size: 12, font: boldFont });
   yPos -= 15;
 
   page.drawLine({
