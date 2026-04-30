@@ -24,7 +24,7 @@ const checklistData = {
     { id: "incomm", label: "Incomm" },
     { id: "reader", label: "Check Reader" },
     { id: "fcSwitches", label: "Switches" },
-    { id: "chownow", label: "ChowNow / Lula" },
+    { id: "lula", label: "Lula" },
     { id: "fcDeadCables", label: "Dead Ethernet Cables" },
     { id: "passport", label: "Passport version and document" },
     { id: "deliPrinter", label: "Deli Printer - Check physical damage, run test print, verify quality" },
