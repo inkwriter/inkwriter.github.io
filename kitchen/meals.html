@@ -28,16 +28,12 @@
     --rs: 8px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     font-family: 'Source Sans 3', sans-serif;
-    background: var(--cream);
-    color: var(--text);
-    min-height: 100dvh;
-    padding-bottom: 90px;
+    background: var(--cream); color: var(--text);
+    min-height: 100dvh; padding-bottom: 90px;
   }
 
-  /* Header */
   header {
     background: var(--espresso);
     padding: 1rem 1.25rem 0;
@@ -45,13 +41,11 @@
   }
   .header-top {
     display: flex; align-items: center;
-    justify-content: space-between;
-    padding-bottom: .75rem;
+    justify-content: space-between; padding-bottom: .75rem;
   }
   .app-title {
     font-family: 'Lora', serif;
-    font-size: 1.25rem; font-weight: 600;
-    color: var(--parchment);
+    font-size: 1.25rem; font-weight: 600; color: var(--parchment);
   }
   .add-btn {
     background: var(--bark); border: none; color: var(--parchment);
@@ -61,7 +55,6 @@
   }
   .add-btn:active { background: var(--warm-tan); }
 
-  /* Tabs */
   .tabs { display: flex; }
   .tab {
     flex: 1; padding: .6rem .25rem;
@@ -70,12 +63,10 @@
     color: var(--warm-tan);
     font-family: 'Source Sans 3', sans-serif;
     font-size: .85rem; cursor: pointer;
-    transition: color .15s, border-color .15s;
-    text-align: center;
+    transition: color .15s, border-color .15s; text-align: center;
   }
   .tab.active { color: var(--parchment); border-bottom-color: var(--warm-tan); font-weight: 500; }
 
-  /* Match banner */
   .banner {
     background: var(--moss-light);
     border-bottom: 1px solid #b8d09a;
@@ -92,16 +83,12 @@
     font-family: 'Source Sans 3', sans-serif;
   }
 
-  /* Content */
   .content { padding: .75rem 1.25rem; display: flex; flex-direction: column; gap: 10px; }
 
-  .empty {
-    text-align: center; padding: 3rem 1rem; color: var(--muted);
-  }
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
   .empty-icon { font-size: 2.5rem; margin-bottom: .75rem; opacity: .5; }
   .empty p { font-size: .95rem; line-height: 1.6; }
 
-  /* Recipe card */
   .recipe-card {
     background: #fff; border: 1px solid var(--border);
     border-radius: var(--r); padding: .9rem 1rem;
@@ -125,24 +112,19 @@
   .b-none { background: var(--parchment); color: var(--muted); }
 
   .ing-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
-  .ing {
-    font-size: .72rem; padding: 2px 8px; border-radius: 10px;
-  }
+  .ing { font-size: .72rem; padding: 2px 8px; border-radius: 10px; }
   .ing-have    { background: var(--moss-light); color: var(--moss); }
   .ing-missing { background: var(--rust-light); color: var(--rust); }
   .recipe-time { font-size: .78rem; color: var(--muted); margin-top: 4px; }
 
-  /* Bottom nav */
   .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: var(--espresso);
-    display: flex; border-top: 1px solid rgba(255,255,255,.08);
-    z-index: 100;
+    display: flex; border-top: 1px solid rgba(255,255,255,.08); z-index: 100;
   }
   .nav-link {
     flex: 1; padding: .7rem .25rem .55rem;
-    background: transparent; border: none;
-    color: var(--warm-tan);
+    background: transparent; border: none; color: var(--warm-tan);
     font-family: 'Source Sans 3', sans-serif; font-size: .7rem;
     display: flex; flex-direction: column; align-items: center; gap: 3px;
     text-decoration: none; transition: color .15s;
@@ -150,11 +132,9 @@
   .nav-link.active, .nav-link:hover { color: var(--parchment); }
   .nav-icon { font-size: 1.2rem; }
 
-  /* Modals */
   .backdrop {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.5); z-index: 200;
-    align-items: flex-end;
+    background: rgba(0,0,0,.5); z-index: 200; align-items: flex-end;
   }
   .backdrop.open { display: flex; }
   .modal {
@@ -174,7 +154,6 @@
     margin-bottom: 1.25rem; color: var(--espresso);
   }
 
-  /* Form */
   .fg { margin-bottom: 1rem; }
   .fg label {
     display: block; font-size: .78rem; font-weight: 500;
@@ -193,7 +172,6 @@
   .fg input:focus, .fg textarea:focus { border-color: var(--bark); }
   .helper { font-size: .75rem; color: var(--muted); margin-top: .25rem; }
 
-  /* Buttons */
   .btn-row { display: flex; gap: 8px; margin-top: 1.25rem; }
   .btn {
     flex: 1; padding: .75rem; border-radius: var(--rs);
@@ -205,7 +183,6 @@
   .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--muted); }
   .btn-danger  { background: var(--rust-light); color: var(--rust); }
 
-  /* View modal content */
   .big-match {
     text-align: center; padding: 1rem;
     background: var(--parchment); border-radius: var(--rs); margin-bottom: 1rem;
@@ -214,8 +191,7 @@
   .big-lbl { font-size: .8rem; color: var(--muted); }
   .section-lbl {
     font-size: .75rem; font-weight: 500; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .06em;
-    margin: 1rem 0 .5rem;
+    text-transform: uppercase; letter-spacing: .06em; margin: 1rem 0 .5rem;
   }
   .ing-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: .5rem; }
   .instructions { font-size: .95rem; line-height: 1.7; white-space: pre-wrap; }
@@ -239,7 +215,7 @@
     <strong id="banner-head">Loading…</strong>
     <span id="banner-sub"></span>
   </div>
-  <button class="banner-btn" onclick="render()">Refresh</button>
+  <button class="banner-btn" onclick="loadAndRender()">Refresh</button>
 </div>
 
 <div class="content" id="content"></div>
@@ -254,18 +230,15 @@
       <label>Recipe Name *</label>
       <input type="text" id="r-name" placeholder="e.g. Chicken Stir Fry" autocomplete="off">
     </div>
-
     <div class="fg">
       <label>Ingredients (one per line) *</label>
       <textarea id="r-ings" placeholder="chicken breast&#10;soy sauce&#10;garlic&#10;broccoli" rows="5"></textarea>
-      <p class="helper">Use the same names as your inventory for best matching.</p>
+      <p class="helper">Use the same names as your inventory.csv for best matching.</p>
     </div>
-
     <div class="fg">
       <label>Cook Time</label>
       <input type="text" id="r-time" placeholder="e.g. 30 min">
     </div>
-
     <div class="fg">
       <label>Instructions (optional)</label>
       <textarea id="r-instructions" placeholder="Step by step…" rows="4"></textarea>
@@ -298,9 +271,22 @@
 
 <script src="data.js"></script>
 <script>
+let inventory = [];
 let view      = 'match';
 let editId    = null;
 let viewId    = null;
+
+async function loadAndRender() {
+  document.getElementById('banner-head').textContent = 'Loading inventory…';
+  document.getElementById('banner-sub').textContent  = '';
+  try {
+    inventory = await KitchenData.loadInventory();
+  } catch (e) {
+    document.getElementById('banner-head').textContent = 'Could not load inventory.csv';
+    inventory = [];
+  }
+  render();
+}
 
 function switchView(v) {
   view = v;
@@ -309,10 +295,9 @@ function switchView(v) {
 }
 
 function render() {
-  const matched = KitchenData.matchRecipes();
+  const matched = KitchenData.matchRecipes(inventory);
   const recipes = KitchenData.getRecipes();
 
-  // Banner
   const canMake = matched.filter(r => r.score === 100).length;
   const close   = matched.filter(r => r.score >= 50 && r.score < 100).length;
   document.getElementById('banner-head').textContent =
@@ -353,12 +338,12 @@ function render() {
 
 function openAdd() {
   editId = null;
-  document.getElementById('edit-title').textContent = 'Add Recipe';
-  document.getElementById('r-del').style.display = 'none';
-  document.getElementById('r-name').value = '';
-  document.getElementById('r-ings').value = '';
-  document.getElementById('r-time').value = '';
-  document.getElementById('r-instructions').value = '';
+  document.getElementById('edit-title').textContent   = 'Add Recipe';
+  document.getElementById('r-del').style.display      = 'none';
+  document.getElementById('r-name').value             = '';
+  document.getElementById('r-ings').value             = '';
+  document.getElementById('r-time').value             = '';
+  document.getElementById('r-instructions').value     = '';
   document.getElementById('edit-modal').classList.add('open');
   setTimeout(() => document.getElementById('r-name').focus(), 300);
 }
@@ -398,7 +383,7 @@ function deleteRecipe() {
 // ── View modal ─────────────────────────────────────────────────────────────
 
 function openView(id) {
-  const r = KitchenData.matchRecipes().find(rec => rec.id === id);
+  const r = KitchenData.matchRecipes(inventory).find(rec => rec.id === id);
   if (!r) return;
   viewId = id;
 
@@ -432,16 +417,16 @@ function switchToEdit() {
   if (!r) return;
   editId = viewId;
   document.getElementById('view-modal').classList.remove('open');
-  document.getElementById('edit-title').textContent = 'Edit Recipe';
-  document.getElementById('r-del').style.display = 'block';
-  document.getElementById('r-name').value = r.name;
-  document.getElementById('r-ings').value = (r.ingredients || []).join('\n');
-  document.getElementById('r-time').value = r.cookTime || '';
-  document.getElementById('r-instructions').value = r.instructions || '';
+  document.getElementById('edit-title').textContent       = 'Edit Recipe';
+  document.getElementById('r-del').style.display          = 'block';
+  document.getElementById('r-name').value                 = r.name;
+  document.getElementById('r-ings').value                 = (r.ingredients || []).join('\n');
+  document.getElementById('r-time').value                 = r.cookTime || '';
+  document.getElementById('r-instructions').value         = r.instructions || '';
   document.getElementById('edit-modal').classList.add('open');
 }
 
-render();
+loadAndRender();
 </script>
 </body>
 </html>

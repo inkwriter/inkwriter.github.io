@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Family Meal Planner</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- MODE BAR -->
+  <div class="mode-bar">
+    <span class="mode-title">🥘 <span id="family-name-display">Sexton</span> Family</span>
+    <span id="sync-status" class="sync-status"></span>
+    <div class="mode-toggle">
+      <button class="mode-btn active" data-mode="app"    onclick="switchMode('app')">▶ APP</button>
+      <button class="mode-btn"        data-mode="editor" onclick="switchMode('editor')">✏ EDITOR</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ APP VIEW ══════════════════ -->
+  <div id="view-app" class="view">
+    <div class="app-container">
+
+      <!-- Tabs (scrollable on mobile) -->
+      <div class="tabs-wrap">
+        <div class="tabs">
+          <button class="tab active" data-tab="plan"     onclick="switchTab('plan')">📅 Plan</button>
+          <button class="tab"        data-tab="recipes"  onclick="switchTab('recipes')">📖 Recipes</button>
+          <button class="tab"        data-tab="pantry"   onclick="switchTab('pantry')">🥫 Pantry</button>
+          <button class="tab"        data-tab="supplies" onclick="switchTab('supplies')">🧻 Supplies</button>
+          <button class="tab"        data-tab="grocery"  onclick="switchTab('grocery')">🛒 Grocery</button>
+        </div>
+      </div>
+
+      <!-- ── PLAN TAB ── -->
+      <div id="tab-plan" class="tab-panel">
+        <div class="panel-actions">
+          <div class="summary-bar" id="plan-summary"></div>
+          <button class="btn btn-ghost btn-sm" onclick="clearWeek()">🗑 Clear Week</button>
+        </div>
+        <div class="plan-scroll">
+          <div class="plan-grid" id="plan-grid"></div>
+        </div>
+      </div>
+
+      <!-- ── RECIPES TAB ── -->
+      <div id="tab-recipes" class="tab-panel hidden">
+        <div class="recipe-controls">
+          <input id="recipe-search" placeholder="Search recipes…" oninput="renderRecipes()" />
+          <button class="btn btn-ghost btn-sm" onclick="switchMode('editor')">Edit →</button>
+        </div>
+        <div id="recipe-tag-filters" class="tag-filters"></div>
+        <div class="recipe-grid" id="recipe-grid"></div>
+      </div>
+
+      <!-- ── PANTRY TAB ── -->
+      <div id="tab-pantry" class="tab-panel hidden">
+        <div class="card add-form">
+          <div class="form-row">
+            <div class="form-field form-field--grow"><label>Item</label><input id="pant-name" placeholder="e.g. rice" /></div>
+            <div class="form-field form-field--sm"><label>Qty</label><input id="pant-qty" type="number" placeholder="1" /></div>
+            <div class="form-field form-field--sm"><label>Unit</label><select id="pant-unit"></select></div>
+            <div class="form-field form-field--md"><label>Category</label><select id="pant-cat"></select></div>
+            <button class="btn btn-primary form-submit" onclick="addPantryItem()">Add</button>
+          </div>
+        </div>
+        <div class="item-grid" id="pantry-grid"></div>
+      </div>
+
+      <!-- ── SUPPLIES TAB ── -->
+      <div id="tab-supplies" class="tab-panel hidden">
+        <div class="card add-form">
+          <div class="form-row">
+            <div class="form-field form-field--grow"><label>Item</label><input id="sup-name" placeholder="e.g. Trash Bags" /></div>
+            <div class="form-field form-field--sm"><label>Qty</label><input id="sup-qty" type="number" placeholder="1" /></div>
+            <div class="form-field form-field--sm"><label>Unit</label><select id="sup-unit"></select></div>
+            <div class="form-field form-field--sm"><label>Reorder at</label><input id="sup-threshold" type="number" placeholder="1" /></div>
+            <div class="form-field form-field--md"><label>Category</label><select id="sup-cat"></select></div>
+            <button class="btn btn-primary form-submit" onclick="addSupplyItem()">Add</button>
+          </div>
+        </div>
+        <p class="supply-hint">Items at or below the reorder threshold are automatically added to your grocery list.</p>
+        <div id="supply-grid"></div>
+      </div>
+
+      <!-- ── GROCERY TAB ── -->
+      <div id="tab-grocery" class="tab-panel hidden">
+        <div class="summary-bar" id="grocery-summary"></div>
+        <div class="grocery-add-row">
+          <input id="grocery-extra" placeholder="Add item manually…" onkeydown="if(event.key==='Enter')addGroceryExtra()" />
+          <button class="btn" onclick="addGroceryExtra()">Add</button>
+          <button class="btn btn-amber" id="clear-checked-btn" onclick="clearChecked()" style="display:none">Clear checked</button>
+        </div>
+        <div id="grocery-list"></div>
+        <div id="grocery-empty" class="empty-state" style="display:none">
+          <div style="font-size:32px;margin-bottom:12px">📅</div>
+          Plan your week or add supplies — your grocery list will build itself.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════ EDITOR VIEW ══════════════════ -->
+  <div id="view-editor" class="view hidden">
+    <div class="editor">
+
+      <div class="ed-sidebar">
+        <div class="ed-sidebar-title">Modules</div>
+        <button class="ed-mod-btn active" data-mod="recipes"    onclick="switchModule('recipes')">📖 <span>Recipes</span> <span class="ed-mod-count" id="count-recipes"></span></button>
+        <button class="ed-mod-btn"        data-mod="pantry"     onclick="switchModule('pantry')">🥫 <span>Pantry</span> <span class="ed-mod-count" id="count-pantry"></span></button>
+        <button class="ed-mod-btn"        data-mod="supplies"   onclick="switchModule('supplies')">🧻 <span>Supplies</span> <span class="ed-mod-count" id="count-supplies"></span></button>
+        <button class="ed-mod-btn"        data-mod="categories" onclick="switchModule('categories')">🏷️ <span>Grocery Cats</span> <span class="ed-mod-count" id="count-categories"></span></button>
+        <button class="ed-mod-btn"        data-mod="settings"   onclick="switchModule('settings')">⚙️ <span>Settings</span></button>
+      </div>
+
+      <div class="ed-main">
+        <div class="ed-topbar">
+          <span id="ed-mod-icon" style="font-size:18px">📖</span>
+          <h2 id="ed-mod-title">Recipes</h2>
+          <span id="ed-mod-desc" class="ed-desc"></span>
+          <div class="ed-actions">
+            <button class="ed-btn ed-btn-add" id="ed-add-btn" onclick="editorAddRow()">+ Add Recipe</button>
+          </div>
+        </div>
+        <div class="ed-content" id="ed-content"></div>
+        <div class="ed-status">
+          <span><span class="ed-dot"></span>Auto-saved</span>
+          <span id="ed-status-module">Module: recipes</span>
+          <span id="ed-status-count"></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════ PICK MEAL MODAL ══════════════════ -->
+  <div id="modal-pick" class="overlay hidden" onclick="closeModal('modal-pick')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h2 id="modal-pick-title">Pick a meal</h2>
+      <div id="modal-pick-list" class="modal-scroll"></div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal('modal-pick')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ INGREDIENTS MODAL ══════════════════ -->
+  <div id="modal-ing" class="overlay hidden" onclick="closeModal('modal-ing')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h2 id="modal-ing-title">Ingredients</h2>
+      <div id="modal-ing-list"></div>
+      <button class="btn btn-sm" onclick="ingModalAddRow()" style="margin-top:8px">+ ingredient</button>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal('modal-ing')">Cancel</button>
+        <button class="btn btn-primary" onclick="ingModalSave()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="config.js"></script>
+  <script src="storage.js"></script>
+  <script src="app.js"></script>
+  <script src="editor.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
