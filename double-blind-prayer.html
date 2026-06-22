@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veiled — A Double-Blind Prayer Watch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14181f;
+    --ink-2:#1b212b;
+    --ink-3:#232b37;
+    --parchment:#ece3d0;
+    --parchment-dim:#bdb6a4;
+    --gold:#c9a44c;
+    --gold-soft:#d9c081;
+    --muted:#857f70;
+    --line:rgba(201,164,76,.22);
+    --line-soft:rgba(236,227,208,.10);
+    --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+  }
+
+  *{box-sizing:border-box}
+
+  html,body{margin:0;padding:0}
+
+  body{
+    background:
+      radial-gradient(120% 80% at 50% -10%, #1d2530 0%, var(--ink) 55%) fixed,
+      var(--ink);
+    color:var(--parchment);
+    font-family:"EB Garamond",Georgia,serif;
+    font-size:18px;
+    line-height:1.6;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{
+    width:100%;
+    max-width:560px;
+    margin:0 auto;
+    padding:38px 22px 64px;
+  }
+
+  /* ---- masthead ---- */
+  header{text-align:center;margin-bottom:34px}
+
+  .eyebrow{
+    font-family:"Cinzel",serif;
+    font-size:.62rem;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin:0 0 14px;
+  }
+
+  h1{
+    font-family:"Cinzel",serif;
+    font-weight:600;
+    font-size:2.35rem;
+    line-height:1.05;
+    margin:0;
+    letter-spacing:.02em;
+  }
+
+  .rule{
+    width:64px;height:1px;margin:18px auto 16px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  }
+
+  .lede{
+    margin:0 auto;max-width:38ch;
+    color:var(--parchment-dim);
+    font-size:1.02rem;font-style:italic;
+  }
+
+  /* ---- panel ---- */
+  .panel{
+    background:linear-gradient(180deg,var(--ink-2),var(--ink-2));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px 22px 26px;
+    box-shadow:var(--shadow);
+  }
+
+  label.field-label{
+    display:block;
+    font-family:"Cinzel",serif;
+    font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--gold-soft);
+    margin:0 0 10px;
+  }
+
+  textarea{
+    width:100%;
+    min-height:170px;
+    resize:vertical;
+    background:var(--ink);
+    border:1px solid var(--line-soft);
+    border-radius:10px;
+    color:var(--parchment);
+    font-family:"EB Garamond",serif;
+    font-size:1.05rem;
+    line-height:1.7;
+    padding:14px 15px;
+  }
+  textarea::placeholder{color:var(--muted);font-style:italic}
+  textarea:focus,button:focus-visible,.step button:focus-visible{
+    outline:2px solid var(--gold);
+    outline-offset:2px;
+  }
+
+  .count-note{
+    margin:8px 2px 0;
+    font-size:.85rem;color:var(--muted);
+    text-align:right;
+  }
+
+  /* ---- stepper ---- */
+  .stepper-row{
+    margin-top:26px;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;
+  }
+  .stepper-row .field-label{margin-bottom:0}
+
+  .step{
+    display:flex;align-items:center;
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+  }
+  .step button{
+    width:52px;height:52px;
+    background:var(--ink-3);
+    border:none;color:var(--gold-soft);
+    font-size:1.6rem;line-height:1;
+    font-family:"EB Garamond",serif;
+    cursor:pointer;
+  }
+  .step button:active{background:#2c3543}
+  .step button:disabled{opacity:.3;cursor:not-allowed}
+  .step .readout{
+    width:64px;text-align:center;
+    font-family:"Cinzel",serif;font-size:1.4rem;
+    color:var(--parchment);
+  }
+
+  /* ---- buttons ---- */
+  .cta{
+    display:block;width:100%;
+    margin-top:26px;
+    padding:17px;
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));
+    color:#1a1306;
+    font-family:"Cinzel",serif;font-weight:600;
+    font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;
+    border:none;border-radius:12px;cursor:pointer;
+  }
+  .cta:active{transform:translateY(1px)}
+  .cta:disabled{
+    background:var(--ink-3);color:var(--muted);
+    cursor:not-allowed;
+  }
+
+  .ghost{
+    display:block;width:100%;
+    margin-top:12px;padding:14px;
+    background:transparent;color:var(--gold-soft);
+    border:1px solid var(--line);border-radius:12px;
+    font-family:"Cinzel",serif;
+    font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+    cursor:pointer;
+  }
+  .ghost:active{background:rgba(201,164,76,.06)}
+
+  /* ---- watch / cards ---- */
+  .watch-intro{
+    text-align:center;margin:6px 0 24px;
+  }
+  .watch-intro .lede{font-size:.98rem}
+
+  .cards{display:flex;flex-direction:column;gap:14px}
+
+  .card{
+    position:relative;
+    border:1px solid var(--line);
+    border-radius:13px;
+    background:var(--ink-2);
+    padding:22px 20px;
+    display:flex;align-items:center;gap:18px;
+    cursor:pointer;
+    transition:border-color .25s ease, background .25s ease;
+  }
+  .card:hover{border-color:rgba(201,164,76,.45)}
+  .card.revealed{
+    cursor:default;
+    background:linear-gradient(180deg,var(--ink-3),var(--ink-2));
+    border-color:rgba(201,164,76,.5);
+  }
+
+  .seal{
+    flex:0 0 auto;
+    width:50px;height:50px;border-radius:50%;
+    display:grid;place-items:center;
+    border:1px solid var(--gold);
+    color:var(--gold-soft);
+    font-family:"Cinzel",serif;font-size:1.15rem;
+    background:radial-gradient(circle at 35% 30%, #2c3543, var(--ink));
+  }
+  .card.revealed .seal{
+    background:radial-gradient(circle at 35% 30%, var(--gold-soft), var(--gold));
+    color:#1a1306;border-color:var(--gold-soft);
+  }
+
+  .card-body{min-width:0}
+  .card-kicker{
+    font-family:"Cinzel",serif;
+    font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:3px;
+  }
+  .card-name{
+    font-size:1.28rem;line-height:1.25;
+    color:var(--parchment-dim);
+    font-style:italic;
+  }
+  .card.revealed .card-name{
+    color:var(--parchment);font-style:normal;
+    font-weight:500;
+  }
+  .card.revealed .card-kicker{color:var(--gold-soft)}
+
+  .reveal-hint{
+    font-size:.82rem;color:var(--muted);
+    margin-left:auto;flex:0 0 auto;font-style:italic;
+  }
+  .card.revealed .reveal-hint{display:none}
+
+  /* utility */
+  .hidden{display:none !important}
+
+  footer{
+    text-align:center;margin-top:34px;
+    font-size:.8rem;color:var(--muted);
+  }
+
+  @media (max-width:380px){
+    h1{font-size:2rem}
+    body{font-size:17px}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">A Double-Blind Prayer Watch</p>
+    <h1>Veiled</h1>
+    <div class="rule"></div>
+    <p class="lede">Pray for each person known only by a number, so the word you receive isn&rsquo;t shaped by what you already know of them.</p>
+  </header>
+
+  <!-- STAGE 1: SETUP -->
+  <section id="setup" class="panel">
+    <label class="field-label" for="names">The list</label>
+    <textarea id="names" placeholder="Paste your list here — one name per line.&#10;&#10;Sarah&#10;Daniel&#10;The Whitesburg church plant&#10;&hellip;"></textarea>
+    <p class="count-note" id="countNote">0 names</p>
+
+    <div class="stepper-row">
+      <label class="field-label" for="howMany" id="howManyLabel">How many to pray for</label>
+      <div class="step" role="group" aria-labelledby="howManyLabel">
+        <button type="button" id="minus" aria-label="Fewer">&minus;</button>
+        <div class="readout" id="howMany" aria-live="polite">1</div>
+        <button type="button" id="plus" aria-label="More">+</button>
+      </div>
+    </div>
+
+    <button class="cta" id="drawBtn" disabled>Draw the watch</button>
+  </section>
+
+  <!-- STAGE 2: WATCH -->
+  <section id="watch" class="hidden">
+    <div class="watch-intro">
+      <p class="lede">Sit with each one. When you&rsquo;ve received your word, lift the veil.</p>
+    </div>
+    <div class="cards" id="cards"></div>
+    <button class="cta" id="revealAllBtn">Reveal all names</button>
+    <button class="ghost" id="restartBtn">New watch</button>
+  </section>
+
+  <footer>One name at a time. Tap a card to reveal it on its own.</footer>
+
+</div>
+
+<script>
+(function(){
+  const namesInput = document.getElementById('names');
+  const countNote  = document.getElementById('countNote');
+  const howMany    = document.getElementById('howMany');
+  const minus      = document.getElementById('minus');
+  const plus       = document.getElementById('plus');
+  const drawBtn    = document.getElementById('drawBtn');
+
+  const setup      = document.getElementById('setup');
+  const watch      = document.getElementById('watch');
+  const cardsEl    = document.getElementById('cards');
+  const revealAll  = document.getElementById('revealAllBtn');
+  const restartBtn = document.getElementById('restartBtn');
+
+  let want = 1;
+
+  function parseNames(){
+    return namesInput.value
+      .split('\n')
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  function refresh(){
+    const list = parseNames();
+    const n = list.length;
+    countNote.textContent = n === 1 ? '1 name' : n + ' names';
+
+    // clamp desired count to [1, n]
+    if(n === 0){ want = 1; }
+    else if(want > n){ want = n; }
+    else if(want < 1){ want = 1; }
+
+    howMany.textContent = n === 0 ? 0 : want;
+
+    minus.disabled = n === 0 || want <= 1;
+    plus.disabled  = n === 0 || want >= n;
+    drawBtn.disabled = n === 0;
+    drawBtn.textContent = n === 0 ? 'Add some names first'
+                        : want === 1 ? 'Draw the watch'
+                        : 'Draw ' + want;
+  }
+
+  // Fisher-Yates — a fair shuffle (the bias-free part matters here)
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function makeCard(index, name){
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'card';
+    card.innerHTML =
+      '<span class="seal">' + index + '</span>' +
+      '<span class="card-body">' +
+        '<span class="card-kicker">Person ' + index + '</span>' +
+        '<span class="card-name">Held in prayer</span>' +
+      '</span>' +
+      '<span class="reveal-hint">tap to reveal</span>';
+
+    const nameEl   = card.querySelector('.card-name');
+    const kickerEl = card.querySelector('.card-kicker');
+
+    card.addEventListener('click', function(){
+      if(card.classList.contains('revealed')) return;
+      card.classList.add('revealed');
+      kickerEl.textContent = 'Person ' + index;
+      nameEl.textContent = name;
+    });
+    return card;
+  }
+
+  function draw(){
+    const drawn = shuffle(parseNames()).slice(0, want);
+    cardsEl.innerHTML = '';
+    drawn.forEach((name, i) => cardsEl.appendChild(makeCard(i + 1, name)));
+    setup.classList.add('hidden');
+    watch.classList.remove('hidden');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  // events
+  namesInput.addEventListener('input', refresh);
+  minus.addEventListener('click', () => { want--; refresh(); });
+  plus .addEventListener('click', () => { want++; refresh(); });
+  drawBtn.addEventListener('click', draw);
+
+  revealAll.addEventListener('click', function(){
+    cardsEl.querySelectorAll('.card:not(.revealed)').forEach(c => c.click());
+  });
+
+  restartBtn.addEventListener('click', function(){
+    watch.classList.add('hidden');
+    setup.classList.remove('hidden');
+    refresh();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>
