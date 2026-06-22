@@ -1,0 +1,14 @@
+name,location,quantity,expDate,lowStock,notes,emoji
+Whole Milk,fridge,1 gallon,2025-04-25,false,,🥛
+Cheddar Cheese,fridge,8 oz,2025-05-01,false,,🧀
+Eggs,fridge,1 dozen,2025-04-30,false,,🥚
+Butter,fridge,1 stick,2025-05-15,false,,🧈
+Leftover Chili,fridge,2 servings,2025-04-21,false,Made Monday,🥫
+Chicken Breasts,freezer,2 lbs,,false,,🐔
+Ground Beef,freezer,1 lb,,false,,🥩
+Frozen Broccoli,freezer,12 oz,,false,,🥦
+Bread,pantry,1 loaf,2025-04-23,false,,🍞
+Garlic,pantry,1 head,,false,,🧄
+Olive Oil,pantry,,,true,Running low,🫚
+Rice,pantry,2 lbs,,false,,🍚
+Soy Sauce,pantry,,,false,,🧂

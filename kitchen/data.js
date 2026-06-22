@@ -1,45 +1,58 @@
-// data.js — shared storage for Kitchen Inventory
-// All data lives in localStorage under 'kitchen_inventory' and 'kitchen_recipes'
+// data.js — Kitchen Inventory shared helpers
+// Inventory: loaded from inventory.csv (read-only, edit the file and push to update)
+// Recipes:   stored in localStorage (editable from the app)
 
 const KitchenData = (() => {
 
-  // ── Inventory ──────────────────────────────────────────────────────────────
+  // ── CSV loader ─────────────────────────────────────────────────────────────
+  // Fetches inventory.csv, parses it, returns array of item objects.
+  // Adds a generated id (row index) so the rest of the app can reference items.
 
-  function getInventory() {
-    try { return JSON.parse(localStorage.getItem('kitchen_inventory')) || []; }
-    catch { return []; }
+  async function loadInventory() {
+    const res = await fetch('inventory.csv?v=' + Date.now()); // bust cache
+    if (!res.ok) throw new Error('Could not load inventory.csv');
+    const text = await res.text();
+    return parseCSV(text);
   }
 
-  function saveInventory(items) {
-    localStorage.setItem('kitchen_inventory', JSON.stringify(items));
+  function parseCSV(text) {
+    const lines = text.trim().split('\n').filter(l => l.trim());
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim());
+
+    return lines.slice(1).map((line, idx) => {
+      const values = splitCSVLine(line);
+      const obj = { id: String(idx) };
+      headers.forEach((h, i) => {
+        obj[h] = (values[i] || '').trim();
+      });
+      // normalize lowStock to boolean
+      obj.lowStock = obj.lowStock === 'true';
+      return obj;
+    });
   }
 
-  function addItem(item) {
-    const items = getInventory();
-    item.id = Date.now().toString();
-    items.push(item);
-    saveInventory(items);
-    return item;
+  // Handles quoted fields with commas inside them
+  function splitCSVLine(line) {
+    const result = [];
+    let cur = '';
+    let inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuote = !inQuote; continue; }
+      if (ch === ',' && !inQuote) { result.push(cur); cur = ''; continue; }
+      cur += ch;
+    }
+    result.push(cur);
+    return result;
   }
 
-  function updateItem(id, updates) {
-    const items = getInventory();
-    const idx = items.findIndex(i => i.id === id);
-    if (idx === -1) return null;
-    items[idx] = { ...items[idx], ...updates };
-    saveInventory(items);
-    return items[idx];
+  function getItemsByLocation(items, location) {
+    return items.filter(i => i.location === location);
   }
 
-  function deleteItem(id) {
-    saveInventory(getInventory().filter(i => i.id !== id));
-  }
-
-  function getItemsByLocation(location) {
-    return getInventory().filter(i => i.location === location);
-  }
-
-  // ── Recipes ────────────────────────────────────────────────────────────────
+  // ── Recipes (localStorage) ─────────────────────────────────────────────────
 
   function getRecipes() {
     try { return JSON.parse(localStorage.getItem('kitchen_recipes')) || []; }
@@ -71,10 +84,10 @@ const KitchenData = (() => {
     saveRecipes(getRecipes().filter(r => r.id !== id));
   }
 
-  // ── Meal Matching ──────────────────────────────────────────────────────────
+  // ── Meal matching ──────────────────────────────────────────────────────────
 
-  function matchRecipes() {
-    const inventoryNames = getInventory().map(i => i.name.toLowerCase().trim());
+  function matchRecipes(inventory) {
+    const inventoryNames = inventory.map(i => i.name.toLowerCase().trim());
 
     return getRecipes().map(recipe => {
       const ingredients = recipe.ingredients || [];
@@ -96,7 +109,6 @@ const KitchenData = (() => {
   }
 
   // ── Date helpers ───────────────────────────────────────────────────────────
-  // Parse "YYYY-MM-DD" without UTC timezone shift
 
   function parseLocalDate(dateStr) {
     if (!dateStr) return null;
@@ -134,8 +146,8 @@ const KitchenData = (() => {
   }
 
   return {
-    getInventory, saveInventory, addItem, updateItem, deleteItem, getItemsByLocation,
-    getRecipes, saveRecipes, addRecipe, updateRecipe, deleteRecipe, matchRecipes,
+    loadInventory, getItemsByLocation,
+    getRecipes, addRecipe, updateRecipe, deleteRecipe, matchRecipes,
     getExpirationStatus, formatExpDate, esc
   };
 })();
