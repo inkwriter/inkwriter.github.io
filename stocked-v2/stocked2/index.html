@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stocked — Home Inventory & Shopping</title>
+  <meta name="description" content="Household inventory, recipes, and inventory-aware shopping lists.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="wordmark">
+        <span class="wordmark-jar" aria-hidden="true"></span>
+        <h1>Stocked</h1>
+      </div>
+      <div class="sync-status" id="syncStatus">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncLabel">Demo mode</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Main sections">
+    <button class="tab active" data-view="inventory" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 7v13h16V7M4 7l2-3h12l2 3M9 11h6"/></svg>
+      Inventory
+    </button>
+    <button class="tab" data-view="recipes">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3zM9 8h6M9 12h6"/></svg>
+      Recipes
+    </button>
+    <button class="tab" data-view="mealplan">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 8h16M5 5h14v16H5zM8 12h3M13 12h3M8 16h3M13 16h3"/></svg>
+      Meal Plan
+    </button>
+    <button class="tab" data-view="shopping">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h15l-2 9H7L5 3H2M9 20a1 1 0 100-2 1 1 0 000 2zM17 20a1 1 0 100-2 1 1 0 000 2z"/></svg>
+      List
+      <span class="tab-badge" id="listBadge" hidden>0</span>
+    </button>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============ INVENTORY VIEW ============ -->
+    <section class="view active" id="view-inventory" aria-labelledby="inv-heading">
+      <div class="view-head">
+        <h2 id="inv-heading">What's in the house</h2>
+        <button class="btn btn-primary" id="btnAddItem">+ Add item</button>
+      </div>
+
+      <div class="filter-row">
+        <div class="chip-scroll" id="locationChips" role="group" aria-label="Filter by location"></div>
+      </div>
+
+      <div class="filter-row filter-row-secondary">
+        <input type="search" id="invSearch" class="input input-search" placeholder="Search items…" aria-label="Search inventory">
+        <label class="toggle">
+          <input type="checkbox" id="lowOnly">
+          <span>Low stock only</span>
+        </label>
+      </div>
+
+      <div id="lowStockBanner" class="banner banner-low" hidden></div>
+      <div id="expiringBanner" class="banner banner-expiring" hidden></div>
+
+      <div class="inventory-groups" id="inventoryGroups"></div>
+    </section>
+
+    <!-- ============ RECIPES VIEW ============ -->
+    <section class="view" id="view-recipes" aria-labelledby="rcp-heading">
+      <div class="view-head">
+        <h2 id="rcp-heading">Recipe box</h2>
+        <button class="btn btn-primary" id="btnAddRecipe">+ Add recipe</button>
+      </div>
+
+      <p class="view-hint">Select recipes, then build a shopping list. Stocked checks the pantry first and only lists what's missing.</p>
+
+      <div class="recipe-grid" id="recipeGrid"></div>
+
+      <div class="selection-bar" id="selectionBar" hidden>
+        <span id="selectionCount">0 selected</span>
+        <label class="toggle toggle-light">
+          <input type="checkbox" id="includeOptional">
+          <span>Include optional ingredients</span>
+        </label>
+        <button class="btn btn-light" id="btnClearSel">Clear</button>
+        <button class="btn btn-cta" id="btnBuildList">Build shopping list</button>
+      </div>
+    </section>
+
+    <!-- ============ MEAL PLAN VIEW ============ -->
+    <section class="view" id="view-mealplan" aria-labelledby="meal-heading">
+      <div class="view-head">
+        <h2 id="meal-heading">Meal plan</h2>
+        <div class="view-head-actions">
+          <button class="btn btn-ghost" id="btnSaveMealPlan">Save week</button>
+          <button class="btn btn-primary" id="btnBuildMealPlanList">Build list from week</button>
+        </div>
+      </div>
+
+      <p class="view-hint">Pick one dinner recipe for each day. Stocked will check your inventory and add only the missing ingredients to the shopping list.</p>
+
+      <div class="meal-plan-toolbar">
+        <div class="form-field">
+          <label>Week starts</label>
+          <input type="date" id="mealWeekStart" class="input">
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="mealIncludeOptional">
+          <span>Include optional ingredients</span>
+        </label>
+      </div>
+
+      <div class="meal-plan-grid" id="mealPlanGrid"></div>
+    </section>
+
+    <!-- ============ SHOPPING LIST VIEW ============ -->
+    <section class="view" id="view-shopping" aria-labelledby="shop-heading">
+      <div class="view-head">
+        <h2 id="shop-heading">Shopping list</h2>
+        <div class="view-head-actions">
+          <button class="btn btn-ghost" id="btnCheckStaples">Check staples</button>
+          <button class="btn btn-primary" id="btnAddManual">+ Add item</button>
+        </div>
+      </div>
+
+      <div class="receipt-wrap">
+        <div class="receipt" id="receipt">
+          <!-- rendered by app.js -->
+        </div>
+      </div>
+
+      <div class="list-footer" id="listFooter" hidden>
+        <button class="btn btn-ghost" id="btnClearPurchased">Clear purchased &amp; skipped</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ MODAL ============ -->
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <h3 id="modalTitle">Title</h3>
+        <button class="modal-close" id="modalClose" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
