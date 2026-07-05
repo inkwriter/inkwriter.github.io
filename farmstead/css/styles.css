@@ -1,0 +1,493 @@
+/* ============================================================
+   styles.css — Homestead Hollow
+   A warm "county fair" palette: soil brown, meadow green,
+   sunflower gold, barn red. The page background is a sky that
+   tints with the real time of day (body[data-sky]).
+   ============================================================ */
+
+/* ---- Design tokens ---- */
+:root {
+  --soil:        #7a5233;
+  --soil-dark:   #5e3d24;
+  --soil-light:  #9a6b42;
+  --meadow:      #6da34d;
+  --meadow-dark: #4f7d36;
+  --gold:        #e9b44c;
+  --barn:        #b3552e;
+  --cream:       #fdf6e3;
+  --ink:         #3a2a1a;
+  --wood:        #8b5a2b;
+  --wood-dark:   #6b4420;
+  --radius: 12px;
+  --shadow: 0 3px 10px rgba(58, 42, 26, 0.25);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--ink);
+  min-height: 100vh;
+  transition: background 2s ease;
+}
+
+/* ---- Day/night sky (cosmetic, driven by the real clock) ---- */
+body[data-sky="dawn"]  { background: linear-gradient(#f5c8a0, #fdeecd 55%, #cfe3b8); }
+body[data-sky="day"]   { background: linear-gradient(#a8d8ea, #dff0d8 55%, #cfe3b8); }
+body[data-sky="dusk"]  { background: linear-gradient(#e8a87c, #f2d0a4 55%, #c2d6a4); }
+body[data-sky="night"] { background: linear-gradient(#2c3357, #4a5578 55%, #5d6b58); }
+body[data-sky="night"] { color: #f2ecdc; }
+body[data-sky="night"] .weather { color: #d8d2c0; }
+
+/* ---- Header: the wooden sign ---- */
+.header {
+  text-align: center;
+  padding: 20px 12px 6px;
+}
+
+.sign {
+  display: inline-block;
+  background: linear-gradient(var(--wood), var(--wood-dark));
+  border: 3px solid var(--wood-dark);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow), inset 0 2px 0 rgba(255,255,255,0.15);
+  padding: 10px 34px 12px;
+  position: relative;
+}
+
+/* Two little "nails" on the sign */
+.sign::before, .sign::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #d9c9a3;
+  box-shadow: inset 0 -1px 2px rgba(0,0,0,0.5);
+}
+.sign::before { left: 10px; }
+.sign::after  { right: 10px; }
+
+.sign h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  color: var(--cream);
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.35);
+}
+.sign h1:hover { color: var(--gold); }
+
+.tagline {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: #e6d6b0;
+  font-style: italic;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.weather {
+  margin: 8px 0 0;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+/* ---- HUD ---- */
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.hud-item {
+  background: var(--cream);
+  border: 2px solid var(--wood);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow);
+  color: var(--ink);
+}
+
+.hud-xp { display: flex; align-items: center; gap: 8px; }
+
+.xp-bar {
+  display: inline-block;
+  width: 110px; height: 10px;
+  background: #e3d5b8;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--wood);
+}
+.xp-fill {
+  display: block;
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--meadow), var(--gold));
+  transition: width 0.4s ease;
+}
+.xp-text { font-size: 0.8rem; }
+
+.icon-btn {
+  border: 2px solid var(--wood);
+  background: var(--cream);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.icon-btn:hover { background: var(--gold); }
+
+/* ---- Layout: farm + shop ---- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 18px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 16px 24px;
+  align-items: start;
+}
+
+/* ---- Toolbar ---- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tool-btn {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--wood);
+  background: var(--cream);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.tool-btn:hover { background: #f6e7c4; }
+.tool-btn.active {
+  background: var(--meadow);
+  border-color: var(--meadow-dark);
+  color: #fff;
+}
+
+.tool-current {
+  margin-left: auto;
+  font-size: 0.85rem;
+  background: var(--cream);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 5px 12px;
+  border: 2px dashed var(--wood);
+}
+
+/* ---- Farm grid ---- */
+.farm-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-size, 8), 1fr);
+  gap: 5px;
+  background: var(--meadow-dark);
+  border: 5px solid var(--wood-dark);
+  border-radius: var(--radius);
+  padding: 8px;
+  box-shadow: var(--shadow);
+}
+
+.tile {
+  position: relative;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: clamp(1rem, 3.4vw, 1.8rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.1s ease;
+  /* Tilled-soil texture drawn in pure CSS */
+  background:
+    repeating-linear-gradient(
+      0deg,
+      var(--soil) 0 6px,
+      var(--soil-light) 6px 8px
+    );
+  box-shadow: inset 0 0 0 2px var(--soil-dark);
+}
+.tile:hover { transform: scale(1.06); z-index: 1; }
+.tile:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+.tile.locked {
+  background: repeating-linear-gradient(45deg, #6f6a5e 0 8px, #7d7768 8px 16px);
+  box-shadow: inset 0 0 0 2px #55514a;
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.tile.decor {
+  background: linear-gradient(var(--meadow), var(--meadow-dark));
+  box-shadow: inset 0 0 0 2px var(--meadow-dark);
+}
+.tile.decor.moving {
+  outline: 3px dashed var(--gold);
+  animation: wiggle 0.6s ease-in-out infinite;
+}
+
+.tile.ready {
+  box-shadow: inset 0 0 0 2px var(--gold), 0 0 12px var(--gold);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.25); }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-2deg); }
+  50%      { transform: rotate(2deg); }
+}
+
+.tile-icon { line-height: 1; pointer-events: none; }
+
+.tile-timer {
+  pointer-events: none;
+  font-size: 0.55rem;
+  font-family: Verdana, sans-serif;
+  color: var(--cream);
+  background: rgba(58, 42, 26, 0.7);
+  border-radius: 4px;
+  padding: 0 4px;
+  margin-top: 2px;
+}
+
+.tile-bar {
+  pointer-events: none;
+  position: absolute;
+  bottom: 3px; left: 10%;
+  width: 80%; height: 4px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.tile-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+
+/* ---- Achievements row ---- */
+.achievement-row {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.achievement-label { font-size: 0.85rem; font-style: italic; }
+.badge {
+  font-size: 1.3rem;
+  filter: grayscale(1) opacity(0.4);
+  cursor: help;
+}
+.badge.earned { filter: none; }
+
+/* ---- Shop ---- */
+.shop {
+  background: var(--cream);
+  border: 3px solid var(--wood);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  color: var(--ink);
+}
+
+.shop-title { margin: 0 0 10px; font-size: 1.15rem; }
+
+.shop-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+
+.shop-tab {
+  flex: 1;
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 7px 4px;
+  border-radius: 8px;
+  border: 2px solid var(--wood);
+  background: #f3e6c8;
+  cursor: pointer;
+}
+.shop-tab.active {
+  background: var(--gold);
+  border-color: var(--barn);
+  font-weight: bold;
+}
+
+.shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.shop-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  font-family: inherit;
+  background: #fffaf0;
+  border: 2px solid #e0cfa8;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.shop-card:hover { border-color: var(--gold); background: #fff3d6; }
+.shop-card.selected { border-color: var(--meadow-dark); background: #eaf4de; }
+.shop-card.locked { opacity: 0.55; cursor: not-allowed; }
+.shop-card.expansion { border-style: dashed; }
+.shop-card.season {
+  border-style: dashed;
+  border-color: #c78bb0;
+  background: #fdf2f8;
+}
+.shop-card.season:hover { border-color: #a85b8c; background: #fbe4f0; }
+
+.hud-bonus {
+  background: linear-gradient(#fff6dc, #ffedbe);
+  border-color: var(--gold);
+  font-size: 0.85rem;
+}
+
+.shop-icon { font-size: 1.7rem; }
+.shop-info { display: flex; flex-direction: column; gap: 1px; }
+.shop-name { font-weight: bold; font-size: 0.95rem; }
+.shop-name small { font-weight: normal; color: var(--barn); }
+.shop-desc { font-size: 0.78rem; font-style: italic; color: #6b5a42; }
+.shop-stats { font-size: 0.78rem; font-family: Verdana, sans-serif; color: #4c3d29; }
+
+/* ---- Save controls ---- */
+.save-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.save-btn {
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 2px solid var(--wood);
+  background: #f3e6c8;
+  cursor: pointer;
+}
+.save-btn:hover { background: var(--gold); }
+.save-btn.danger { border-color: var(--barn); color: var(--barn); }
+.save-btn.danger:hover { background: var(--barn); color: #fff; }
+
+/* ---- Harvest All button ---- */
+.tool-btn.special {
+  background: linear-gradient(var(--gold), #d19a2f);
+  border-color: var(--barn);
+  font-weight: bold;
+}
+.tool-btn.special:hover { filter: brightness(1.08); }
+
+/* ---- Export/Import dialog ---- */
+.save-dialog {
+  border: 3px solid var(--wood);
+  border-radius: var(--radius);
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  width: min(520px, 92vw);
+  font-family: Georgia, "Times New Roman", serif;
+}
+.save-dialog::backdrop { background: rgba(58, 42, 26, 0.55); }
+.save-dialog h3 { margin: 0 0 4px; }
+.dialog-hint { margin: 0 0 10px; font-size: 0.85rem; font-style: italic; }
+.dialog-text {
+  width: 100%;
+  font-family: monospace;
+  font-size: 0.75rem;
+  border: 2px solid var(--wood);
+  border-radius: 8px;
+  padding: 8px;
+  resize: vertical;
+  background: #fffaf0;
+}
+.dialog-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.dialog-buttons .save-btn { flex: 1; min-width: 110px; }
+
+/* ---- Toast ---- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink);
+  color: var(--cream);
+  padding: 10px 20px;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  font-size: 0.92rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  max-width: 90vw;
+  text-align: center;
+  z-index: 50;
+}
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---- Footer ---- */
+.footer {
+  text-align: center;
+  font-size: 0.75rem;
+  font-style: italic;
+  padding: 0 12px 20px;
+  opacity: 0.75;
+}
+
+/* ---- Responsive: stack the shop under the farm on small screens ---- */
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  .shop-list { max-height: 300px; }
+  .tool-current { margin-left: 0; width: 100%; text-align: center; }
+  .farm-grid { gap: 3px; padding: 5px; }
+}
+
+/* On very small screens the 10x10 tiles get tiny — keep the progress
+   bar but hide the timer text (it's still in the tooltip). */
+@media (max-width: 480px) {
+  .tile-timer { display: none; }
+  .tile { font-size: clamp(0.7rem, 4vw, 1.2rem); border-radius: 5px; }
+}
+
+/* ---- Respect reduced-motion preferences ---- */
+@media (prefers-reduced-motion: reduce) {
+  .tile.ready, .tile.decor.moving { animation: none; }
+  .tile:hover { transform: none; }
+  body { transition: none; }
+}
