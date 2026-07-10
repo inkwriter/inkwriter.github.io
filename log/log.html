@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#14181d" />
+  <title>Field Log</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ============================================================
+       HEADER + COMPOSE
+       The compose box is the permanent focus of the app.
+       It stays pinned so a new entry is always one tap away.
+  ============================================================ -->
+  <header class="masthead">
+    <div class="masthead__row">
+      <div class="brand">
+        <span class="brand__mark">▚</span>
+        <span class="brand__name">Field Log</span>
+      </div>
+      <div class="masthead__actions">
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Switch theme" title="Switch theme">
+          <span class="icon-btn__glyph" data-theme-glyph></span>
+        </button>
+        <button id="menuToggle" class="icon-btn" type="button" aria-label="Open tools" aria-expanded="false" title="Tools">
+          <span class="icon-btn__glyph">⋯</span>
+        </button>
+      </div>
+    </div>
+
+    <form id="composeForm" class="compose" autocomplete="off">
+      <label class="sr-only" for="entryInput">What are you working on?</label>
+      <textarea
+        id="entryInput"
+        class="compose__input"
+        rows="1"
+        placeholder="What are you working on?  (try  printer: cleared Brother queue)"
+        enterkeyhint="done"
+      ></textarea>
+      <div class="compose__bar">
+        <span class="compose__hint">Enter to log · Shift+Enter for a new line</span>
+        <button id="saveBtn" class="btn btn--primary" type="submit">Log it</button>
+      </div>
+    </form>
+
+    <!-- Saved / last-saved status line -->
+    <div class="statusline" id="statusLine" role="status" aria-live="polite">
+      <span class="statusline__saved" id="savedFlash" hidden>Saved</span>
+      <span class="statusline__last" id="lastSaved"></span>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       TOOLS DRAWER (search, filters, export, import, reset)
+       Kept out of the way so the log stays the main surface.
+  ============================================================ -->
+  <div class="drawer" id="toolsDrawer" hidden>
+    <div class="drawer__inner">
+
+      <div class="field">
+        <input id="searchInput" class="field__input" type="search" placeholder="Search entries…" aria-label="Search entries" />
+      </div>
+
+      <div class="chips" id="dateChips" role="group" aria-label="Date range">
+        <button class="chip is-active" data-range="all" type="button">All</button>
+        <button class="chip" data-range="today" type="button">Today</button>
+        <button class="chip" data-range="yesterday" type="button">Yesterday</button>
+        <button class="chip" data-range="week" type="button">This week</button>
+        <button class="chip" data-range="month" type="button">This month</button>
+        <button class="chip" data-range="custom" type="button">Custom</button>
+      </div>
+
+      <div class="daterange" id="customRange" hidden>
+        <label class="daterange__cell">From<input id="fromDate" type="date" /></label>
+        <label class="daterange__cell">To<input id="toDate" type="date" /></label>
+      </div>
+
+      <div class="chips" id="categoryChips" role="group" aria-label="Category"></div>
+
+      <div class="drawer__group">
+        <span class="drawer__label">Export</span>
+        <div class="btn-row">
+          <button id="exportPdf" class="btn btn--ghost" type="button">PDF</button>
+          <button id="exportCsv" class="btn btn--ghost" type="button">CSV</button>
+          <button id="exportJson" class="btn btn--ghost" type="button">JSON backup</button>
+        </div>
+      </div>
+
+      <div class="drawer__group">
+        <span class="drawer__label">Restore</span>
+        <div class="btn-row">
+          <button id="importBtn" class="btn btn--ghost" type="button">Import JSON…</button>
+          <input id="importFile" type="file" accept="application/json,.json" hidden />
+        </div>
+      </div>
+
+      <div class="drawer__group">
+        <span class="drawer__label">Danger zone</span>
+        <div class="btn-row">
+          <button id="resetBtn" class="btn btn--danger" type="button">Reset all data</button>
+        </div>
+      </div>
+
+      <p class="privacy">
+        Entries live only in this browser's local storage. Clearing site data — or
+        opening the log on another device or browser — starts you fresh. Export a
+        backup to keep or move your log.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       LOG
+  ============================================================ -->
+  <main class="log" id="logRoot" aria-live="polite"></main>
+
+  <!-- Toast for import/export/delete/reset messages -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- ============================================================
+       RESET MODAL — type-to-confirm guard against accidents
+  ============================================================ -->
+  <div class="modal" id="resetModal" hidden>
+    <div class="modal__backdrop" data-close-reset></div>
+    <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+      <h2 class="modal__title" id="resetTitle">Reset all data</h2>
+      <p class="modal__body">
+        This permanently deletes every logged entry from this browser.
+        <strong>It cannot be undone.</strong> Export a JSON backup first if there's
+        any chance you'll want it back.
+      </p>
+      <button id="resetBackupBtn" class="btn btn--ghost btn--block" type="button">Export a backup first</button>
+      <label class="modal__confirm" for="resetConfirm">Type <code>RESET</code> to confirm</label>
+      <input id="resetConfirm" class="field__input" type="text" placeholder="RESET" autocomplete="off" />
+      <div class="modal__actions">
+        <button id="resetCancel" class="btn btn--ghost" type="button" data-close-reset>Cancel</button>
+        <button id="resetConfirmBtn" class="btn btn--danger" type="button" disabled>Reset anyway</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- jsPDF is loaded from a CDN and is the app's only external dependency.
+       It is used solely for the PDF export. Everything else works offline. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

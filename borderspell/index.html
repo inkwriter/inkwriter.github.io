@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Borderspell — territory war, settled by cards</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ===== Header: title, players, phase, main buttons ===== -->
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Borderspell</h1>
+      <p class="tagline">Hold the land. Win the fights with cards.</p>
+    </div>
+    <div id="player-strip" class="player-strip"><!-- rendered by ui.js --></div>
+    <div class="phase-block">
+      <div id="phase-display" class="phase-display"></div>
+      <div class="phase-buttons">
+        <button id="btn-skip-reinforce" class="btn">Done reinforcing →</button>
+        <button id="btn-end-turn" class="btn">End turn</button>
+        <button id="btn-reset" class="btn subtle">Reset game</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- One-line hint area: shows why an action was invalid -->
+  <div id="action-message" class="action-message"></div>
+
+  <!-- ===== Main: map + sidebar ===== -->
+  <main class="layout">
+    <section class="map-wrap" aria-label="Territory map">
+      <div id="map" class="map">
+        <svg id="map-links" class="map-links" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div id="map-tiles" class="map-tiles"><!-- rendered by ui.js --></div>
+      </div>
+      <p class="map-help">
+        Reinforce: click your territories to place troops. ·
+        Attack: click your territory, then a bordering enemy territory.
+      </p>
+    </section>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <h2>Territory</h2>
+        <div id="territory-panel"></div>
+      </div>
+      <div class="panel log-panel">
+        <h2>Turn log</h2>
+        <div id="turn-log" class="log"></div>
+      </div>
+      <div class="panel log-panel">
+        <h2>Battle log</h2>
+        <div id="battle-log" class="log"></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ===== Bottom: current player's hand ===== -->
+  <footer class="hand-wrap">
+    <h2 id="hand-title">Hand</h2>
+    <div id="hand" class="hand"></div>
+  </footer>
+
+  <!-- ===== Battle modal (hidden until a battle starts) ===== -->
+  <div id="battle-overlay" class="battle-overlay"></div>
+
+  <!-- ===== Game over banner ===== -->
+  <div id="gameover-banner" class="gameover-banner"></div>
+
+  <!-- ===== Debug panel ===== -->
+  <button id="debug-toggle" class="debug-toggle" title="Debug tools">🛠</button>
+  <div id="debug-panel" class="debug-panel">
+    <h3>Debug</h3>
+    <div class="debug-buttons">
+      <button id="debug-reset" class="btn subtle">Reset game</button>
+      <button id="debug-power" class="btn subtle">+5 Power</button>
+      <button id="debug-draw" class="btn subtle">Draw card</button>
+      <button id="debug-troops" class="btn subtle">+3 troops (selected)</button>
+      <button id="debug-endturn" class="btn subtle">Force end turn</button>
+      <button id="debug-battle" class="btn subtle">Test battle</button>
+    </div>
+    <h4>Game state</h4>
+    <pre id="debug-state" class="debug-state"></pre>
+  </div>
+
+  <!-- ===== Scripts: plain files, load order matters =====
+       config & data first, then engine modules, then UI, then app. -->
+  <script src="js/config.js"></script>
+  <script src="js/data/territories.js"></script>
+  <script src="js/data/cards.js"></script>
+  <script src="js/data/factions.js"></script>
+  <script src="js/data/bonuses.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/bonuses.js"></script>
+  <script src="js/cards.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/turn.js"></script>
+  <script src="js/battle.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/debug.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
