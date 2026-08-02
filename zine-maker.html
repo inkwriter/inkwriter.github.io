@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Pocket Zine Maker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
@@ -15,6 +15,7 @@
   --ink:#141414;        /* xerox black       */
   --riso:#FF48B0;       /* riso fluoro pink  */
   --riso-blue:#0078BF;  /* riso blue         */
+  --riso-yellow:#FFE800;
   --line:#CFCBC0;
   --danger:#E0301E;
   --shadow:3px 3px 0 var(--ink);
@@ -34,12 +35,12 @@ body{
   touch-action:manipulation;
 }
 button{font-family:var(--font-body);cursor:pointer}
-button:focus-visible,input:focus-visible{outline:3px solid var(--riso-blue);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--riso-blue);outline-offset:2px}
 
 /* ============ header ============ */
 header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px 8px;gap:10px;flex:0 0 auto;
+  padding:calc(8px + env(safe-area-inset-top)) 14px 8px;gap:10px;flex:0 0 auto;
   border-bottom:2px solid var(--ink);
   background:var(--paper);
 }
@@ -59,7 +60,15 @@ header{
   padding:6px 12px;background:#fff;
   transform:rotate(3deg);
   box-shadow:2px 2px 0 var(--ink);
+  display:flex;align-items:center;gap:6px;
 }
+#saveDot{
+  width:8px;height:8px;border-radius:50%;background:var(--line);
+  transition:background .2s;flex:0 0 auto;
+}
+#saveDot.saving{background:var(--riso-yellow)}
+#saveDot.saved{background:var(--riso-blue)}
+#saveDot.failed{background:var(--danger)}
 .icon-btn{
   flex:0 0 auto;width:42px;height:42px;border-radius:var(--radius);
   border:2px solid var(--ink);background:#fff;box-shadow:var(--shadow);
@@ -96,14 +105,14 @@ header{
 
 /* ============ toolbars ============ */
 #toolbars{flex:0 0 auto;border-top:2px solid var(--ink);background:var(--paper);padding:8px 10px 6px}
-.tool-row{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:nowrap}
+.tool-row{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:nowrap}
 .tool-btn{
-  flex:1 1 0;max-width:64px;height:52px;border-radius:var(--radius);
+  flex:1 1 0;min-width:0;max-width:64px;height:50px;border-radius:var(--radius);
   border:2px solid var(--ink);background:#fff;box-shadow:var(--shadow);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  font-size:.53rem;font-weight:700;text-transform:uppercase;letter-spacing:.02em;
 }
-.tool-btn svg{width:20px;height:20px;flex:0 0 auto}
+.tool-btn svg{width:19px;height:19px;flex:0 0 auto}
 .tool-btn.active{background:var(--riso);color:#fff;box-shadow:1px 1px 0 var(--ink);transform:translate(2px,2px)}
 .tool-btn.active svg{stroke:#fff}
 .tool-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
@@ -112,18 +121,26 @@ header{
 .swatches{display:flex;gap:6px;align-items:center}
 .swatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);padding:0}
 .swatch.sel{outline:3px solid var(--riso);outline-offset:2px}
+.swatches.dim{opacity:.3;pointer-events:none}
 #customColor{width:30px;height:30px;border:2px solid var(--ink);border-radius:8px;background:#fff;padding:2px}
 #customColor::-webkit-color-swatch-wrapper{padding:1px}
 #customColor::-webkit-color-swatch{border:none;border-radius:4px}
 .size-wrap{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
 .size-wrap svg{flex:0 0 auto;width:16px;height:16px}
+.size-wrap .cap{
+  font-size:.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  flex:0 0 auto;color:#6E6A5F;width:34px;text-align:right;
+}
 input[type=range]{
-  flex:1;min-width:0;appearance:none;height:6px;border-radius:99px;
+  flex:1;min-width:0;appearance:none;-webkit-appearance:none;height:6px;border-radius:99px;
   background:var(--ink);
 }
 input[type=range]::-webkit-slider-thumb{
-  appearance:none;width:24px;height:24px;border-radius:50%;
+  appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;
   background:var(--riso);border:2px solid var(--ink);
+}
+input[type=range]::-moz-range-thumb{
+  width:22px;height:22px;border-radius:50%;background:var(--riso);border:2px solid var(--ink);
 }
 .mini-btn{
   width:42px;height:36px;border-radius:8px;border:2px solid var(--ink);
@@ -132,18 +149,50 @@ input[type=range]::-webkit-slider-thumb{
 }
 .mini-btn:disabled{opacity:.35;box-shadow:none}
 .mini-btn:active:not(:disabled){transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.mini-btn.on{background:var(--riso-blue)}
+.mini-btn.on svg{stroke:#fff}
 .mini-btn svg{width:16px;height:16px}
 
-/* shape picker popover */
-#shapePicker{
-  display:none;gap:8px;justify-content:center;margin-top:8px;
-}
+/* conditional row: shape picker OR object controls */
+#shapePicker{display:none;gap:8px;justify-content:center;margin-top:8px}
 #shapePicker.open{display:flex}
-.shape-opt{width:48px;height:44px;border:2px solid var(--ink);border-radius:8px;background:#fff;
+.shape-opt{width:48px;height:42px;border:2px solid var(--ink);border-radius:8px;background:#fff;
   display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
 .shape-opt.sel{background:var(--riso-blue)}
 .shape-opt.sel svg *{fill:#fff;stroke:#fff}
 .shape-opt svg{width:22px;height:22px}
+
+#objectRow{display:none;gap:6px;justify-content:center;margin-top:8px}
+#objectRow.open{display:flex}
+.obj-btn{
+  flex:1 1 0;max-width:74px;height:42px;border:2px solid var(--ink);border-radius:8px;
+  background:#fff;box-shadow:2px 2px 0 var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  font-size:.48rem;font-weight:700;text-transform:uppercase;letter-spacing:.02em;
+}
+.obj-btn svg{width:15px;height:15px}
+.obj-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.obj-btn.on{background:var(--riso-blue);color:#fff}
+.obj-btn.on svg{stroke:#fff}
+.obj-btn.danger{color:var(--danger)}
+
+/* action row */
+.action-row{display:flex;gap:6px;align-items:center;margin-top:8px}
+#layerChip{
+  flex:1 1 auto;min-width:0;height:36px;border:2px solid var(--ink);border-radius:8px;
+  background:#fff;box-shadow:2px 2px 0 var(--ink);
+  display:flex;align-items:center;gap:7px;padding:0 9px;
+}
+#layerChip:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+#layerChip .stack-icon{width:16px;height:16px;flex:0 0 auto}
+#layerChip .lc-name{
+  flex:1 1 auto;min-width:0;text-align:left;font-weight:700;font-size:.74rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#layerChip .lc-count{
+  flex:0 0 auto;font-family:var(--font-display);font-size:.58rem;
+  background:var(--ink);color:#fff;border-radius:99px;padding:2px 7px;letter-spacing:.04em;
+}
 
 /* ============ footer nav ============ */
 nav{
@@ -161,6 +210,97 @@ nav{
 .nav-btn.primary{background:var(--riso);color:#fff}
 .nav-btn.preview{background:var(--riso-blue);color:#fff;flex:1.2}
 
+/* ============ stack sheet ============ */
+.sheet-backdrop{
+  position:fixed;inset:0;background:rgba(20,20,20,.45);z-index:50;
+  display:none;
+}
+.sheet-backdrop.open{display:block}
+#layerSheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:55;
+  background:var(--paper);border-top:3px solid var(--ink);
+  border-radius:16px 16px 0 0;
+  transform:translateY(102%);transition:transform .22s ease;
+  display:flex;flex-direction:column;
+  max-height:min(74dvh,640px);
+  padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -6px 0 rgba(20,20,20,.12);
+}
+#layerSheet.open{transform:translateY(0)}
+.sheet-grab{width:52px;height:5px;border-radius:99px;background:var(--line);margin:9px auto 4px;flex:0 0 auto}
+.sheet-head{
+  display:flex;align-items:center;gap:8px;padding:2px 14px 10px;flex:0 0 auto;
+  border-bottom:2px solid var(--ink);
+}
+.sheet-head h2{font-family:var(--font-display);font-size:.95rem;text-transform:uppercase;flex:1;letter-spacing:.04em}
+.sheet-head .hint{font-size:.66rem;color:#6E6A5F;font-weight:500}
+.add-layer{
+  height:38px;padding:0 12px;border:2px solid var(--ink);border-radius:8px;
+  background:var(--riso);color:#fff;box-shadow:2px 2px 0 var(--ink);
+  font-family:var(--font-display);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;
+  display:flex;align-items:center;gap:5px;flex:0 0 auto;
+}
+.add-layer:disabled{opacity:.35;box-shadow:none;background:#fff;color:var(--ink)}
+.add-layer:active:not(:disabled){transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+#layerList{
+  flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:10px 12px 16px;display:flex;flex-direction:column;gap:8px;
+  touch-action:pan-y;
+}
+.layer-row{
+  flex:0 0 auto;   /* keep full height and let the list scroll instead of squashing rows */
+  border:2px solid var(--ink);border-radius:var(--radius);background:#fff;
+  box-shadow:2px 2px 0 var(--ink);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.layer-row.sel{outline:3px solid var(--riso);outline-offset:2px}
+.layer-row.dragging{opacity:.85;box-shadow:5px 5px 0 var(--ink);transform:scale(1.015)}
+.layer-row.hidden-layer .lr-main{opacity:.45}
+.lr-main{display:flex;align-items:center;gap:9px;padding:8px 9px}
+.drag-handle{
+  width:26px;height:52px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  color:#8A8577;touch-action:none;background:none;border:none;
+}
+.drag-handle svg{width:16px;height:16px;pointer-events:none}
+.layer-thumb{
+  width:38px;height:56px;flex:0 0 auto;border:2px solid var(--ink);border-radius:4px;
+  background:#fff;display:block;
+  background-image:linear-gradient(45deg,#E4E0D6 25%,transparent 25%,transparent 75%,#E4E0D6 75%),
+                   linear-gradient(45deg,#E4E0D6 25%,transparent 25%,transparent 75%,#E4E0D6 75%);
+  background-size:10px 10px;background-position:0 0,5px 5px;
+}
+.lr-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left;background:none;border:none;padding:0}
+.lr-name{font-weight:700;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr-meta{font-size:.62rem;color:#6E6A5F;text-transform:uppercase;letter-spacing:.05em;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr-badge{background:var(--riso-blue);color:#fff;border-radius:3px;padding:1px 4px;margin-left:4px}
+.lr-btn{
+  width:36px;height:36px;flex:0 0 auto;border:2px solid var(--ink);border-radius:7px;background:#fff;
+  display:flex;align-items:center;justify-content:center;
+}
+.lr-btn svg{width:16px;height:16px}
+.lr-btn.off{background:var(--paper-2);color:#9A968B}
+.lr-opts{display:none;border-top:2px dashed var(--line);padding:10px 11px 12px;gap:10px;flex-direction:column}
+.lr-opts.open{display:flex}
+.opt-line{display:flex;align-items:center;gap:9px}
+.opt-line label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex:0 0 62px;color:#6E6A5F}
+.opt-line select,.opt-line input[type=text]{
+  flex:1;min-width:0;height:36px;border:2px solid var(--ink);border-radius:7px;background:#fff;
+  font-family:var(--font-body);font-size:.8rem;font-weight:700;padding:0 8px;
+}
+.opt-val{font-size:.68rem;font-weight:700;width:40px;text-align:right;flex:0 0 auto}
+.opt-btns{display:flex;gap:6px;flex-wrap:wrap}
+.opt-btn{
+  height:36px;padding:0 10px;border:2px solid var(--ink);border-radius:7px;background:#fff;
+  font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  display:flex;align-items:center;gap:4px;box-shadow:2px 2px 0 var(--ink);
+}
+.opt-btn:active:not(:disabled){transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.opt-btn:disabled{opacity:.35;box-shadow:none}
+.opt-btn.on{background:var(--riso-blue);color:#fff}
+.opt-btn.danger{background:var(--danger);color:#fff}
+.opt-btn svg{width:14px;height:14px}
+
 /* ============ preview screen ============ */
 #previewScreen{
   position:fixed;inset:0;background:var(--paper);z-index:40;
@@ -177,9 +317,7 @@ nav{
 .toggle-row{display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:.9rem}
 .switch{position:relative;width:56px;height:30px;flex:0 0 auto}
 .switch input{opacity:0;width:0;height:0}
-.slider-ui{
-  position:absolute;inset:0;border:2px solid var(--ink);border-radius:99px;background:#fff;transition:.15s;
-}
+.slider-ui{position:absolute;inset:0;border:2px solid var(--ink);border-radius:99px;background:#fff;transition:.15s}
 .slider-ui::before{
   content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;
   background:var(--ink);transition:.15s;
@@ -198,8 +336,10 @@ nav{
   background:var(--paper);border:2px solid var(--ink);border-radius:var(--radius);
   box-shadow:5px 5px 0 var(--ink);padding:16px;width:min(400px,100%);
   display:flex;flex-direction:column;gap:12px;
+  max-height:90dvh;overflow-y:auto;
 }
 .modal h2{font-family:var(--font-display);font-size:1rem;text-transform:uppercase}
+.modal p{font-size:.86rem;line-height:1.45}
 .modal textarea{
   font-family:var(--font-body);font-size:1.05rem;padding:10px;border:2px solid var(--ink);
   border-radius:8px;min-height:90px;resize:vertical;background:#fff;
@@ -208,19 +348,89 @@ nav{
 .modal-actions .nav-btn{height:46px;font-size:.8rem}
 .hidden-input{display:none}
 
+/* photo treatment modal */
+#photoPreviewWrap{
+  display:flex;align-items:center;justify-content:center;background:var(--paper-2);
+  border:2px solid var(--ink);border-radius:8px;padding:8px;min-height:150px;
+}
+#photoPreview{max-width:100%;max-height:190px;display:block;background:#fff}
+.chip-row{display:flex;gap:6px}
+.chip{
+  flex:1;height:48px;border:2px solid var(--ink);border-radius:8px;background:#fff;
+  box-shadow:2px 2px 0 var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+}
+.chip .chip-sub{font-size:.5rem;font-weight:500;text-transform:none;letter-spacing:0;color:#6E6A5F}
+.chip.sel{background:var(--riso);color:#fff}
+.chip.sel .chip-sub{color:rgba(255,255,255,.85)}
+.chip:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+#thrLine{display:none;align-items:center;gap:9px}
+#thrLine.open{display:flex}
+#thrLine label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex:0 0 58px;color:#6E6A5F}
+
+/* panel picker grid */
+.panel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.panel-pick{
+  height:56px;border:2px solid var(--ink);border-radius:8px;background:#fff;
+  box-shadow:2px 2px 0 var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-size:.55rem;font-weight:700;text-transform:uppercase;line-height:1.15;text-align:center;padding:2px;
+}
+.panel-pick:disabled{opacity:.3;box-shadow:none}
+.panel-pick .pp-num{font-family:var(--font-display);font-size:.78rem}
+.panel-pick:active:not(:disabled){transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+
 /* toast */
 #toast{
   position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);
   background:var(--ink);color:#fff;padding:8px 16px;border-radius:99px;
   font-size:.8rem;font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:70;
-  white-space:nowrap;
+  max-width:88vw;text-align:center;
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 @media (min-width:700px){
-  .tool-btn{max-width:80px}
-  header{padding:12px 22px}
+  .tool-btn{max-width:80px;font-size:.58rem}
+  header{padding:calc(12px + env(safe-area-inset-top)) 22px 12px}
   .masthead h1{font-size:1.4rem}
+  #layerSheet{left:50%;right:auto;width:min(560px,100%);transform:translate(-50%,102%);
+    border-left:3px solid var(--ink);border-right:3px solid var(--ink)}
+  #layerSheet.open{transform:translate(-50%,0)}
+}
+/* short viewports (landscape phones): shrink the chrome, then move the
+   toolbars into a side rail so the page never squeezes the canvas away */
+@media (max-height:560px){
+  header{padding:calc(6px + env(safe-area-inset-top)) 12px 6px}
+  .masthead h1{font-size:.95rem}
+  .masthead .app-name{font-size:.58rem}
+  .icon-btn{width:36px;height:36px}
+  .stamp{padding:4px 10px;font-size:.66rem}
+  nav{padding:6px 10px calc(6px + env(safe-area-inset-bottom))}
+  .nav-btn{height:42px;font-size:.75rem}
+  #stage{padding:8px}
+  #toolbars{padding:6px 8px 6px}
+  .options-row,.action-row,#shapePicker,#objectRow{margin-top:6px}
+}
+@media (max-height:560px) and (min-width:620px){
+  body{
+    display:grid;
+    grid-template-columns:1fr 272px;
+    grid-template-rows:auto 1fr auto;
+    grid-template-areas:"head tools" "stage tools" "nav tools";
+  }
+  header{grid-area:head}
+  #stage{grid-area:stage}
+  nav{grid-area:nav}
+  #toolbars{
+    grid-area:tools;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    border-top:none;border-left:2px solid var(--ink);
+    padding:8px 8px calc(12px + env(safe-area-inset-bottom));
+  }
+  .tool-row{flex-wrap:wrap}
+  .tool-btn{flex:0 0 calc(25% - 5px);max-width:none}
+  #objectRow{flex-wrap:wrap}
+  .obj-btn{flex:0 0 calc(33.333% - 4px);max-width:none}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none !important}
@@ -235,7 +445,7 @@ nav{
     <span class="app-name">Pocket Zine Maker</span>
     <h1 id="panelLabel">Front cover</h1>
   </div>
-  <span class="stamp" id="panelCounter">1 / 8</span>
+  <span class="stamp"><span id="saveDot" role="status" aria-label="Save status"></span><span id="panelCounter">1 / 8</span></span>
   <button class="icon-btn" id="bgBtn" aria-label="Panel background color" title="Panel background">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M12 3l7 7a5 5 0 01-7 7 5 5 0 01-7-7z" fill="#fff"/>
@@ -255,7 +465,7 @@ nav{
 
 <div id="toolbars">
   <div class="tool-row" role="toolbar" aria-label="Drawing tools">
-    <button class="tool-btn" data-tool="select" aria-label="Select and move">
+    <button class="tool-btn" data-tool="select" aria-label="Move and resize">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 8-6.5 1.5L15 19l-3 1.3L9.5 14 5 17z"/></svg>
       Move
     </button>
@@ -267,6 +477,10 @@ nav{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 21l-4-4 11-11 6 6-9 9zM5 13l6 6"/></svg>
       Erase
     </button>
+    <button class="tool-btn" data-tool="fill" aria-label="Fill an area with color">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 11l6-6 7 7-6 6a2.8 2.8 0 01-4 0l-3-3a2.8 2.8 0 010-4z"/><path d="M9 8L7.5 6.5"/><path d="M20 16c1 1.4 1.6 2.5 1.6 3.2a1.6 1.6 0 01-3.2 0c0-.7.6-1.8 1.6-3.2z" fill="currentColor" stroke="none"/></svg>
+      Fill
+    </button>
     <button class="tool-btn" data-tool="text" aria-label="Text">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5h14M12 5v14M9 19h6"/></svg>
       Text
@@ -275,7 +489,7 @@ nav{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="10" width="10" height="10" rx="1"/><circle cx="16" cy="8" r="5"/></svg>
       Shape
     </button>
-    <button class="tool-btn" data-tool="image" aria-label="Add image">
+    <button class="tool-btn" data-tool="image" aria-label="Add photo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M4 19l6-6 4 4 3-3 4 4"/></svg>
       Photo
     </button>
@@ -288,6 +502,29 @@ nav{
     <button class="shape-opt" data-shape="star" aria-label="Star"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 16.9 5.9 20.4l1.5-6.8L2.2 9l6.9-.7z" fill="#141414"/></svg></button>
   </div>
 
+  <div id="objectRow" role="toolbar" aria-label="Selected item controls">
+    <button class="obj-btn" id="objBack" aria-label="Send backward">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V6M6 14l6 6 6-6"/></svg>
+      Back
+    </button>
+    <button class="obj-btn" id="objForward" aria-label="Bring forward">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v14M6 10l6-6 6 6"/></svg>
+      Forward
+    </button>
+    <button class="obj-btn" id="objDup" aria-label="Duplicate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>
+      Copy
+    </button>
+    <button class="obj-btn" id="objClip" aria-label="Mask into the item below">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v10a3 3 0 003 3h9"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/><path d="M18 3L9.5 16"/></svg>
+      Mask
+    </button>
+    <button class="obj-btn danger" id="objDel" aria-label="Delete">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+      Delete
+    </button>
+  </div>
+
   <div class="options-row">
     <div class="swatches" id="swatches">
       <button class="swatch sel" data-color="#141414" style="background:#141414" aria-label="Black"></button>
@@ -298,17 +535,27 @@ nav{
       <input type="color" id="customColor" value="#141414" aria-label="Custom color">
     </div>
     <div class="size-wrap">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
+      <span class="cap" id="sliderCap">Size</span>
       <input type="range" id="sizeSlider" min="2" max="60" value="10" aria-label="Brush size">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/></svg>
     </div>
+  </div>
+
+  <div class="action-row">
+    <button id="layerChip" aria-label="Open the stack">
+      <svg class="stack-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>
+      <span class="lc-name" id="chipName">Drawing</span>
+      <span class="lc-count" id="chipCount">1</span>
+    </button>
+    <button class="mini-btn" id="pickBtn" aria-label="Pick a color from the panel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3.5a2.1 2.1 0 013 3l-8 8-3 1 1-3z"/><path d="M12.5 8.5L4 17v3h3l8.5-8.5"/></svg>
+    </button>
     <button class="mini-btn" id="undoBtn" aria-label="Undo" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 14L4 9l5-5"/><path d="M4 9h9a7 7 0 017 7v3"/></svg>
     </button>
     <button class="mini-btn" id="redoBtn" aria-label="Redo" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 14l5-5-5-5"/><path d="M20 9h-9a7 7 0 00-7 7v3"/></svg>
     </button>
-    <button class="mini-btn" id="clearBtn" aria-label="Clear panel">
+    <button class="mini-btn" id="clearBtn" aria-label="Clear">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>
     </button>
   </div>
@@ -325,6 +572,85 @@ nav{
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 4l8 8-8 8"/></svg>
   </button>
 </nav>
+
+<!-- ================= STACK SHEET ================= -->
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<section id="layerSheet" aria-label="Panel stack">
+  <div class="sheet-grab"></div>
+  <div class="sheet-head">
+    <div style="flex:1;min-width:0">
+      <h2>The stack</h2>
+      <span class="hint">Top of the list sits on top of the page.</span>
+    </div>
+    <button class="add-layer" id="addLayerBtn">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
+      Layer
+    </button>
+    <button class="lr-btn" id="closeSheet" aria-label="Close the stack">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div id="layerList"></div>
+</section>
+
+<!-- ================= TEXT MODAL ================= -->
+<div class="modal-backdrop" id="textModal">
+  <div class="modal">
+    <h2 id="textModalTitle">Add text</h2>
+    <textarea id="textInput" placeholder="Type something…"></textarea>
+    <div class="modal-actions">
+      <button class="nav-btn" id="textCancel">Cancel</button>
+      <button class="nav-btn primary" id="textOk">Place text</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PHOTO TREATMENT MODAL ================= -->
+<div class="modal-backdrop" id="photoModal">
+  <div class="modal">
+    <h2>How should it print?</h2>
+    <div id="photoPreviewWrap"><canvas id="photoPreview"></canvas></div>
+    <div class="chip-row" id="photoModes">
+      <button class="chip" data-mode="photo">Photo<span class="chip-sub">full color</span></button>
+      <button class="chip" data-mode="gray">Grayscale<span class="chip-sub">soft grays</span></button>
+      <button class="chip sel" data-mode="copy">Photocopy<span class="chip-sub">1-bit dither</span></button>
+    </div>
+    <div id="thrLine" class="open">
+      <label for="thrSlider">Contrast</label>
+      <input type="range" id="thrSlider" min="60" max="200" value="128" aria-label="Photocopy contrast">
+      <span class="opt-val" id="thrVal">128</span>
+    </div>
+    <div class="modal-actions">
+      <button class="nav-btn" id="photoCancel">Cancel</button>
+      <button class="nav-btn primary" id="photoOk">Add photo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CLEAR MODAL ================= -->
+<div class="modal-backdrop" id="clearModal">
+  <div class="modal">
+    <h2>What should I clear?</h2>
+    <p id="clearLayerLine">You can undo either one right after.</p>
+    <div class="modal-actions" style="flex-direction:column">
+      <button class="nav-btn" id="clearLayerOk">Clear this layer</button>
+      <button class="nav-btn" id="clearPanelOk" style="background:var(--danger);color:#fff">Clear the whole panel</button>
+      <button class="nav-btn" id="clearCancel">Keep it</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= COPY-TO-PANEL MODAL ================= -->
+<div class="modal-backdrop" id="copyModal">
+  <div class="modal">
+    <h2>Copy to which panel?</h2>
+    <p id="copyWhat">It lands on top of that panel's stack.</p>
+    <div class="panel-grid" id="panelGrid"></div>
+    <div class="modal-actions">
+      <button class="nav-btn" id="copyCancel">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- ================= PREVIEW SCREEN ================= -->
 <section id="previewScreen" aria-label="Zine preview">
@@ -353,40 +679,20 @@ nav{
   </div>
 </section>
 
-<!-- ================= TEXT MODAL ================= -->
-<div class="modal-backdrop" id="textModal">
-  <div class="modal">
-    <h2 id="textModalTitle">Add text</h2>
-    <textarea id="textInput" placeholder="Type something…"></textarea>
-    <div class="modal-actions">
-      <button class="nav-btn" id="textCancel">Cancel</button>
-      <button class="nav-btn primary" id="textOk">Place text</button>
-    </div>
-  </div>
-</div>
-
-<!-- ================= CLEAR CONFIRM ================= -->
-<div class="modal-backdrop" id="clearModal">
-  <div class="modal">
-    <h2>Clear this panel?</h2>
-    <p style="font-size:.9rem">Everything on this panel will be removed. You can undo right after.</p>
-    <div class="modal-actions">
-      <button class="nav-btn" id="clearCancel">Keep it</button>
-      <button class="nav-btn" id="clearOk" style="background:var(--danger);color:#fff">Clear panel</button>
-    </div>
-  </div>
-</div>
-
 <input type="file" id="imageInput" class="hidden-input" accept="image/*">
 <div id="toast" role="status"></div>
-
 <script>
 /* =========================================================
    Pocket Zine Maker
    8 portrait panels -> one landscape letter sheet (PDF)
-   Imposition (matches reference image):
-     top row, rotated 180°, L->R : page4 page3 page2 page1
+
+   Imposition:
+     top row, rotated 180, L->R : page4 page3 page2 page1
      bottom row, upright,  L->R : page5 page6 back  front
+
+   Every panel holds an ordered stack of items. An item is a
+   drawing layer, a piece of text, a shape, or a photo. Index 0
+   is the bottom of the stack.
    ========================================================= */
 (() => {
 'use strict';
@@ -398,504 +704,1715 @@ const PANEL_H = Math.round(4.25 * DPI);   // 1275
 const SHEET_W = 11 * DPI;                 // 3300 (landscape letter)
 const SHEET_H = 8.5 * DPI;                // 2550
 const PANEL_COUNT = 8;
-const MAX_UNDO = 10;
+const MAX_LAYERS = 8;                     // items per panel
+const UNDO_BUDGET = 22 * 1024 * 1024;     // bytes of history kept per panel
 const LABELS = ['Front cover','Page 1','Page 2','Page 3','Page 4','Page 5','Page 6','Back cover'];
-// sheet cells: [panelIndex, col, row, rotated]
 const IMPOSITION = [
-  [4,0,0,true],[3,1,0,true],[2,2,0,true],[1,3,0,true],   // top row, upside down
-  [5,0,1,false],[6,1,1,false],[7,2,1,false],[0,3,1,false] // bottom row, upright
+  [4,0,0,true],[3,1,0,true],[2,2,0,true],[1,3,0,true],
+  [5,0,1,false],[6,1,1,false],[7,2,1,false],[0,3,1,false]
 ];
 const CANVAS_FONT = "'Space Grotesk','Archivo Black',sans-serif";
+const BLENDS = [
+  ['source-over','Normal'],
+  ['multiply','Multiply'],
+  ['screen','Screen']
+];
+const KIND_LABEL = {draw:'Drawing layer', text:'Text', shape:'Shape', image:'Photo'};
+
+/* ---------- tiny helpers ---------- */
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b) => v<a?a:(v>b?b:v);
+let idSeq = 1;
+const newId = () => 'i' + (idSeq++);
+
+function newCanvas(w,h){
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  return c;
+}
+function hexToRgb(hex){
+  const h = hex.replace('#','');
+  const n = h.length === 3
+    ? h.split('').map(c=>parseInt(c+c,16))
+    : [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+  return {r:n[0]|0, g:n[1]|0, b:n[2]|0};
+}
+function rgbToHex(r,g,b){
+  return '#' + [r,g,b].map(v=>clamp(v|0,0,255).toString(16).padStart(2,'0')).join('');
+}
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(()=>t.classList.remove('show'), 2000);
+}
+function loadImage(src){
+  return new Promise((res,rej)=>{
+    const im = new Image();
+    im.onload = ()=>res(im);
+    im.onerror = ()=>rej(new Error('image failed to load'));
+    im.src = src;
+  });
+}
+
+/* scratch canvases reused for compositing, masking and fills */
+const scratchA = newCanvas(PANEL_W, PANEL_H), sa = scratchA.getContext('2d', {willReadFrequently:true});
+const scratchB = newCanvas(PANEL_W, PANEL_H), sb = scratchB.getContext('2d', {willReadFrequently:true});
+const scratchC = newCanvas(PANEL_W, PANEL_H), sc = scratchC.getContext('2d', {willReadFrequently:true});
+
+/* ---------- item constructors ---------- */
+function baseItem(kind, name){
+  return {
+    id:newId(), kind, name,
+    opacity:1, blend:'source-over',
+    visible:true, locked:false, clip:false
+  };
+}
+function makeDraw(name){
+  const it = baseItem('draw', name || 'Drawing');
+  it.canvas = newCanvas(PANEL_W, PANEL_H);
+  it.alphaLock = false;
+  it._ser = null;
+  return it;
+}
+function measureText(o){
+  ctx.font = `700 ${o.fontSize}px ${CANVAS_FONT}`;
+  o.lines = String(o.text).split('\n');
+  const lh = o.fontSize * 1.2;
+  let w = 0;
+  for(const ln of o.lines) w = Math.max(w, ctx.measureText(ln).width);
+  o.w = Math.max(w, 20);
+  o.h = Math.max(o.lines.length * lh, o.fontSize);
+}
+function makeText(text, x, y, col){
+  const o = baseItem('text', text.split('\n')[0].slice(0,22) || 'Text');
+  Object.assign(o, {text, cx:x, cy:y, rot:0, fontSize:90, color:col});
+  measureText(o);
+  return o;
+}
+function makeShape(kind, x, y, col){
+  const names = {rect:'Rectangle', circle:'Circle', triangle:'Triangle', star:'Star'};
+  const o = baseItem('shape', names[kind] || 'Shape');
+  Object.assign(o, {shape:kind, cx:x, cy:y, w:320, h:320, rot:0, color:col});
+  return o;
+}
+function makeImage(img, src, cx, cy){
+  const o = baseItem('image', 'Photo');
+  const maxW = PANEL_W * 0.72;
+  const s = Math.min(1, maxW/img.width, (PANEL_H*0.5)/img.height);
+  Object.assign(o, {img, src, cx, cy, w:img.width*s, h:img.height*s, rot:0});
+  return o;
+}
 
 /* ---------- state ---------- */
-const panels = [];           // {bg, bitmap(canvas), objects[]}
-for (let i=0;i<PANEL_COUNT;i++){
-  const c=document.createElement('canvas'); c.width=PANEL_W; c.height=PANEL_H;
-  panels.push({bg:'#ffffff', bitmap:c, objects:[]});
+const panels = [];
+for(let i=0;i<PANEL_COUNT;i++){
+  const first = makeDraw('Drawing');
+  panels.push({bg:'#ffffff', items:[first], activeDraw:first.id});
 }
 const undoStacks = panels.map(()=>[]);
 const redoStacks = panels.map(()=>[]);
 
-let cur = 0;                 // current panel index
+let cur = 0;
 let tool = 'pencil';
 let shapeKind = 'rect';
 let color = '#141414';
 let brushSize = 10;
-let selectedObj = null;
-let editingTextObj = null;   // when re-editing existing text
-let pendingTextPos = null;   // canvas coords for new text
+let selectedId = null;
+let pickArmed = false;
+let editingTextId = null;
+let pendingTextPos = null;
+let drag = null;
+let lastTap = {t:0, id:null};
 
-/* ---------- dom ---------- */
-const $ = id => document.getElementById(id);
 const canvas = $('panelCanvas');
 const ctx = canvas.getContext('2d');
 canvas.width = PANEL_W; canvas.height = PANEL_H;
 
-/* ---------- helpers ---------- */
-function toast(msg){
-  const t=$('toast'); t.textContent=msg; t.classList.add('show');
-  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),1800);
+/* ---------- model access ---------- */
+const P = () => panels[cur];
+function itemById(id, p){ return (p||P()).items.find(i=>i.id===id) || null; }
+function selectedItem(){ return selectedId ? itemById(selectedId) : null; }
+function indexOfItem(id, p){ return (p||P()).items.findIndex(i=>i.id===id); }
+
+function activeDrawItem(){
+  const p = P();
+  let it = p.items.find(i => i.id === p.activeDraw && i.kind === 'draw');
+  if(!it) it = [...p.items].reverse().find(i => i.kind === 'draw');
+  if(!it){
+    it = makeDraw('Drawing');
+    p.items.push(it);
+  }
+  p.activeDraw = it.id;
+  return it;
 }
-function cloneBitmap(src){
-  const c=document.createElement('canvas'); c.width=src.width; c.height=src.height;
-  c.getContext('2d').drawImage(src,0,0); return c;
+/* Returns a paintable layer, or null with an explanation shown. */
+function paintTarget(){
+  const it = activeDrawItem();
+  if(it.locked){ toast(`"${it.name}" is locked — unlock it in the stack`); return null; }
+  if(!it.visible){ toast(`"${it.name}" is hidden — turn its eye back on`); return null; }
+  return it;
 }
-function cloneObjects(objs){
-  return objs.map(o=>({...o, lines: o.lines?[...o.lines]:undefined})); // img refs shared on purpose
+
+/* ---------- history ---------- */
+function metaSnapshot(pi){
+  const p = panels[pi === undefined ? cur : pi];
+  return {
+    bg: p.bg,
+    activeDraw: p.activeDraw,
+    selected: selectedId,
+    items: p.items.map(it => ({...it}))
+  };
 }
-function snapshot(i){
-  return {bg:panels[i].bg, bitmap:cloneBitmap(panels[i].bitmap), objects:cloneObjects(panels[i].objects)};
+function metaRestore(s){
+  const p = P();  // restores into whichever panel is open when undo runs
+  p.bg = s.bg;
+  p.activeDraw = s.activeDraw;
+  p.items = s.items.map(it => ({...it, _ser:null}));
+  selectedId = s.selected && itemById(s.selected) ? s.selected : null;
 }
-function pushUndo(){
-  const s=undoStacks[cur];
-  s.push(snapshot(cur));
-  if(s.length>MAX_UNDO) s.shift();
-  redoStacks[cur].length=0;
-  updateHistoryButtons();
+function entryBytes(e){
+  if(e.kind === 'pix') return e.before.data.length + e.after.data.length + 200;
+  return 3000;
 }
-function restore(i,state){
-  panels[i].bg=state.bg;
-  panels[i].bitmap=cloneBitmap(state.bitmap);
-  panels[i].objects=cloneObjects(state.objects);
+function trimHistory(stack){
+  let total = 0;
+  for(const e of stack) total += entryBytes(e);
+  while(stack.length > 1 && total > UNDO_BUDGET){
+    total -= entryBytes(stack.shift());
+  }
+}
+function pushEntry(e, pi){
+  const k = pi === undefined ? cur : pi;
+  const s = undoStacks[k];
+  s.push(e);
+  trimHistory(s);
+  redoStacks[k].length = 0;
+  if(k === cur) updateHistoryButtons();
+  scheduleSave();
+}
+/* metadata edits: grab a snapshot first, mutate, then commit */
+function commitMeta(before, pi){
+  pushEntry({kind:'meta', before, after: metaSnapshot(pi)}, pi);
+}
+/* pixel edits on one drawing layer, stored as just the changed rectangle */
+function pushPixels(itemId, rect, before, after){
+  pushEntry({kind:'pix', itemId, rect, before, after});
+}
+function applyEntry(e, which){
+  if(e.kind === 'meta'){
+    metaRestore(which === 'before' ? e.before : e.after);
+  }else{
+    const it = itemById(e.itemId);
+    if(it && it.kind === 'draw'){
+      const data = which === 'before' ? e.before : e.after;
+      it.canvas.getContext('2d').putImageData(data, e.rect.x, e.rect.y);
+      it._ser = null;
+    }
+  }
+  P().items.forEach(i => { i._ser = null; });
 }
 function undo(){
-  const s=undoStacks[cur]; if(!s.length) return;
-  redoStacks[cur].push(snapshot(cur));
-  restore(cur,s.pop());
-  selectedObj=null; render(); updateHistoryButtons();
+  const s = undoStacks[cur];
+  if(!s.length) return;
+  const e = s.pop();
+  redoStacks[cur].push(e);
+  applyEntry(e, 'before');
+  afterHistory();
 }
 function redo(){
-  const s=redoStacks[cur]; if(!s.length) return;
-  undoStacks[cur].push(snapshot(cur));
-  restore(cur,s.pop());
-  selectedObj=null; render(); updateHistoryButtons();
+  const s = redoStacks[cur];
+  if(!s.length) return;
+  const e = s.pop();
+  undoStacks[cur].push(e);
+  applyEntry(e, 'after');
+  afterHistory();
+}
+function afterHistory(){
+  if(selectedId && !itemById(selectedId)) selectedId = null;
+  updateHistoryButtons();
+  syncControls();
+  render();
+  if(sheetOpen) renderLayerList();
+  scheduleSave();
 }
 function updateHistoryButtons(){
-  $('undoBtn').disabled=!undoStacks[cur].length;
-  $('redoBtn').disabled=!redoStacks[cur].length;
+  $('undoBtn').disabled = !undoStacks[cur].length;
+  $('redoBtn').disabled = !redoStacks[cur].length;
 }
 
-/* ---------- object model ---------- */
-function measureText(o, c2d){
-  c2d.font = `700 ${o.fontSize}px ${CANVAS_FONT}`;
-  o.lines = o.text.split('\n');
-  const lh = o.fontSize*1.2;
-  let w = 0;
-  for(const ln of o.lines) w = Math.max(w, c2d.measureText(ln).width);
-  o.w = Math.max(w, 20);
-  o.h = Math.max(o.lines.length*lh, o.fontSize);
-}
-function makeText(text,x,y){
-  const o={type:'text',text,cx:x,cy:y,rot:0,fontSize:90,color};
-  measureText(o,ctx);
-  return o;
-}
-function makeShape(kind,x,y){
-  return {type:'shape',shape:kind,cx:x,cy:y,w:320,h:320,rot:0,color};
-}
-function makeImage(img,cx,cy){
-  const maxW=PANEL_W*0.72;
-  const sc=Math.min(1,maxW/img.width, (PANEL_H*0.5)/img.height);
-  return {type:'image',img,cx,cy,w:img.width*sc,h:img.height*sc,rot:0};
-}
-
-/* ---------- render ---------- */
-function drawObject(c2d,o){
+/* ---------- rendering ---------- */
+function drawItemBare(c2d, it){
+  if(it.kind === 'draw'){
+    c2d.drawImage(it.canvas, 0, 0);
+    return;
+  }
   c2d.save();
-  c2d.translate(o.cx,o.cy);
-  c2d.rotate(o.rot);
-  if(o.type==='text'){
-    c2d.font=`700 ${o.fontSize}px ${CANVAS_FONT}`;
-    c2d.fillStyle=o.color;
-    c2d.textAlign='center'; c2d.textBaseline='middle';
-    const lh=o.fontSize*1.2, total=o.lines.length*lh;
-    o.lines.forEach((ln,i)=>{
-      c2d.fillText(ln,0,-total/2+lh*(i+0.5));
-    });
-  }else if(o.type==='shape'){
-    c2d.fillStyle=o.color;
-    const w=o.w,h=o.h;
+  c2d.translate(it.cx, it.cy);
+  c2d.rotate(it.rot);
+  if(it.kind === 'text'){
+    if(!it.lines) measureText(it);
+    c2d.font = `700 ${it.fontSize}px ${CANVAS_FONT}`;
+    c2d.fillStyle = it.color;
+    c2d.textAlign = 'center';
+    c2d.textBaseline = 'middle';
+    const lh = it.fontSize * 1.2, total = it.lines.length * lh;
+    it.lines.forEach((ln,i)=> c2d.fillText(ln, 0, -total/2 + lh*(i+0.5)));
+  }else if(it.kind === 'shape'){
+    c2d.fillStyle = it.color;
+    const w = it.w, h = it.h;
     c2d.beginPath();
-    if(o.shape==='rect') c2d.rect(-w/2,-h/2,w,h);
-    else if(o.shape==='circle') c2d.ellipse(0,0,w/2,h/2,0,0,Math.PI*2);
-    else if(o.shape==='triangle'){c2d.moveTo(0,-h/2);c2d.lineTo(w/2,h/2);c2d.lineTo(-w/2,h/2);c2d.closePath();}
-    else if(o.shape==='star'){
-      const spikes=5,or=Math.min(w,h)/2,ir=or*0.45;
+    if(it.shape === 'rect') c2d.rect(-w/2, -h/2, w, h);
+    else if(it.shape === 'circle') c2d.ellipse(0, 0, w/2, h/2, 0, 0, Math.PI*2);
+    else if(it.shape === 'triangle'){
+      c2d.moveTo(0,-h/2); c2d.lineTo(w/2,h/2); c2d.lineTo(-w/2,h/2); c2d.closePath();
+    }else if(it.shape === 'star'){
+      const spikes = 5, or = Math.min(w,h)/2, ir = or*0.45;
       for(let i=0;i<spikes*2;i++){
-        const r=i%2===0?or:ir, a=(Math.PI/spikes)*i - Math.PI/2;
-        i===0?c2d.moveTo(Math.cos(a)*r,Math.sin(a)*r):c2d.lineTo(Math.cos(a)*r,Math.sin(a)*r);
+        const r = i%2===0 ? or : ir, a = (Math.PI/spikes)*i - Math.PI/2;
+        i===0 ? c2d.moveTo(Math.cos(a)*r, Math.sin(a)*r) : c2d.lineTo(Math.cos(a)*r, Math.sin(a)*r);
       }
       c2d.closePath();
     }
     c2d.fill();
-  }else if(o.type==='image'){
-    c2d.drawImage(o.img,-o.w/2,-o.h/2,o.w,o.h);
+  }else if(it.kind === 'image'){
+    c2d.drawImage(it.img, -it.w/2, -it.h/2, it.w, it.h);
   }
   c2d.restore();
 }
-function renderPanelTo(c2d,i){
-  const p=panels[i];
-  c2d.fillStyle=p.bg; c2d.fillRect(0,0,PANEL_W,PANEL_H);
-  c2d.drawImage(p.bitmap,0,0);
-  for(const o of p.objects) drawObject(c2d,o);
+function renderPanelTo(c2d, i){
+  const p = panels[i];
+  c2d.save();
+  c2d.globalAlpha = 1;
+  c2d.globalCompositeOperation = 'source-over';
+  c2d.fillStyle = p.bg;
+  c2d.fillRect(0, 0, PANEL_W, PANEL_H);
+  for(let k=0;k<p.items.length;k++){
+    const it = p.items[k];
+    if(!it.visible || it.opacity <= 0) continue;
+    if(it.clip && k > 0){
+      // draw the item, then keep only the part sitting on the item below
+      sa.globalCompositeOperation = 'source-over';
+      sa.globalAlpha = 1;
+      sa.clearRect(0,0,PANEL_W,PANEL_H);
+      drawItemBare(sa, it);
+      sb.globalCompositeOperation = 'source-over';
+      sb.globalAlpha = 1;
+      sb.clearRect(0,0,PANEL_W,PANEL_H);
+      drawItemBare(sb, p.items[k-1]);
+      sa.globalCompositeOperation = 'destination-in';
+      sa.drawImage(scratchB, 0, 0);
+      sa.globalCompositeOperation = 'source-over';
+      c2d.globalAlpha = it.opacity;
+      c2d.globalCompositeOperation = it.blend;
+      c2d.drawImage(scratchA, 0, 0);
+    }else{
+      c2d.globalAlpha = it.opacity;
+      c2d.globalCompositeOperation = it.blend;
+      drawItemBare(c2d, it);
+    }
+  }
+  c2d.restore();
 }
 function handlePositions(o){
-  // returns positions in canvas coords for resize (br), rotate (top), delete (tr)
-  const cos=Math.cos(o.rot),sin=Math.sin(o.rot);
-  const pt=(dx,dy)=>({x:o.cx+dx*cos-dy*sin, y:o.cy+dx*sin+dy*cos});
-  return {
-    br: pt(o.w/2, o.h/2),
-    rot: pt(0, -o.h/2-70),
-    del: pt(-o.w/2, -o.h/2)
-  };
+  const cos = Math.cos(o.rot), sin = Math.sin(o.rot);
+  const pt = (dx,dy) => ({x:o.cx + dx*cos - dy*sin, y:o.cy + dx*sin + dy*cos});
+  return { br: pt(o.w/2, o.h/2), rot: pt(0, -o.h/2 - 70), del: pt(-o.w/2, -o.h/2) };
 }
 function render(){
-  renderPanelTo(ctx,cur);
-  if(selectedObj && tool==='select'){
-    const o=selectedObj;
-    const px = PANEL_W / canvas.getBoundingClientRect().width; // screen-consistent sizes
+  renderPanelTo(ctx, cur);
+  const o = selectedItem();
+  if(o && o.kind !== 'draw' && tool === 'select' && !o.locked){
+    const px = PANEL_W / Math.max(1, canvas.getBoundingClientRect().width);
     ctx.save();
-    ctx.translate(o.cx,o.cy); ctx.rotate(o.rot);
-    ctx.strokeStyle='#0078BF'; ctx.lineWidth=3*px; ctx.setLineDash([10*px,8*px]);
-    ctx.strokeRect(-o.w/2,-o.h/2,o.w,o.h);
+    ctx.translate(o.cx, o.cy);
+    ctx.rotate(o.rot);
+    ctx.strokeStyle = '#0078BF';
+    ctx.lineWidth = 3*px;
+    ctx.setLineDash([10*px, 8*px]);
+    ctx.strokeRect(-o.w/2, -o.h/2, o.w, o.h);
     ctx.setLineDash([]);
-    // rotate stem
-    ctx.beginPath(); ctx.moveTo(0,-o.h/2); ctx.lineTo(0,-o.h/2-70); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -o.h/2); ctx.lineTo(0, -o.h/2 - 70); ctx.stroke();
     ctx.restore();
-    const H=14*px, hp=handlePositions(o);
-    const dot=(p,fill)=>{ctx.beginPath();ctx.arc(p.x,p.y,H,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();ctx.lineWidth=3*px;ctx.strokeStyle='#141414';ctx.stroke();};
-    dot(hp.br,'#ffffff');            // resize
-    dot(hp.rot,'#0078BF');           // rotate
-    dot(hp.del,'#E0301E');           // delete
-    // delete X
-    ctx.strokeStyle='#fff'; ctx.lineWidth=3.5*px; ctx.beginPath();
-    ctx.moveTo(hp.del.x-H*0.45,hp.del.y-H*0.45); ctx.lineTo(hp.del.x+H*0.45,hp.del.y+H*0.45);
-    ctx.moveTo(hp.del.x+H*0.45,hp.del.y-H*0.45); ctx.lineTo(hp.del.x-H*0.45,hp.del.y+H*0.45);
+    const H = 14*px, hp = handlePositions(o);
+    const dot = (p,fill)=>{
+      ctx.beginPath(); ctx.arc(p.x, p.y, H, 0, Math.PI*2);
+      ctx.fillStyle = fill; ctx.fill();
+      ctx.lineWidth = 3*px; ctx.strokeStyle = '#141414'; ctx.stroke();
+    };
+    dot(hp.br, '#ffffff');
+    dot(hp.rot, '#0078BF');
+    dot(hp.del, '#E0301E');
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5*px;
+    ctx.beginPath();
+    ctx.moveTo(hp.del.x - H*0.45, hp.del.y - H*0.45); ctx.lineTo(hp.del.x + H*0.45, hp.del.y + H*0.45);
+    ctx.moveTo(hp.del.x + H*0.45, hp.del.y - H*0.45); ctx.lineTo(hp.del.x - H*0.45, hp.del.y + H*0.45);
     ctx.stroke();
   }
 }
 
-/* ---------- layout / sizing ---------- */
+/* ---------- layout ---------- */
 function fitCanvas(){
-  const stage=$('stage');
-  const pad=44; // frame + stage padding allowance
-  const availW=stage.clientWidth-pad, availH=stage.clientHeight-pad;
-  const ratio=PANEL_W/PANEL_H;
-  let w=availH*ratio, h=availH;
-  if(w>availW){w=availW; h=availW/ratio;}
-  canvas.style.width=Math.floor(w)+'px';
-  canvas.style.height=Math.floor(h)+'px';
+  const stage = $('stage');
+  const pad = 44;
+  const availW = stage.clientWidth - pad, availH = stage.clientHeight - pad;
+  if(availW <= 0 || availH <= 0) return;
+  const ratio = PANEL_W / PANEL_H;
+  let w = availH * ratio, h = availH;
+  if(w > availW){ w = availW; h = availW / ratio; }
+  canvas.style.width = Math.floor(w) + 'px';
+  canvas.style.height = Math.floor(h) + 'px';
   render();
 }
-window.addEventListener('resize',fitCanvas);
+window.addEventListener('resize', fitCanvas);
+window.addEventListener('orientationchange', ()=>setTimeout(fitCanvas, 250));
 
-/* ---------- pointer handling ---------- */
+/* ---------- hit testing ---------- */
 function canvasPoint(e){
-  const r=canvas.getBoundingClientRect();
-  return {x:(e.clientX-r.left)*(PANEL_W/r.width), y:(e.clientY-r.top)*(PANEL_H/r.height)};
+  const r = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left) * (PANEL_W / r.width),
+    y: (e.clientY - r.top) * (PANEL_H / r.height)
+  };
 }
 function hitObject(pt){
-  const objs=panels[cur].objects;
-  for(let i=objs.length-1;i>=0;i--){
-    const o=objs[i];
-    const dx=pt.x-o.cx, dy=pt.y-o.cy;
-    const cos=Math.cos(-o.rot), sin=Math.sin(-o.rot);
-    const lx=dx*cos-dy*sin, ly=dx*sin+dy*cos;
-    const padHit=30;
-    if(Math.abs(lx)<=o.w/2+padHit && Math.abs(ly)<=o.h/2+padHit) return o;
+  const items = P().items;
+  for(let i=items.length-1;i>=0;i--){
+    const o = items[i];
+    if(o.kind === 'draw' || !o.visible || o.locked) continue;
+    const dx = pt.x - o.cx, dy = pt.y - o.cy;
+    const cos = Math.cos(-o.rot), sin = Math.sin(-o.rot);
+    const lx = dx*cos - dy*sin, ly = dx*sin + dy*cos;
+    const padHit = 30;
+    if(Math.abs(lx) <= o.w/2 + padHit && Math.abs(ly) <= o.h/2 + padHit) return o;
   }
   return null;
 }
 function hitHandle(pt){
-  if(!selectedObj) return null;
-  const px=PANEL_W/canvas.getBoundingClientRect().width;
-  const R=26*px, hp=handlePositions(selectedObj);
-  const near=p=>Math.hypot(pt.x-p.x,pt.y-p.y)<=R;
+  const o = selectedItem();
+  if(!o || o.kind === 'draw' || o.locked) return null;
+  const px = PANEL_W / Math.max(1, canvas.getBoundingClientRect().width);
+  const R = 26*px, hp = handlePositions(o);
+  const near = p => Math.hypot(pt.x - p.x, pt.y - p.y) <= R;
   if(near(hp.del)) return 'del';
   if(near(hp.rot)) return 'rot';
   if(near(hp.br)) return 'resize';
   return null;
 }
 
-let drag=null; // {mode:'draw'|'move'|'resize'|'rotate', ...}
-let lastTap={t:0,obj:null};
+/* ---------- eyedropper ---------- */
+function sampleColor(pt){
+  sc.globalCompositeOperation = 'source-over';
+  sc.globalAlpha = 1;
+  sc.clearRect(0,0,PANEL_W,PANEL_H);
+  renderPanelTo(sc, cur);
+  const x = clamp(Math.round(pt.x), 0, PANEL_W-1), y = clamp(Math.round(pt.y), 0, PANEL_H-1);
+  const d = sc.getImageData(x, y, 1, 1).data;
+  return rgbToHex(d[0], d[1], d[2]);
+}
 
-canvas.addEventListener('pointerdown',e=>{
+/* ---------- flood fill ---------- */
+function floodFill(pt){
+  const layer = paintTarget();
+  if(!layer) return;
+  const sx = clamp(Math.round(pt.x), 0, PANEL_W-1), sy = clamp(Math.round(pt.y), 0, PANEL_H-1);
+
+  // The region comes from what you can see; the paint lands on the active layer.
+  sc.globalCompositeOperation = 'source-over';
+  sc.globalAlpha = 1;
+  sc.clearRect(0,0,PANEL_W,PANEL_H);
+  renderPanelTo(sc, cur);
+  const comp = sc.getImageData(0, 0, PANEL_W, PANEL_H).data;
+
+  const si = sy*PANEL_W + sx;
+  const tr = comp[si*4], tg = comp[si*4+1], tb = comp[si*4+2];
+  const tol = 34;
+  const match = p => {
+    const i = p*4;
+    return Math.abs(comp[i]-tr) <= tol && Math.abs(comp[i+1]-tg) <= tol && Math.abs(comp[i+2]-tb) <= tol;
+  };
+  if(!match(si)) return;
+
+  const mask = new Uint8Array(PANEL_W * PANEL_H);
+  let minX = sx, maxX = sx, minY = sy, maxY = sy;
+  const stack = [si];
+  while(stack.length){
+    const p = stack.pop();
+    if(mask[p]) continue;
+    const y = (p / PANEL_W) | 0;
+    const rowStart = y * PANEL_W;
+    let xl = p - rowStart, xr = xl;
+    while(xl > 0 && !mask[rowStart+xl-1] && match(rowStart+xl-1)) xl--;
+    while(xr < PANEL_W-1 && !mask[rowStart+xr+1] && match(rowStart+xr+1)) xr++;
+    if(xl < minX) minX = xl;
+    if(xr > maxX) maxX = xr;
+    if(y < minY) minY = y;
+    if(y > maxY) maxY = y;
+    for(let x=xl;x<=xr;x++){
+      mask[rowStart+x] = 1;
+      if(y > 0){ const q = rowStart - PANEL_W + x; if(!mask[q] && match(q)) stack.push(q); }
+      if(y < PANEL_H-1){ const q = rowStart + PANEL_W + x; if(!mask[q] && match(q)) stack.push(q); }
+    }
+  }
+
+  const bx = minX, by = minY, bw = maxX-minX+1, bh = maxY-minY+1;
+  const lctx = layer.canvas.getContext('2d', {willReadFrequently:true});
+  const before = lctx.getImageData(bx, by, bw, bh);
+
+  const {r,g,b} = hexToRgb(color);
+  const out = sb.createImageData(bw, bh);
+  const od = out.data;
+  for(let y=0;y<bh;y++){
+    const src = (by+y)*PANEL_W + bx;
+    for(let x=0;x<bw;x++){
+      if(mask[src+x]){
+        const o = (y*bw + x)*4;
+        od[o] = r; od[o+1] = g; od[o+2] = b; od[o+3] = 255;
+      }
+    }
+  }
+  sb.clearRect(0,0,PANEL_W,PANEL_H);
+  sb.putImageData(out, bx, by);
+
+  lctx.save();
+  lctx.globalCompositeOperation = layer.alphaLock ? 'source-atop' : 'source-over';
+  lctx.drawImage(scratchB, bx, by, bw, bh, bx, by, bw, bh);
+  lctx.restore();
+  layer._ser = null;
+
+  const after = lctx.getImageData(bx, by, bw, bh);
+  pushPixels(layer.id, {x:bx, y:by, w:bw, h:bh}, before, after);
+  render();
+}
+
+/* ---------- pointer handling ---------- */
+canvas.addEventListener('pointerdown', e => {
   e.preventDefault();
-  canvas.setPointerCapture(e.pointerId);
-  const pt=canvasPoint(e);
+  const pt = canvasPoint(e);
 
-  if(tool==='pencil'||tool==='eraser'){
-    pushUndo();
-    const b=panels[cur].bitmap.getContext('2d');
-    b.lineCap='round'; b.lineJoin='round';
-    b.lineWidth=brushSize*(PANEL_W/300);       // slider maps to on-paper feel
-    if(tool==='eraser'){b.globalCompositeOperation='destination-out';}
-    else {b.globalCompositeOperation='source-over'; b.strokeStyle=color;}
-    b.beginPath(); b.moveTo(pt.x,pt.y);
-    b.lineTo(pt.x+0.01,pt.y+0.01); b.stroke();  // dot on tap
-    drag={mode:'draw',bctx:b,last:pt};
+  if(pickArmed){
+    setColor(sampleColor(pt), true);
+    pickArmed = false;
+    $('pickBtn').classList.remove('on');
+    toast('Color picked up');
+    return;
+  }
+
+  try{ canvas.setPointerCapture(e.pointerId); }catch(_){ }
+
+  if(tool === 'pencil' || tool === 'eraser'){
+    const layer = paintTarget();
+    if(!layer) return;
+    const b = layer.canvas.getContext('2d', {willReadFrequently:true});
+    const before = newCanvas(PANEL_W, PANEL_H);
+    before.getContext('2d').drawImage(layer.canvas, 0, 0);
+    b.save();
+    b.lineCap = 'round'; b.lineJoin = 'round';
+    b.lineWidth = brushSize * (PANEL_W/300);
+    if(tool === 'eraser'){
+      b.globalCompositeOperation = 'destination-out';
+    }else{
+      b.globalCompositeOperation = layer.alphaLock ? 'source-atop' : 'source-over';
+      b.strokeStyle = color;
+    }
+    b.beginPath();
+    b.moveTo(pt.x, pt.y);
+    b.lineTo(pt.x + 0.01, pt.y + 0.01);
+    b.stroke();
+    const pad = b.lineWidth/2 + 3;
+    drag = {
+      mode:'draw', layer, bctx:b, beforeCanvas:before,
+      bbox:{x0:pt.x-pad, y0:pt.y-pad, x1:pt.x+pad, y1:pt.y+pad}, pad
+    };
+    layer._ser = null;
     render();
     return;
   }
 
-  if(tool==='text'){
-    pendingTextPos=pt; editingTextObj=null;
-    $('textModalTitle').textContent='Add text';
-    $('textInput').value='';
-    openModal('textModal'); setTimeout(()=>$('textInput').focus(),50);
+  if(tool === 'fill'){ floodFill(pt); return; }
+
+  if(tool === 'text'){
+    pendingTextPos = pt; editingTextId = null;
+    $('textModalTitle').textContent = 'Add text';
+    $('textInput').value = '';
+    openModal('textModal');
+    setTimeout(()=>$('textInput').focus(), 50);
     return;
   }
 
-  if(tool==='shape'){
-    pushUndo();
-    const o=makeShape(shapeKind,pt.x,pt.y);
-    panels[cur].objects.push(o);
-    selectedObj=o; setTool('select');
-    render(); toast('Shape added — drag to move');
+  if(tool === 'shape'){
+    if(!roomForItem()) return;
+    const before = metaSnapshot();
+    const o = makeShape(shapeKind, pt.x, pt.y, color);
+    P().items.push(o);
+    selectedId = o.id;
+    commitMeta(before);
+    setTool('select');
+    render();
+    toast('Shape added — drag it to move');
     return;
   }
 
-  if(tool==='select'){
-    const h=hitHandle(pt);
-    if(h==='del'){
-      pushUndo();
-      panels[cur].objects=panels[cur].objects.filter(o=>o!==selectedObj);
-      selectedObj=null; render(); return;
-    }
-    if(h==='rot'){
-      pushUndo();
-      drag={mode:'rotate'}; return;
-    }
-    if(h==='resize'){
-      pushUndo();
-      const o=selectedObj;
-      drag={mode:'resize',startDist:Math.hypot(pt.x-o.cx,pt.y-o.cy),w0:o.w,h0:o.h,f0:o.fontSize||0};
+  if(tool === 'select'){
+    const h = hitHandle(pt);
+    if(h === 'del'){
+      const before = metaSnapshot();
+      P().items = P().items.filter(o => o.id !== selectedId);
+      selectedId = null;
+      commitMeta(before);
+      syncControls(); render();
       return;
     }
-    const o=hitObject(pt);
+    if(h === 'rot'){ drag = {mode:'rotate', before:metaSnapshot()}; return; }
+    if(h === 'resize'){
+      const o = selectedItem();
+      drag = {
+        mode:'resize', before:metaSnapshot(),
+        startDist: Math.max(1, Math.hypot(pt.x-o.cx, pt.y-o.cy)),
+        w0:o.w, h0:o.h, f0:o.fontSize||0
+      };
+      return;
+    }
+    const o = hitObject(pt);
     if(o){
-      // double-tap text to edit
-      const now=Date.now();
-      if(o.type==='text' && lastTap.obj===o && now-lastTap.t<350){
-        editingTextObj=o; pendingTextPos=null;
-        $('textModalTitle').textContent='Edit text';
-        $('textInput').value=o.text;
-        openModal('textModal'); setTimeout(()=>$('textInput').focus(),50);
-        lastTap={t:0,obj:null};
+      const now = Date.now();
+      if(o.kind === 'text' && lastTap.id === o.id && now - lastTap.t < 350){
+        editingTextId = o.id; pendingTextPos = null;
+        $('textModalTitle').textContent = 'Edit text';
+        $('textInput').value = o.text;
+        openModal('textModal');
+        setTimeout(()=>$('textInput').focus(), 50);
+        lastTap = {t:0, id:null};
         return;
       }
-      lastTap={t:now,obj:o};
-      if(o!==selectedObj) selectedObj=o;
-      pushUndo();
-      drag={mode:'move',dx:pt.x-o.cx,dy:pt.y-o.cy};
-      render();
+      lastTap = {t:now, id:o.id};
+      selectedId = o.id;
+      drag = {mode:'move', before:metaSnapshot(), dx:pt.x-o.cx, dy:pt.y-o.cy};
+      syncControls(); render();
     }else{
-      selectedObj=null; render();
+      selectedId = null;
+      syncControls(); render();
     }
   }
 });
 
-canvas.addEventListener('pointermove',e=>{
+canvas.addEventListener('pointermove', e => {
   if(!drag) return;
   e.preventDefault();
-  const pt=canvasPoint(e);
-  if(drag.mode==='draw'){
-    drag.bctx.lineTo(pt.x,pt.y); drag.bctx.stroke();
+  const pt = canvasPoint(e);
+  if(drag.mode === 'draw'){
+    drag.bctx.lineTo(pt.x, pt.y);
+    drag.bctx.stroke();
+    const p = drag.pad, bb = drag.bbox;
+    if(pt.x-p < bb.x0) bb.x0 = pt.x-p;
+    if(pt.y-p < bb.y0) bb.y0 = pt.y-p;
+    if(pt.x+p > bb.x1) bb.x1 = pt.x+p;
+    if(pt.y+p > bb.y1) bb.y1 = pt.y+p;
     render();
-  }else if(drag.mode==='move'){
-    selectedObj.cx=pt.x-drag.dx; selectedObj.cy=pt.y-drag.dy; render();
-  }else if(drag.mode==='resize'){
-    const o=selectedObj;
-    const s=Math.max(0.12, Math.hypot(pt.x-o.cx,pt.y-o.cy)/drag.startDist);
-    o.w=drag.w0*s; o.h=drag.h0*s;
-    if(o.type==='text'){o.fontSize=Math.max(14,drag.f0*s); measureText(o,ctx);}
+  }else if(drag.mode === 'move'){
+    const o = selectedItem(); if(!o) return;
+    o.cx = pt.x - drag.dx; o.cy = pt.y - drag.dy;
     render();
-  }else if(drag.mode==='rotate'){
-    const o=selectedObj;
-    o.rot=Math.atan2(pt.y-o.cy, pt.x-o.cx)+Math.PI/2;
+  }else if(drag.mode === 'resize'){
+    const o = selectedItem(); if(!o) return;
+    const s = Math.max(0.12, Math.hypot(pt.x-o.cx, pt.y-o.cy) / drag.startDist);
+    o.w = drag.w0 * s; o.h = drag.h0 * s;
+    if(o.kind === 'text'){ o.fontSize = Math.max(14, drag.f0*s); measureText(o); }
+    render();
+  }else if(drag.mode === 'rotate'){
+    const o = selectedItem(); if(!o) return;
+    o.rot = Math.atan2(pt.y-o.cy, pt.x-o.cx) + Math.PI/2;
     render();
   }
 });
-function endDrag(e){
+
+function endDrag(){
   if(!drag) return;
-  if(drag.mode==='draw') drag.bctx.globalCompositeOperation='source-over';
-  drag=null;
+  const d = drag;
+  drag = null;
+  if(d.mode === 'draw'){
+    d.bctx.restore();
+    const x = clamp(Math.floor(d.bbox.x0), 0, PANEL_W-1);
+    const y = clamp(Math.floor(d.bbox.y0), 0, PANEL_H-1);
+    const w = clamp(Math.ceil(d.bbox.x1) - x, 1, PANEL_W - x);
+    const h = clamp(Math.ceil(d.bbox.y1) - y, 1, PANEL_H - y);
+    const before = d.beforeCanvas.getContext('2d').getImageData(x, y, w, h);
+    const after = d.layer.canvas.getContext('2d', {willReadFrequently:true}).getImageData(x, y, w, h);
+    pushPixels(d.layer.id, {x, y, w, h}, before, after);
+    d.beforeCanvas.width = d.beforeCanvas.height = 0; // let it go
+  }else if(d.before){
+    commitMeta(d.before);
+  }
+  if(sheetOpen) renderLayerList();
 }
-canvas.addEventListener('pointerup',endDrag);
-canvas.addEventListener('pointercancel',endDrag);
+canvas.addEventListener('pointerup', endDrag);
+canvas.addEventListener('pointercancel', endDrag);
 
-/* ---------- toolbar wiring ---------- */
+/* ---------- tool + control wiring ---------- */
+function roomForItem(){
+  if(P().items.length >= MAX_LAYERS){
+    toast(`A panel holds ${MAX_LAYERS} things — merge or delete one first`);
+    return false;
+  }
+  return true;
+}
 function setTool(t){
-  tool=t;
-  document.querySelectorAll('.tool-btn').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));
-  $('shapePicker').classList.toggle('open',t==='shape');
-  if(t!=='select'){selectedObj=null; render();}
+  tool = t;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === t));
+  syncControls();
+  render();
 }
-document.querySelectorAll('.tool-btn').forEach(b=>{
-  b.addEventListener('click',()=>{
-    const t=b.dataset.tool;
-    if(t==='image'){$('imageInput').click(); return;}
-    setTool(t);
-    if(t==='text') toast('Tap the panel to place text');
-    if(t==='shape') toast('Pick a shape, then tap the panel');
-  });
-});
-document.querySelectorAll('.shape-opt').forEach(b=>{
-  b.addEventListener('click',()=>{
-    shapeKind=b.dataset.shape;
-    document.querySelectorAll('.shape-opt').forEach(x=>x.classList.toggle('sel',x===b));
-  });
-});
-function setColor(c){
-  color=c;
-  document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('sel',s.dataset.color===c));
-  if(selectedObj && (selectedObj.type==='text'||selectedObj.type==='shape')){
-    pushUndo(); selectedObj.color=c; render();
-  }
-}
-document.querySelectorAll('.swatch').forEach(s=>s.addEventListener('click',()=>setColor(s.dataset.color)));
-$('customColor').addEventListener('input',e=>setColor(e.target.value));
-$('sizeSlider').addEventListener('input',e=>brushSize=+e.target.value);
-$('undoBtn').addEventListener('click',undo);
-$('redoBtn').addEventListener('click',redo);
+function syncControls(){
+  const o = selectedItem();
+  const isObj = o && o.kind !== 'draw';
+  $('shapePicker').classList.toggle('open', tool === 'shape');
+  $('objectRow').classList.toggle('open', tool !== 'shape' && !!o);
 
-/* clear */
-$('clearBtn').addEventListener('click',()=>openModal('clearModal'));
-$('clearCancel').addEventListener('click',()=>closeModal('clearModal'));
-$('clearOk').addEventListener('click',()=>{
-  pushUndo();
-  const p=panels[cur];
-  p.bitmap.getContext('2d').clearRect(0,0,PANEL_W,PANEL_H);
-  p.objects=[]; selectedObj=null;
-  closeModal('clearModal'); render(); toast('Panel cleared');
-});
-
-/* background color */
-$('bgBtn').addEventListener('click',()=>$('bgColorInput').click());
-$('bgColorInput').addEventListener('input',e=>{
-  pushUndo(); panels[cur].bg=e.target.value; render();
-});
-
-/* image upload */
-$('imageInput').addEventListener('change',e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const rd=new FileReader();
-  rd.onload=()=>{
-    const img=new Image();
-    img.onload=()=>{
-      pushUndo();
-      const o=makeImage(img,PANEL_W/2,PANEL_H/2);
-      panels[cur].objects.push(o);
-      selectedObj=o; setTool('select'); render();
-      toast('Photo added — pinch handles to resize');
-    };
-    img.src=rd.result;
-  };
-  rd.readAsDataURL(f);
-  e.target.value='';
-});
-
-/* text modal */
-function openModal(id){$(id).classList.add('open');}
-function closeModal(id){$(id).classList.remove('open');}
-$('textCancel').addEventListener('click',()=>closeModal('textModal'));
-$('textOk').addEventListener('click',()=>{
-  const txt=$('textInput').value.trim();
-  closeModal('textModal');
-  if(!txt) return;
-  pushUndo();
-  if(editingTextObj){
-    editingTextObj.text=txt; measureText(editingTextObj,ctx);
-    selectedObj=editingTextObj;
+  // slider: brush size while painting, opacity while an object is selected
+  const paintMode = (tool === 'pencil' || tool === 'eraser' || tool === 'fill');
+  const slider = $('sizeSlider');
+  if(!paintMode && isObj){
+    slider.dataset.role = 'opacity';
+    slider.min = 5; slider.max = 100; slider.value = Math.round(o.opacity*100);
+    slider.setAttribute('aria-label','Opacity');
+    $('sliderCap').textContent = 'Fade';
   }else{
-    const o=makeText(txt,pendingTextPos.x,pendingTextPos.y);
-    panels[cur].objects.push(o);
-    selectedObj=o;
+    slider.dataset.role = 'size';
+    slider.min = 2; slider.max = 60; slider.value = brushSize;
+    slider.setAttribute('aria-label','Brush size');
+    $('sliderCap').textContent = 'Size';
   }
-  editingTextObj=null; pendingTextPos=null;
-  setTool('select'); render();
+  $('swatches').classList.toggle('dim', !paintMode && o && (o.kind === 'image' || o.kind === 'draw'));
+
+  if(o){
+    const idx = indexOfItem(o.id);
+    $('objForward').disabled = idx === P().items.length-1;
+    $('objBack').disabled = idx === 0;
+    $('objClip').disabled = idx === 0;
+    $('objClip').classList.toggle('on', !!o.clip);
+  }
+  const active = activeDrawItem();
+  $('chipName').textContent = o ? o.name : active.name;
+  $('chipCount').textContent = String(P().items.length);
+}
+document.querySelectorAll('.tool-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    const t = b.dataset.tool;
+    if(t === 'image'){
+      if(!roomForItem()) return;
+      $('imageInput').click();
+      return;
+    }
+    if(t === 'pencil' || t === 'eraser' || t === 'fill'){
+      // painting always aims at a drawing layer, so show which one
+      const before = selectedId;
+      const layer = activeDrawItem();
+      if(selectedId && itemById(selectedId) && itemById(selectedId).kind !== 'draw') selectedId = null;
+      if(before !== selectedId && sheetOpen) renderLayerList();
+      setTool(t);
+      if(t === 'fill') toast(`Tap an area to fill it on "${layer.name}"`);
+      return;
+    }
+    setTool(t);
+    if(t === 'text') toast('Tap the panel to place text');
+    if(t === 'shape') toast('Pick a shape, then tap the panel');
+  });
+});
+document.querySelectorAll('.shape-opt').forEach(b => {
+  b.addEventListener('click', () => {
+    shapeKind = b.dataset.shape;
+    document.querySelectorAll('.shape-opt').forEach(x => x.classList.toggle('sel', x === b));
+  });
+});
+
+function setColor(c, quiet){
+  color = c;
+  document.querySelectorAll('.swatch').forEach(s => s.classList.toggle('sel', s.dataset.color === c));
+  $('customColor').value = /^#[0-9a-f]{6}$/i.test(c) ? c : '#141414';
+  const o = selectedItem();
+  if(!quiet && o && (o.kind === 'text' || o.kind === 'shape')){
+    const before = metaSnapshot();
+    o.color = c;
+    commitMeta(before);
+    render();
+    if(sheetOpen) renderLayerList();
+  }
+}
+document.querySelectorAll('.swatch').forEach(s => s.addEventListener('click', () => setColor(s.dataset.color)));
+$('customColor').addEventListener('input', e => setColor(e.target.value));
+
+$('sizeSlider').addEventListener('input', e => {
+  if(e.target.dataset.role === 'opacity'){
+    const o = selectedItem();
+    if(o){ o.opacity = (+e.target.value)/100; render(); }
+  }else{
+    brushSize = +e.target.value;
+  }
+});
+$('sizeSlider').addEventListener('change', e => {
+  if(e.target.dataset.role === 'opacity'){
+    const o = selectedItem();
+    if(o){
+      const before = metaSnapshot();
+      before.items.forEach(i => { if(i.id === o.id) i.opacity = o._opBefore ?? i.opacity; });
+      commitMeta(before);
+      if(sheetOpen) renderLayerList();
+    }
+  }
+});
+$('sizeSlider').addEventListener('pointerdown', () => {
+  const o = selectedItem();
+  if(o && $('sizeSlider').dataset.role === 'opacity') o._opBefore = o.opacity;
+});
+
+$('undoBtn').addEventListener('click', undo);
+$('redoBtn').addEventListener('click', redo);
+$('pickBtn').addEventListener('click', () => {
+  pickArmed = !pickArmed;
+  $('pickBtn').classList.toggle('on', pickArmed);
+  if(pickArmed) toast('Tap the panel to pick up that color');
+});
+
+/* ---------- object row ---------- */
+function moveSelected(dir){
+  const o = selectedItem(); if(!o) return;
+  const items = P().items;
+  const i = indexOfItem(o.id);
+  const j = i + dir;
+  if(j < 0 || j >= items.length) return;
+  const before = metaSnapshot();
+  items.splice(j, 0, items.splice(i, 1)[0]);
+  commitMeta(before);
+  syncControls(); render();
+  if(sheetOpen) renderLayerList();
+}
+$('objForward').addEventListener('click', () => moveSelected(1));
+$('objBack').addEventListener('click', () => moveSelected(-1));
+$('objDup').addEventListener('click', () => duplicateItem(selectedId));
+$('objDel').addEventListener('click', () => deleteItem(selectedId));
+$('objClip').addEventListener('click', () => {
+  const o = selectedItem(); if(!o) return;
+  const i = indexOfItem(o.id);
+  if(i === 0) return;
+  const before = metaSnapshot();
+  o.clip = !o.clip;
+  commitMeta(before);
+  toast(o.clip ? `Masked into "${P().items[i-1].name}"` : 'Mask removed');
+  syncControls(); render();
+  if(sheetOpen) renderLayerList();
+});
+
+function cloneItem(it){
+  const c = {...it, id:newId(), _ser:null};
+  if(it.kind === 'draw'){
+    c.canvas = newCanvas(PANEL_W, PANEL_H);
+    c.canvas.getContext('2d').drawImage(it.canvas, 0, 0);
+  }
+  if(it.kind === 'text') c.lines = it.lines ? [...it.lines] : undefined;
+  return c;
+}
+function duplicateItem(id){
+  const it = itemById(id); if(!it) return;
+  if(!roomForItem()) return;
+  const before = metaSnapshot();
+  const c = cloneItem(it);
+  c.name = it.name.replace(/ copy( \d+)?$/,'') + ' copy';
+  c.clip = false;
+  if(c.kind !== 'draw'){ c.cx += 40; c.cy += 40; }
+  P().items.splice(indexOfItem(id)+1, 0, c);
+  selectedId = c.id;
+  if(c.kind === 'draw') P().activeDraw = c.id;
+  commitMeta(before);
+  syncControls(); render();
+  if(sheetOpen) renderLayerList();
+  toast('Copied');
+}
+function deleteItem(id){
+  const it = itemById(id); if(!it) return;
+  const p = P();
+  if(p.items.length === 1){ toast('A panel needs at least one thing on it'); return; }
+  const before = metaSnapshot();
+  const i = indexOfItem(id);
+  p.items.splice(i, 1);
+  if(p.items[i] && p.items[i].clip && i === 0) p.items[i].clip = false;
+  if(selectedId === id) selectedId = null;
+  if(p.activeDraw === id) p.activeDraw = null;
+  activeDrawItem();
+  commitMeta(before);
+  syncControls(); render();
+  if(sheetOpen) renderLayerList();
+  toast(`"${it.name}" removed`);
+}
+function mergeDown(id){
+  const p = P();
+  const i = indexOfItem(id);
+  if(i <= 0) return;
+  const top = p.items[i], bot = p.items[i-1];
+  if(bot.kind !== 'draw' || top.kind !== 'draw'){
+    toast('Merge joins two drawing layers');
+    return;
+  }
+  const before = metaSnapshot();
+  const merged = makeDraw(bot.name);
+  const m = merged.canvas.getContext('2d');
+  m.globalAlpha = bot.opacity;
+  m.drawImage(bot.canvas, 0, 0);
+  m.globalAlpha = top.opacity;
+  m.globalCompositeOperation = top.blend;
+  m.drawImage(top.canvas, 0, 0);
+  merged.alphaLock = bot.alphaLock;
+  p.items.splice(i-1, 2, merged);
+  p.activeDraw = merged.id;
+  selectedId = merged.id;
+  commitMeta(before);
+  syncControls(); render(); renderLayerList();
+  toast('Layers merged');
+}
+
+/* ---------- the stack sheet ---------- */
+let sheetOpen = false;
+let openOptsId = null;
+
+function openSheet(){
+  sheetOpen = true;
+  renderLayerList();
+  $('layerSheet').classList.add('open');
+  $('sheetBackdrop').classList.add('open');
+}
+function closeSheet(){
+  sheetOpen = false;
+  openOptsId = null;
+  $('layerSheet').classList.remove('open');
+  $('sheetBackdrop').classList.remove('open');
+}
+$('layerChip').addEventListener('click', openSheet);
+$('closeSheet').addEventListener('click', closeSheet);
+$('sheetBackdrop').addEventListener('click', closeSheet);
+
+function thumbFor(it){
+  const t = newCanvas(76, 118);
+  const tc = t.getContext('2d');
+  sa.globalCompositeOperation = 'source-over';
+  sa.globalAlpha = 1;
+  sa.clearRect(0, 0, PANEL_W, PANEL_H);
+  drawItemBare(sa, it);
+  tc.drawImage(scratchA, 0, 0, PANEL_W, PANEL_H, 0, 0, 76, 118);
+  return t.toDataURL('image/png');
+}
+function metaLine(it){
+  const bits = [KIND_LABEL[it.kind]];
+  if(it.opacity < 0.995) bits.push(Math.round(it.opacity*100) + '%');
+  const bl = BLENDS.find(b => b[0] === it.blend);
+  if(bl && bl[0] !== 'source-over') bits.push(bl[1]);
+  if(it.alphaLock) bits.push('Alpha lock');
+  if(it.locked) bits.push('Locked');
+  return bits.join(' · ');
+}
+function renderLayerList(){
+  const p = P();
+  const list = $('layerList');
+  list.innerHTML = '';
+  $('addLayerBtn').disabled = p.items.length >= MAX_LAYERS;
+
+  // top of the list is the top of the stack
+  for(let d = p.items.length - 1; d >= 0; d--){
+    const it = p.items[d];
+    const row = document.createElement('div');
+    row.className = 'layer-row';
+    row.dataset.id = it.id;
+    if(it.id === selectedId || (it.kind === 'draw' && it.id === p.activeDraw && !selectedId)) row.classList.add('sel');
+    if(!it.visible) row.classList.add('hidden-layer');
+
+    const main = document.createElement('div');
+    main.className = 'lr-main';
+
+    const handle = document.createElement('button');
+    handle.className = 'drag-handle';
+    handle.setAttribute('aria-label', `Reorder ${it.name}`);
+    handle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 9h14M5 15h14"/></svg>';
+    handle.addEventListener('pointerdown', ev => startRowDrag(ev, it.id));
+
+    const thumb = document.createElement('img');
+    thumb.className = 'layer-thumb';
+    thumb.alt = '';
+    thumb.src = thumbFor(it);
+
+    const text = document.createElement('button');
+    text.className = 'lr-text';
+    const nm = document.createElement('span');
+    nm.className = 'lr-name';
+    nm.textContent = it.name;
+    if(it.clip) nm.innerHTML = `${escapeHtml(it.name)} <span class="lr-badge">MASK</span>`;
+    const mt = document.createElement('span');
+    mt.className = 'lr-meta';
+    mt.textContent = metaLine(it);
+    text.append(nm, mt);
+    text.addEventListener('click', () => {
+      selectedId = it.id;
+      if(it.kind === 'draw') p.activeDraw = it.id;
+      syncControls(); render(); renderLayerList();
+    });
+
+    const eye = document.createElement('button');
+    eye.className = 'lr-btn' + (it.visible ? '' : ' off');
+    eye.setAttribute('aria-label', it.visible ? `Hide ${it.name}` : `Show ${it.name}`);
+    eye.innerHTML = it.visible
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.8 12S5.5 5.5 12 5.5 22.2 12 22.2 12 18.5 18.5 12 18.5 1.8 12 1.8 12z"/><circle cx="12" cy="12" r="3"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l16 16"/><path d="M9.9 5.9A9.7 9.7 0 0112 5.5c6.5 0 10.2 6.5 10.2 6.5a17 17 0 01-3.4 4.1M6.3 7.9A17 17 0 001.8 12S5.5 18.5 12 18.5c1 0 1.9-.15 2.7-.4"/></svg>';
+    eye.addEventListener('click', () => {
+      const before = metaSnapshot();
+      it.visible = !it.visible;
+      commitMeta(before);
+      render(); renderLayerList(); syncControls();
+    });
+
+    const more = document.createElement('button');
+    more.className = 'lr-btn';
+    more.setAttribute('aria-label', `Options for ${it.name}`);
+    more.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>';
+    more.addEventListener('click', () => {
+      openOptsId = openOptsId === it.id ? null : it.id;
+      renderLayerList();
+    });
+
+    main.append(handle, thumb, text, eye, more);
+    row.append(main);
+    if(openOptsId === it.id) row.append(buildOpts(it, d));
+    list.append(row);
+  }
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function buildOpts(it, index){
+  const wrap = document.createElement('div');
+  wrap.className = 'lr-opts open';
+
+  // name
+  const l1 = document.createElement('div');
+  l1.className = 'opt-line';
+  const lab1 = document.createElement('label');
+  lab1.textContent = 'Name';
+  lab1.htmlFor = 'nm-' + it.id;
+  const nameIn = document.createElement('input');
+  nameIn.type = 'text'; nameIn.id = 'nm-' + it.id; nameIn.value = it.name; nameIn.maxLength = 40;
+  nameIn.addEventListener('change', () => {
+    const before = metaSnapshot();
+    it.name = nameIn.value.trim() || KIND_LABEL[it.kind];
+    commitMeta(before);
+    syncControls(); renderLayerList();
+  });
+  l1.append(lab1, nameIn);
+
+  // opacity
+  const l2 = document.createElement('div');
+  l2.className = 'opt-line';
+  const lab2 = document.createElement('label');
+  lab2.textContent = 'Fade';
+  lab2.htmlFor = 'op-' + it.id;
+  const op = document.createElement('input');
+  op.type = 'range'; op.id = 'op-' + it.id; op.min = 0; op.max = 100; op.value = Math.round(it.opacity*100);
+  const opv = document.createElement('span');
+  opv.className = 'opt-val';
+  opv.textContent = Math.round(it.opacity*100) + '%';
+  let opBefore = null;
+  op.addEventListener('pointerdown', () => { opBefore = metaSnapshot(); });
+  op.addEventListener('input', () => {
+    it.opacity = (+op.value)/100;
+    opv.textContent = op.value + '%';
+    render();
+  });
+  op.addEventListener('change', () => {
+    if(opBefore){ commitMeta(opBefore); opBefore = null; }
+    syncControls();
+  });
+  l2.append(lab2, op, opv);
+
+  // blend
+  const l3 = document.createElement('div');
+  l3.className = 'opt-line';
+  const lab3 = document.createElement('label');
+  lab3.textContent = 'Ink';
+  lab3.htmlFor = 'bl-' + it.id;
+  const sel = document.createElement('select');
+  sel.id = 'bl-' + it.id;
+  BLENDS.forEach(([v,n]) => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = n; if(it.blend === v) o.selected = true;
+    sel.append(o);
+  });
+  sel.addEventListener('change', () => {
+    const before = metaSnapshot();
+    it.blend = sel.value;
+    commitMeta(before);
+    render(); renderLayerList();
+  });
+  l3.append(lab3, sel);
+
+  // buttons
+  const btns = document.createElement('div');
+  btns.className = 'opt-btns';
+  const mk = (label, cls, fn, disabled) => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn' + (cls ? ' ' + cls : '');
+    b.textContent = label;
+    b.disabled = !!disabled;
+    b.addEventListener('click', fn);
+    return b;
+  };
+  if(it.kind === 'draw'){
+    btns.append(mk(it.alphaLock ? 'Alpha lock on' : 'Alpha lock', it.alphaLock ? 'on' : '', () => {
+      const before = metaSnapshot();
+      it.alphaLock = !it.alphaLock;
+      commitMeta(before);
+      toast(it.alphaLock ? 'Paint stays inside what is already there' : 'Alpha lock off');
+      renderLayerList();
+    }));
+    btns.append(mk('Merge down', '', () => mergeDown(it.id), index === 0 || P().items[index-1].kind !== 'draw'));
+  }
+  btns.append(mk(it.clip ? 'Masked' : 'Mask below', it.clip ? 'on' : '', () => {
+    const before = metaSnapshot();
+    it.clip = !it.clip;
+    commitMeta(before);
+    render(); renderLayerList(); syncControls();
+  }, index === 0));
+  btns.append(mk(it.locked ? 'Unlock' : 'Lock', it.locked ? 'on' : '', () => {
+    const before = metaSnapshot();
+    it.locked = !it.locked;
+    commitMeta(before);
+    renderLayerList();
+  }));
+  btns.append(mk('Copy', '', () => duplicateItem(it.id)));
+  btns.append(mk('To panel…', '', () => openCopyModal(it.id)));
+  btns.append(mk('Delete', 'danger', () => deleteItem(it.id)));
+  wrap.append(l1, l2, l3, btns);
+  return wrap;
+}
+
+$('addLayerBtn').addEventListener('click', () => {
+  if(!roomForItem()) return;
+  const p = P();
+  const before = metaSnapshot();
+  const n = p.items.filter(i => i.kind === 'draw').length + 1;
+  const it = makeDraw('Drawing ' + n);
+  const at = selectedId ? indexOfItem(selectedId)+1 : p.items.length;
+  p.items.splice(at, 0, it);
+  p.activeDraw = it.id;
+  selectedId = it.id;
+  commitMeta(before);
+  syncControls(); render(); renderLayerList();
+});
+
+/* drag to reorder */
+function startRowDrag(ev, id){
+  ev.preventDefault();
+  const list = $('layerList');
+  const row = list.querySelector(`.layer-row[data-id="${id}"]`);
+  if(!row) return;
+  const p = P();
+  const before = metaSnapshot();
+  const rowH = row.getBoundingClientRect().height + 8;
+  const startY = ev.clientY;
+  let dispIdx = Array.from(list.children).indexOf(row);
+  row.classList.add('dragging');
+  let moved = false;
+
+  const move = e => {
+    e.preventDefault();
+    // the list is rebuilt on every step, so look the row up fresh each time
+    const live = list.querySelector(`.layer-row[data-id="${id}"]`);
+    if(!live) return;
+    const currentDisp = Array.from(list.children).indexOf(live);
+    if(currentDisp < 0) return;
+    const steps = Math.round((e.clientY - startY) / rowH);
+    const target = clamp(dispIdx + steps, 0, p.items.length - 1);
+    if(target === currentDisp) return;
+    // display order is the reverse of stack order
+    const from = p.items.length - 1 - currentDisp;
+    const to = p.items.length - 1 - target;
+    if(from < 0 || from >= p.items.length || to < 0 || to >= p.items.length) return;
+    moved = true;
+    p.items.splice(to, 0, p.items.splice(from, 1)[0]);
+    render();
+    renderLayerList();
+    const again = list.querySelector(`.layer-row[data-id="${id}"]`);
+    if(again) again.classList.add('dragging');
+  };
+  const up = e => {
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', up);
+    window.removeEventListener('pointercancel', up);
+    const again = list.querySelector(`.layer-row[data-id="${id}"]`);
+    if(again) again.classList.remove('dragging');
+    if(moved){ commitMeta(before); syncControls(); }
+  };
+  window.addEventListener('pointermove', move, {passive:false});
+  window.addEventListener('pointerup', up);
+  window.addEventListener('pointercancel', up);
+}
+
+/* ---------- copy to another panel ---------- */
+let copySrcId = null;
+function openCopyModal(id){
+  copySrcId = id;
+  const it = itemById(id);
+  $('copyWhat').textContent = `"${it.name}" lands on top of that panel's stack.`;
+  const grid = $('panelGrid');
+  grid.innerHTML = '';
+  for(let i=0;i<PANEL_COUNT;i++){
+    const b = document.createElement('button');
+    b.className = 'panel-pick';
+    b.disabled = i === cur || panels[i].items.length >= MAX_LAYERS;
+    b.innerHTML = `<span class="pp-num">${i+1}</span><span>${escapeHtml(LABELS[i])}</span>`;
+    b.addEventListener('click', () => {
+      const src = itemById(copySrcId);
+      if(!src) return;
+      const before = metaSnapshot(i);
+      const c = cloneItem(src);
+      c.clip = false;
+      panels[i].items.push(c);
+      commitMeta(before, i);   // undoable once you're on that panel
+      closeModal('copyModal');
+      toast(`Copied to ${LABELS[i]} — undo it from that panel`);
+    });
+    grid.append(b);
+  }
+  openModal('copyModal');
+}
+$('copyCancel').addEventListener('click', () => closeModal('copyModal'));
+
+/* ---------- clear ---------- */
+$('clearBtn').addEventListener('click', () => {
+  $('clearLayerLine').textContent = `"${activeDrawItem().name}" is the layer you're painting on. You can undo either one right after.`;
+  openModal('clearModal');
+});
+$('clearCancel').addEventListener('click', () => closeModal('clearModal'));
+$('clearLayerOk').addEventListener('click', () => {
+  const it = activeDrawItem();
+  const c = it.canvas.getContext('2d', {willReadFrequently:true});
+  const before = c.getImageData(0, 0, PANEL_W, PANEL_H);
+  c.clearRect(0, 0, PANEL_W, PANEL_H);
+  it._ser = null;
+  const after = c.getImageData(0, 0, PANEL_W, PANEL_H);
+  pushPixels(it.id, {x:0, y:0, w:PANEL_W, h:PANEL_H}, before, after);
+  closeModal('clearModal');
+  render();
+  if(sheetOpen) renderLayerList();
+  toast(`"${it.name}" cleared`);
+});
+$('clearPanelOk').addEventListener('click', () => {
+  const before = metaSnapshot();
+  const p = P();
+  const fresh = makeDraw('Drawing');
+  p.items = [fresh];
+  p.activeDraw = fresh.id;
+  p.bg = '#ffffff';
+  selectedId = null;
+  commitMeta(before);
+  closeModal('clearModal');
+  syncControls(); render();
+  if(sheetOpen) renderLayerList();
+  toast('Panel cleared');
+});
+
+/* ---------- background ---------- */
+$('bgBtn').addEventListener('click', () => $('bgColorInput').click());
+let bgBefore = null;
+$('bgColorInput').addEventListener('input', e => {
+  if(!bgBefore) bgBefore = metaSnapshot();
+  P().bg = e.target.value;
+  render();
+});
+$('bgColorInput').addEventListener('change', () => {
+  if(bgBefore){ commitMeta(bgBefore); bgBefore = null; }
+});
+
+/* ---------- photo import + treatment ---------- */
+let photoSrcImg = null, photoMode = 'copy', photoThr = 128;
+
+function processPhoto(img, mode, thr, maxDim){
+  const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width*scale)), h = Math.max(1, Math.round(img.height*scale));
+  const c = newCanvas(w, h);
+  const cx2 = c.getContext('2d', {willReadFrequently:true});
+  cx2.drawImage(img, 0, 0, w, h);
+  if(mode === 'photo') return c;
+
+  const id = cx2.getImageData(0, 0, w, h);
+  const d = id.data;
+  if(mode === 'gray'){
+    for(let i=0;i<d.length;i+=4){
+      const v = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+      d[i] = d[i+1] = d[i+2] = v;
+    }
+    cx2.putImageData(id, 0, 0);
+    return c;
+  }
+  // photocopy: Floyd-Steinberg dither to pure black and white
+  const lum = new Float32Array(w*h);
+  for(let i=0,p=0;i<d.length;i+=4,p++){
+    lum[p] = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+  }
+  const bias = thr - 128;
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const p = y*w + x;
+      const old = lum[p] - bias;
+      const nv = old < 128 ? 0 : 255;
+      const err = old - nv;
+      lum[p] = nv;
+      if(x+1 < w)               lum[p+1]     += err * 7/16;
+      if(y+1 < h){
+        if(x > 0)               lum[p+w-1]   += err * 3/16;
+                                lum[p+w]     += err * 5/16;
+        if(x+1 < w)             lum[p+w+1]   += err * 1/16;
+      }
+    }
+  }
+  for(let p=0,i=0;p<lum.length;p++,i+=4){
+    const v = lum[p] <= 0 ? 0 : 255;
+    d[i] = d[i+1] = d[i+2] = v;
+    d[i+3] = v === 255 ? 0 : 255;   // white becomes transparent so it sits on any background
+  }
+  cx2.putImageData(id, 0, 0);
+  return c;
+}
+function updatePhotoPreview(){
+  if(!photoSrcImg) return;
+  const out = processPhoto(photoSrcImg, photoMode, photoThr, 300);
+  const pv = $('photoPreview');
+  pv.width = out.width; pv.height = out.height;
+  const c = pv.getContext('2d');
+  c.fillStyle = '#fff';
+  c.fillRect(0, 0, out.width, out.height);
+  c.drawImage(out, 0, 0);
+}
+$('imageInput').addEventListener('change', e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    loadImage(rd.result).then(img => {
+      photoSrcImg = img;
+      photoMode = 'copy'; photoThr = 128;
+      $('thrSlider').value = 128; $('thrVal').textContent = '128';
+      document.querySelectorAll('#photoModes .chip').forEach(c => c.classList.toggle('sel', c.dataset.mode === 'copy'));
+      $('thrLine').classList.add('open');
+      updatePhotoPreview();
+      openModal('photoModal');
+    }).catch(() => toast("That file didn't open as an image"));
+  };
+  rd.onerror = () => toast("That file didn't open as an image");
+  rd.readAsDataURL(f);
+});
+document.querySelectorAll('#photoModes .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    photoMode = c.dataset.mode;
+    document.querySelectorAll('#photoModes .chip').forEach(x => x.classList.toggle('sel', x === c));
+    $('thrLine').classList.toggle('open', photoMode === 'copy');
+    updatePhotoPreview();
+  });
+});
+$('thrSlider').addEventListener('input', e => {
+  photoThr = +e.target.value;
+  $('thrVal').textContent = e.target.value;
+  updatePhotoPreview();
+});
+$('photoCancel').addEventListener('click', () => { closeModal('photoModal'); photoSrcImg = null; });
+$('photoOk').addEventListener('click', () => {
+  if(!photoSrcImg) return closeModal('photoModal');
+  const out = processPhoto(photoSrcImg, photoMode, photoThr, 1600);
+  const src = out.toDataURL('image/png');
+  loadImage(src).then(img => {
+    const before = metaSnapshot();
+    const o = makeImage(img, src, PANEL_W/2, PANEL_H/2);
+    if(photoMode === 'copy') o.name = 'Photocopy';
+    P().items.push(o);
+    selectedId = o.id;
+    commitMeta(before);
+    closeModal('photoModal');
+    photoSrcImg = null;
+    setTool('select');
+    render();
+    if(sheetOpen) renderLayerList();
+    toast('Photo added — drag the corner to resize');
+  });
+});
+
+/* ---------- modals ---------- */
+function openModal(id){ $(id).classList.add('open'); }
+function closeModal(id){ $(id).classList.remove('open'); }
+$('textCancel').addEventListener('click', () => closeModal('textModal'));
+$('textOk').addEventListener('click', () => {
+  const txt = $('textInput').value.trim();
+  closeModal('textModal');
+  if(!txt){ editingTextId = null; pendingTextPos = null; return; }
+  const before = metaSnapshot();
+  if(editingTextId){
+    const o = itemById(editingTextId);
+    if(o){
+      o.text = txt;
+      o.name = txt.split('\n')[0].slice(0,22) || 'Text';
+      measureText(o);
+      selectedId = o.id;
+    }
+  }else if(roomForItem()){
+    const o = makeText(txt, pendingTextPos.x, pendingTextPos.y, color);
+    P().items.push(o);
+    selectedId = o.id;
+  }else{
+    editingTextId = null; pendingTextPos = null;
+    return;
+  }
+  editingTextId = null; pendingTextPos = null;
+  commitMeta(before);
+  setTool('select');
+  render();
+  if(sheetOpen) renderLayerList();
 });
 
 /* ---------- navigation ---------- */
 function gotoPanel(i){
-  cur=Math.max(0,Math.min(PANEL_COUNT-1,i));
-  selectedObj=null;
-  $('panelLabel').textContent=LABELS[cur];
-  $('panelCounter').textContent=`${cur+1} / 8`;
-  $('backBtn').disabled=cur===0;
-  $('nextBtn').disabled=cur===PANEL_COUNT-1;
-  $('bgColorInput').value=panels[cur].bg;
+  cur = clamp(i, 0, PANEL_COUNT-1);
+  selectedId = null;
+  openOptsId = null;
+  $('panelLabel').textContent = LABELS[cur];
+  $('panelCounter').textContent = `${cur+1} / 8`;
+  $('backBtn').disabled = cur === 0;
+  $('nextBtn').disabled = cur === PANEL_COUNT-1;
+  $('bgColorInput').value = P().bg;
   updateHistoryButtons();
+  syncControls();
   render();
+  if(sheetOpen) renderLayerList();
 }
-$('backBtn').addEventListener('click',()=>gotoPanel(cur-1));
-$('nextBtn').addEventListener('click',()=>gotoPanel(cur+1));
+$('backBtn').addEventListener('click', () => gotoPanel(cur-1));
+$('nextBtn').addEventListener('click', () => gotoPanel(cur+1));
 
 /* ---------- preview & export ---------- */
-const sheet=$('sheetCanvas');
-sheet.width=SHEET_W; sheet.height=SHEET_H;
+const sheet = $('sheetCanvas');
+sheet.width = SHEET_W; sheet.height = SHEET_H;
 
 function drawSheet(withGuides){
-  const s=sheet.getContext('2d');
-  s.fillStyle='#ffffff'; s.fillRect(0,0,SHEET_W,SHEET_H);
-  for(const [pi,col,row,rot] of IMPOSITION){
+  const s = sheet.getContext('2d');
+  s.globalAlpha = 1; s.globalCompositeOperation = 'source-over';
+  s.fillStyle = '#ffffff';
+  s.fillRect(0, 0, SHEET_W, SHEET_H);
+  const tmp = newCanvas(PANEL_W, PANEL_H);
+  const tctx = tmp.getContext('2d');
+  for(const [pi, col, row, rot] of IMPOSITION){
+    tctx.clearRect(0, 0, PANEL_W, PANEL_H);
+    renderPanelTo(tctx, pi);
     s.save();
-    s.translate(col*PANEL_W+PANEL_W/2, row*PANEL_H+PANEL_H/2);
+    s.translate(col*PANEL_W + PANEL_W/2, row*PANEL_H + PANEL_H/2);
     if(rot) s.rotate(Math.PI);
-    s.translate(-PANEL_W/2,-PANEL_H/2);
-    const tmp=document.createElement('canvas'); tmp.width=PANEL_W; tmp.height=PANEL_H;
-    renderPanelTo(tmp.getContext('2d'),pi);
-    s.drawImage(tmp,0,0);
+    s.translate(-PANEL_W/2, -PANEL_H/2);
+    s.drawImage(tmp, 0, 0);
     s.restore();
   }
   if(withGuides){
-    s.strokeStyle='#B9B4A6'; s.lineWidth=2; s.setLineDash([18,14]);
-    // fold lines: vertical thirds/quarters + horizontal middle
+    s.strokeStyle = '#B9B4A6'; s.lineWidth = 2; s.setLineDash([18,14]);
     for(let c=1;c<4;c++){
-      s.beginPath(); s.moveTo(c*PANEL_W,0); s.lineTo(c*PANEL_W,SHEET_H); s.stroke();
+      s.beginPath(); s.moveTo(c*PANEL_W, 0); s.lineTo(c*PANEL_W, SHEET_H); s.stroke();
     }
-    s.beginPath(); s.moveTo(0,SHEET_H/2); s.lineTo(SHEET_W,SHEET_H/2); s.stroke();
-    // cut line: center slit across the middle two panels
+    s.beginPath(); s.moveTo(0, SHEET_H/2); s.lineTo(SHEET_W, SHEET_H/2); s.stroke();
     s.setLineDash([]);
-    s.strokeStyle='#8A8577'; s.lineWidth=4;
-    s.beginPath(); s.moveTo(PANEL_W,SHEET_H/2); s.lineTo(3*PANEL_W,SHEET_H/2); s.stroke();
-    s.fillStyle='#8A8577'; s.font=`54px ${CANVAS_FONT}`;
-    s.fillText('✂ cut', PANEL_W+30, SHEET_H/2-24);
+    s.strokeStyle = '#8A8577'; s.lineWidth = 4;
+    s.beginPath(); s.moveTo(PANEL_W, SHEET_H/2); s.lineTo(3*PANEL_W, SHEET_H/2); s.stroke();
+    s.fillStyle = '#8A8577'; s.font = `54px ${CANVAS_FONT}`;
+    s.fillText('✂ cut', PANEL_W + 30, SHEET_H/2 - 24);
   }
 }
-$('previewBtn').addEventListener('click',()=>{
+$('previewBtn').addEventListener('click', () => {
   drawSheet($('guidesToggle').checked);
   $('previewScreen').classList.add('open');
 });
-$('closePreview').addEventListener('click',()=>$('previewScreen').classList.remove('open'));
-$('guidesToggle').addEventListener('change',()=>drawSheet($('guidesToggle').checked));
+$('closePreview').addEventListener('click', () => $('previewScreen').classList.remove('open'));
+$('guidesToggle').addEventListener('change', () => drawSheet($('guidesToggle').checked));
 
-$('exportBtn').addEventListener('click',()=>{
-  const status=$('exportStatus');
-  status.textContent='Building your PDF…';
-  setTimeout(()=>{
+$('exportBtn').addEventListener('click', () => {
+  const status = $('exportStatus');
+  status.textContent = 'Building your PDF…';
+  setTimeout(() => {
     try{
-      drawSheet(false); // PDF is always clean — no guides, no cut marks
-      const {jsPDF}=window.jspdf;
-      const pdf=new jsPDF({orientation:'landscape',unit:'in',format:'letter'});
-      pdf.addImage(sheet.toDataURL('image/jpeg',0.95),'JPEG',0,0,11,8.5);
+      drawSheet(false);
+      const {jsPDF} = window.jspdf;
+      const pdf = new jsPDF({orientation:'landscape', unit:'in', format:'letter'});
+      pdf.addImage(sheet.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 11, 8.5);
       pdf.save('my-zine.pdf');
-      drawSheet($('guidesToggle').checked); // restore on-screen preview
-      status.textContent='Saved! Print it landscape, actual size.';
+      drawSheet($('guidesToggle').checked);
+      status.textContent = 'Saved! Print it landscape, actual size.';
     }catch(err){
-      status.textContent='Export failed — check your connection and try again.';
+      status.textContent = "That didn't export. Check your connection and try again.";
       console.error(err);
     }
-    setTimeout(()=>status.textContent='',4000);
-  },30);
+    setTimeout(()=>{ status.textContent = ''; }, 4000);
+  }, 30);
 });
 
+/* ---------- saving ---------- */
+const DB_NAME = 'pocket-zine', STORE = 'projects', KEY = 'current';
+let dbPromise = null, storageOK = true, saveTimer = null, warnedStorage = false;
+
+function openDB(){
+  if(dbPromise) return dbPromise;
+  dbPromise = new Promise((res, rej) => {
+    let req;
+    try{ req = indexedDB.open(DB_NAME, 1); }
+    catch(err){ return rej(err); }
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if(!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE);
+    };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+    req.onblocked = () => rej(new Error('blocked'));
+  }).catch(err => { storageOK = false; throw err; });
+  return dbPromise;
+}
+function setSaveDot(cls){
+  const d = $('saveDot');
+  d.className = cls || '';
+}
+function serItem(it){
+  const o = {
+    id:it.id, kind:it.kind, name:it.name, opacity:it.opacity, blend:it.blend,
+    visible:it.visible, locked:it.locked, clip:it.clip
+  };
+  if(it.kind === 'draw'){
+    o.alphaLock = it.alphaLock;
+    if(!it._ser) it._ser = it.canvas.toDataURL('image/png');
+    o.src = it._ser;
+  }else if(it.kind === 'image'){
+    Object.assign(o, {src:it.src, cx:it.cx, cy:it.cy, w:it.w, h:it.h, rot:it.rot});
+  }else if(it.kind === 'text'){
+    Object.assign(o, {text:it.text, cx:it.cx, cy:it.cy, rot:it.rot, fontSize:it.fontSize, color:it.color});
+  }else if(it.kind === 'shape'){
+    Object.assign(o, {shape:it.shape, cx:it.cx, cy:it.cy, w:it.w, h:it.h, rot:it.rot, color:it.color});
+  }
+  return o;
+}
+function scheduleSave(){
+  if(!storageOK) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveNow(false), 900);
+}
+async function saveNow(force){
+  if(!storageOK) return;
+  if(drag && !force){ scheduleSave(); return; }
+  setSaveDot('saving');
+  try{
+    const payload = {
+      v:2, cur, saved:Date.now(),
+      panels: panels.map(p => ({
+        bg:p.bg,
+        activeDraw:p.activeDraw,
+        items:p.items.map(serItem)
+      }))
+    };
+    const db = await openDB();
+    await new Promise((res, rej) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).put(payload, KEY);
+      tx.oncomplete = res;
+      tx.onerror = () => rej(tx.error);
+      tx.onabort = () => rej(tx.error || new Error('aborted'));
+    });
+    setSaveDot('saved');
+  }catch(err){
+    console.error(err);
+    setSaveDot('failed');
+    if(!warnedStorage){
+      warnedStorage = true;
+      toast('Saving is off — export a PDF to keep your work');
+    }
+  }
+}
+async function loadSaved(){
+  let data = null;
+  try{
+    const db = await openDB();
+    data = await new Promise((res, rej) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const r = tx.objectStore(STORE).get(KEY);
+      r.onsuccess = () => res(r.result || null);
+      r.onerror = () => rej(r.error);
+    });
+  }catch(err){
+    storageOK = false;
+    setSaveDot('failed');
+    toast('Saving is off in this browser — export a PDF to keep your work');
+    return;
+  }
+  if(!data || !Array.isArray(data.panels)) return;
+
+  let maxId = 0;
+  const noteId = id => {
+    const n = parseInt(String(id).slice(1), 10);
+    if(!isNaN(n) && n > maxId) maxId = n;
+  };
+  for(let i=0;i<Math.min(PANEL_COUNT, data.panels.length);i++){
+    const sp = data.panels[i];
+    const items = [];
+    for(const si of (sp.items || [])){
+      noteId(si.id);
+      let it;
+      if(si.kind === 'draw'){
+        it = makeDraw(si.name);
+        it.alphaLock = !!si.alphaLock;
+        if(si.src){
+          try{
+            const img = await loadImage(si.src);
+            it.canvas.getContext('2d').drawImage(img, 0, 0);
+            it._ser = si.src;
+          }catch(e){ /* an unreadable layer comes back blank rather than blocking the load */ }
+        }
+      }else if(si.kind === 'image'){
+        try{
+          const img = await loadImage(si.src);
+          it = makeImage(img, si.src, si.cx, si.cy);
+          it.w = si.w; it.h = si.h; it.rot = si.rot;
+        }catch(e){ continue; }
+      }else if(si.kind === 'text'){
+        it = makeText(si.text, si.cx, si.cy, si.color);
+        it.rot = si.rot; it.fontSize = si.fontSize;
+        measureText(it);
+      }else if(si.kind === 'shape'){
+        it = makeShape(si.shape, si.cx, si.cy, si.color);
+        it.w = si.w; it.h = si.h; it.rot = si.rot;
+      }else continue;
+      it.id = si.id;
+      it.name = si.name || it.name;
+      it.opacity = typeof si.opacity === 'number' ? si.opacity : 1;
+      it.blend = si.blend || 'source-over';
+      it.visible = si.visible !== false;
+      it.locked = !!si.locked;
+      it.clip = !!si.clip;
+      items.push(it);
+    }
+    if(!items.length) items.push(makeDraw('Drawing'));
+    panels[i].bg = sp.bg || '#ffffff';
+    panels[i].items = items;
+    panels[i].activeDraw = items.some(x => x.id === sp.activeDraw)
+      ? sp.activeDraw
+      : ([...items].reverse().find(x => x.kind === 'draw') || items[0]).id;
+  }
+  idSeq = Math.max(idSeq, maxId + 1);
+  cur = clamp(data.cur || 0, 0, PANEL_COUNT-1);
+  setSaveDot('saved');
+}
+
+document.addEventListener('visibilitychange', () => { if(document.hidden) saveNow(true); });
+window.addEventListener('pagehide', () => saveNow(true));
+
+
+/* ---------- debug hook ----------
+   A small window handle used by the headless test harness. It reads and pokes
+   the same code paths the interface uses, so tests exercise the real app. */
+function countInk(cv){
+  const d = cv.getContext('2d', {willReadFrequently:true}).getImageData(0,0,PANEL_W,PANEL_H).data;
+  let n = 0;
+  for(let i=3;i<d.length;i+=4*7) if(d[i] > 8) n++;
+  return n;
+}
+function fracToClient(fx, fy){
+  const r = canvas.getBoundingClientRect();
+  return {clientX: r.left + r.width*fx, clientY: r.top + r.height*fy};
+}
+function firePointer(type, fx, fy){
+  const {clientX, clientY} = fracToClient(fx, fy);
+  canvas.dispatchEvent(new PointerEvent(type, {clientX, clientY, pointerId:1, bubbles:true, cancelable:true, isPrimary:true}));
+}
+window.__zine = {
+  render, setTool,
+  setColor: c => setColor(c, true),
+  stats(){
+    const p = P();
+    const draws = p.items.filter(i => i.kind === 'draw');
+    const last = undoStacks[cur][undoStacks[cur].length-1];
+    return {
+      panel: cur,
+      itemCount: p.items.length,
+      names: p.items.map(i => i.name),
+      kinds: p.items.map(i => i.kind),
+      activeName: activeDrawItem().name,
+      activeLayerPixels: countInk(activeDrawItem().canvas),
+      layerPixels: draws.map(i => countInk(i.canvas)),
+      lastUndoBytes: last ? entryBytes(last) : 0,
+      color
+    };
+  },
+  reorder(from, to){
+    const p = P();
+    if(from < 0 || from >= p.items.length || to < 0 || to >= p.items.length) return;
+    p.items.splice(to, 0, p.items.splice(from, 1)[0]);
+    render(); syncControls();
+  },
+  setItemProp(i, k, v){ P().items[i][k] = v; },
+  tapCanvas(fx, fy){ firePointer('pointerdown', fx, fy); firePointer('pointerup', fx, fy); },
+  strokeCanvas(x1, y1, x2, y2){
+    firePointer('pointerdown', x1, y1);
+    for(let i=1;i<=6;i++) firePointer('pointermove', x1+(x2-x1)*i/6, y1+(y2-y1)*i/6);
+    firePointer('pointerup', x2, y2);
+  },
+  addText(t, fx, fy){
+    const o = makeText(t, PANEL_W*fx, PANEL_H*fy, color);
+    P().items.push(o); selectedId = o.id; render(); syncControls();
+  },
+  addShape(kind, fx, fy){
+    const o = makeShape(kind, PANEL_W*fx, PANEL_H*fy, color);
+    P().items.push(o); selectedId = o.id; render(); syncControls();
+  },
+  compositeInk(){
+    sc.globalCompositeOperation = 'source-over'; sc.globalAlpha = 1;
+    sc.clearRect(0,0,PANEL_W,PANEL_H);
+    renderPanelTo(sc, cur);
+    const d = sc.getImageData(0,0,PANEL_W,PANEL_H).data;
+    const bg = hexToRgb(P().bg);
+    let n = 0;
+    for(let i=0;i<d.length;i+=4*7){
+      if(Math.abs(d[i]-bg.r) + Math.abs(d[i+1]-bg.g) + Math.abs(d[i+2]-bg.b) > 24) n++;
+    }
+    return n;
+  },
+  saveNow,
+  async savedSize(){
+    const db = await openDB();
+    const rec = await new Promise(res => {
+      const tx = db.transaction(STORE, 'readonly');
+      const r = tx.objectStore(STORE).get(KEY);
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => res(null);
+    });
+    return rec ? JSON.stringify(rec).length : 0;
+  },
+  fingerprint(){
+    return panels.map(p => ({
+      bg: p.bg,
+      items: p.items.map(i =>
+        [i.kind, i.name, Math.round(i.opacity*100), i.blend, i.visible, i.clip,
+         i.kind === 'draw' ? countInk(i.canvas) : Math.round(i.cx) + 'x' + Math.round(i.cy)
+        ].join('|'))
+    }));
+  }
+};
+
 /* ---------- init ---------- */
-gotoPanel(0);
-fitCanvas();
-// re-fit once fonts load so text metrics are right
-if(document.fonts&&document.fonts.ready) document.fonts.ready.then(render);
+(async function init(){
+  await loadSaved();
+  gotoPanel(cur);
+  fitCanvas();
+  setColor(color, true);
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(() => {
+      panels.forEach(p => p.items.forEach(it => { if(it.kind === 'text') measureText(it); }));
+      render();
+    });
+  }
+})();
+
 })();
 </script>
 </body>
