@@ -16,7 +16,9 @@ const checklistData = {
     { id: "battery", label: "Check Battery Back Up" },
     { id: "usbEthernet", label: "Check USB/Ethernet x:\\\\10.5.48.2\\xmlgateway" },
     { id: "unauthorized", label: "Check for unauthorized devices" },
-    { id: "deadCables", label: "Check for Dead Cables" }
+    { id: "deadCables", label: "Check for Dead Cables" },
+    { id: "printerPower", label: "Check for printer to be plugged into wall"},
+    { id: "computerPower", label: "Check for computer and monitor to be plugged up to battery backup"}
   ],
   "Front Counter": [
     { id: "westernUnion", label: "Western Union connectivity" },
