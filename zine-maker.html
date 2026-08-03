@@ -34,7 +34,8 @@ body{
   user-select:none;-webkit-user-select:none;
   touch-action:manipulation;
 }
-button{font-family:var(--font-body);cursor:pointer}
+button,select,input,textarea{font-family:var(--font-body);color:inherit;-webkit-text-fill-color:currentColor}
+button{cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--riso-blue);outline-offset:2px}
 
 /* ============ header ============ */
@@ -79,7 +80,7 @@ header{
 
 /* ============ canvas stage ============ */
 #stage{
-  flex:1 1 auto;min-height:0;
+  flex:1 1 auto;min-height:0;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
   padding:12px;
   background:
@@ -908,10 +909,10 @@ function applyEntry(e, which){
     if(it && it.kind === 'draw'){
       const data = which === 'before' ? e.before : e.after;
       it.canvas.getContext('2d').putImageData(data, e.rect.x, e.rect.y);
-      it._ser = null;
+      touchLayer(it);
     }
   }
-  P().items.forEach(i => { i._ser = null; });
+  P().items.forEach(i => { i._ser = null; if(i.kind === 'draw') i._rev = (i._rev || 0) + 1; });
 }
 function undo(){
   const s = undoStacks[cur];
@@ -1061,12 +1062,24 @@ function fitCanvas(){
   const ratio = PANEL_W / PANEL_H;
   let w = availH * ratio, h = availH;
   if(w > availW){ w = availW; h = availW / ratio; }
-  canvas.style.width = Math.floor(w) + 'px';
-  canvas.style.height = Math.floor(h) + 'px';
+  const nw = Math.floor(w) + 'px', nh = Math.floor(h) + 'px';
+  if(canvas.style.width === nw && canvas.style.height === nh) return;
+  canvas.style.width = nw;
+  canvas.style.height = nh;
   render();
 }
 window.addEventListener('resize', fitCanvas);
 window.addEventListener('orientationchange', ()=>setTimeout(fitCanvas, 250));
+/* The toolbars grow and shrink as rows appear (object controls, shape picker),
+   which changes the stage height. Watch the stage itself so the canvas is
+   always refitted, whatever caused the change. */
+let fitQueued = false;
+function requestFit(){
+  if(fitQueued) return;
+  fitQueued = true;
+  requestAnimationFrame(() => { fitQueued = false; fitCanvas(); });
+}
+if(window.ResizeObserver) new ResizeObserver(requestFit).observe($('stage'));
 
 /* ---------- hit testing ---------- */
 function canvasPoint(e){
@@ -1179,7 +1192,7 @@ function floodFill(pt){
   lctx.globalCompositeOperation = layer.alphaLock ? 'source-atop' : 'source-over';
   lctx.drawImage(scratchB, bx, by, bw, bh, bx, by, bw, bh);
   lctx.restore();
-  layer._ser = null;
+  touchLayer(layer);
 
   const after = lctx.getImageData(bx, by, bw, bh);
   pushPixels(layer.id, {x:bx, y:by, w:bw, h:bh}, before, after);
@@ -1225,7 +1238,7 @@ canvas.addEventListener('pointerdown', e => {
       mode:'draw', layer, bctx:b, beforeCanvas:before,
       bbox:{x0:pt.x-pad, y0:pt.y-pad, x1:pt.x+pad, y1:pt.y+pad}, pad
     };
-    layer._ser = null;
+    touchLayer(layer);
     render();
     return;
   }
@@ -1590,7 +1603,19 @@ $('layerChip').addEventListener('click', openSheet);
 $('closeSheet').addEventListener('click', closeSheet);
 $('sheetBackdrop').addEventListener('click', closeSheet);
 
+function touchLayer(it){          // call after any pixel change on a drawing layer
+  it._ser = null;
+  it._rev = (it._rev || 0) + 1;
+}
+function thumbKey(it){
+  if(it.kind === 'draw') return 'd' + (it._rev || 0);
+  return [it.kind, it.shape||'', it.text||'', it.color||'',
+          Math.round(it.cx), Math.round(it.cy), Math.round(it.w), Math.round(it.h),
+          (it.rot||0).toFixed(3), it.src ? it.src.length : 0].join('|');
+}
 function thumbFor(it){
+  const key = thumbKey(it);
+  if(it._thumbKey === key && it._thumb) return it._thumb;
   const t = newCanvas(76, 118);
   const tc = t.getContext('2d');
   sa.globalCompositeOperation = 'source-over';
@@ -1598,7 +1623,9 @@ function thumbFor(it){
   sa.clearRect(0, 0, PANEL_W, PANEL_H);
   drawItemBare(sa, it);
   tc.drawImage(scratchA, 0, 0, PANEL_W, PANEL_H, 0, 0, 76, 118);
-  return t.toDataURL('image/png');
+  it._thumbKey = key;
+  it._thumb = t.toDataURL('image/png');
+  return it._thumb;
 }
 function metaLine(it){
   const bits = [KIND_LABEL[it.kind]];
@@ -1893,7 +1920,7 @@ $('clearLayerOk').addEventListener('click', () => {
   const c = it.canvas.getContext('2d', {willReadFrequently:true});
   const before = c.getImageData(0, 0, PANEL_W, PANEL_H);
   c.clearRect(0, 0, PANEL_W, PANEL_H);
-  it._ser = null;
+  touchLayer(it);
   const after = c.getImageData(0, 0, PANEL_W, PANEL_H);
   pushPixels(it.id, {x:0, y:0, w:PANEL_W, h:PANEL_H}, before, after);
   closeModal('clearModal');
@@ -2378,6 +2405,7 @@ window.__zine = {
     return n;
   },
   saveNow,
+  renderList: () => renderLayerList(),
   async savedSize(){
     const db = await openDB();
     const rec = await new Promise(res => {
