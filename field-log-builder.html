@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Field Log — panel builder</title>
+<style>
+:root{
+  --ink:#16150F;
+  --ink-soft:#4A473C;
+  --rule:#B6B0A0;
+  --dot:#BDB7A6;
+  --hair:#E2DDD0;
+  --stamp:#96412C;
+  --desk:#2A2823;
+  --panelbg:#1E1D19;
+  --edge:#423F37;
+  --mono:ui-monospace,"SFMono-Regular",Consolas,"Courier New",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--desk);font-family:var(--sans);color:#E8E3D6}
+:focus-visible{outline:2px solid #E8B04E;outline-offset:2px}
+
+/* ---------- chrome ---------- */
+.bar{
+  position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:11px 16px;background:var(--panelbg);border-bottom:1px solid var(--edge);
+}
+.bar h1{font:700 13px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;margin-right:auto}
+.bar label{font:12px/1 var(--mono);display:flex;align-items:center;gap:6px}
+input[type=text],select{
+  font:12px/1 var(--mono);padding:6px 8px;background:#2A2823;
+  border:1px solid #555146;color:#E8E3D6;border-radius:3px;
+}
+input[type=text]{width:130px}
+button{
+  font:12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+  padding:8px 14px;background:var(--stamp);color:#fff;border:0;border-radius:3px;cursor:pointer;
+}
+button:hover{background:#B04E35}
+button.ghost{background:transparent;border:1px solid #555146;color:#B5AF9E}
+button.ghost:hover{background:#332F29;color:#E8E3D6}
+
+.wrap{display:flex;flex-wrap:wrap;gap:20px;padding:20px 16px 60px;align-items:flex-start}
+.slots{
+  flex:0 0 300px;background:var(--panelbg);border:1px solid var(--edge);border-radius:5px;padding:14px;
+}
+.slots h2{font:700 10px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:#8E8778;margin-bottom:12px}
+.slot-row{margin-bottom:13px}
+.slot-row .lab{
+  font:700 9px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--stamp);display:block;margin-bottom:5px;
+}
+.slot-row select,.slot-row input{width:100%}
+.slot-row input{margin-top:5px}
+.stage{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:14px}
+.scaler{width:100%;overflow:hidden;display:flex;justify-content:center}
+.fold{
+  font:12.5px/1.7 var(--mono);color:#B5AF9E;max-width:640px;
+}
+.fold b{color:#E8E3D6;letter-spacing:.1em;text-transform:uppercase;font-size:11px}
+.fold ol{margin:6px 0 0 18px}
+
+/* ---------- sheet ---------- */
+.sheet{
+  width:11in;height:8.5in;background:#fff;color:var(--ink);
+  position:relative;transform-origin:top center;flex:0 0 auto;
+  display:grid;grid-template-columns:repeat(4,2.75in);grid-template-rows:repeat(2,4.25in);
+}
+.panel{position:relative;padding:.20in .18in;overflow:hidden;display:flex;flex-direction:column}
+.panel.flip{transform:rotate(180deg)}
+.sheet.guides .panel{outline:.5px dashed #D8D3C6;outline-offset:-.25px}
+.cutline{
+  position:absolute;left:2.75in;top:4.25in;width:5.5in;height:0;
+  border-top:1px dashed #8E8778;display:none;z-index:2;
+}
+.sheet.guides .cutline{display:block}
+.cutline::after{
+  content:"cut";position:absolute;left:50%;top:-13px;transform:translateX(-50%);
+  font:9px/1 var(--mono);letter-spacing:.14em;color:#8E8778;background:#fff;padding:0 5px;
+}
+
+/* ---------- shared panel type ---------- */
+.eyebrow{font:700 8.5px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--stamp)}
+.title{font:700 13px/1.15 var(--sans);letter-spacing:.02em;margin-top:3px}
+.hr{border:0;border-top:1.5px solid var(--ink);margin:7px 0 8px}
+.hr.thin{border:0;border-top:.75px solid var(--rule);margin:7px 0 7px}
+.datefield{font:9.5px/1.4 var(--mono);color:var(--ink-soft);border-bottom:.75px solid var(--rule);padding-bottom:2px;margin:5px 0 7px}
+.foot{
+  margin-top:auto;padding-top:6px;font:8px/1.3 var(--mono);letter-spacing:.1em;
+  text-transform:uppercase;color:#9A9484;display:flex;justify-content:space-between;
+}
+.fill{flex:1;min-height:0}
+.ruled{
+  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent .215in,var(--rule) .215in,var(--rule) calc(.215in + .5px));
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.dotted{
+  background-image:radial-gradient(circle at 1px 1px,var(--dot) 1px,transparent 1.2px);
+  background-size:.16in .16in;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.graphed{
+  background-image:linear-gradient(to right,var(--hair) .5px,transparent .5px),
+                   linear-gradient(to bottom,var(--hair) .5px,transparent .5px);
+  background-size:.16in .16in;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.sheet.nogrid .ruled,.sheet.nogrid .dotted,.sheet.nogrid .graphed{background-image:none}
+
+/* cover */
+.cover{justify-content:center}
+.cover .mark{font:700 32px/.9 var(--sans);letter-spacing:-.02em;text-transform:uppercase}
+.cover .mark span{display:block}
+.cover .mark span:last-child{color:var(--stamp)}
+.cover .sub{font:9px/1.5 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-top:10px}
+.blanks div{
+  font:9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#8E8778;
+  border-bottom:.75px solid var(--rule);padding:13px 0 3px;
+}
+
+/* legend + slot lines */
+.key{list-style:none;font:10.5px/1.45 var(--mono)}
+.key li{display:flex;gap:8px;padding:2px 0;border-bottom:.5px dotted var(--hair)}
+.key li b{color:var(--stamp);width:12px;text-align:center;font-size:11px}
+.lines .ln{display:flex;gap:7px;align-items:flex-end;font:10px/1 var(--mono);color:#9A9484;padding-top:12.5px}
+.lines .ln i{font-style:normal;color:var(--stamp);width:9px;text-align:center}
+.lines .ln u{flex:1;text-decoration:none;border-bottom:.75px solid var(--rule)}
+.prompt{font:9px/1.3 var(--mono);letter-spacing:.04em;color:var(--ink-soft);margin:8px 0 0}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font:8.5px var(--mono)}
+.tbl th{font-weight:400;color:#9A9484;border-bottom:1px solid var(--ink);padding:0 2px 3px;letter-spacing:.06em;text-align:left}
+.tbl td{border-bottom:.75px solid var(--rule);height:.235in}
+.tbl td+td{border-left:.5px solid var(--hair)}
+.tbl .tick{width:.24in}
+.tbl .narrow{width:.5in}
+.hours td:first-child{
+  width:.44in;font:8px var(--mono);color:#9A9484;padding-left:1px;
+  border-right:.5px solid var(--hair);
+}
+
+/* ---------- creative surfaces ---------- */
+.bx{border:.75px solid var(--rule);width:100%}
+.bx.heavy{border:1.25px solid var(--ink)}
+.bxrow{display:flex;gap:.06in}
+.bxrow .bx{flex:1}
+.cap{font:8px/1.3 var(--mono);color:#9A9484;letter-spacing:.06em;padding-top:2px}
+.iso{
+  background-image:
+    repeating-linear-gradient(30deg,var(--hair) 0 .5px,transparent .5px .16in),
+    repeating-linear-gradient(-30deg,var(--hair) 0 .5px,transparent .5px .16in),
+    repeating-linear-gradient(90deg,var(--hair) 0 .5px,transparent .5px .277in);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.pixel{
+  background-image:
+    linear-gradient(to right,var(--hair) .5px,transparent .5px),
+    linear-gradient(to bottom,var(--hair) .5px,transparent .5px);
+  background-size:.085in .085in;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.sheet.nogrid .iso,.sheet.nogrid .pixel{background-image:none}
+.staff{margin-bottom:.13in}
+.staff .st{border-top:.6px solid var(--ink);height:.052in}
+.tab{margin-bottom:.15in}
+.tab .st{border-top:.6px solid var(--rule);height:.055in}
+.tab .st:first-child{border-top-color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:.05in}
+.chips .chip{width:.42in;height:.42in;border:.75px solid var(--rule)}
+.chips .chip span{
+  display:block;margin-top:.44in;font:7px/1 var(--mono);color:#9A9484;text-align:center;
+}
+.pull{
+  font:italic 700 14px/1.35 Georgia,"Times New Roman",serif;color:var(--ink);
+  border-left:2px solid var(--stamp);padding-left:9px;
+}
+.colo{font:8.5px/1.6 var(--mono);color:var(--ink-soft)}
+.colo b{color:var(--ink);letter-spacing:.12em;text-transform:uppercase;font-size:8px}
+.bignum{font:700 60px/.85 var(--sans);letter-spacing:-.04em;color:var(--stamp)}
+
+
+@media print{
+  @page{size:11in 8.5in;margin:0}
+  body{background:#fff}
+  .bar,.slots,.fold{display:none}
+  .wrap{padding:0;gap:0}
+  .scaler{overflow:visible}
+  .sheet{transform:none!important}
+}
+@media (max-width:900px){
+  .slots{flex:1 1 100%}
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1>Field Log &middot; panel builder</h1>
+  <label>Preset
+    <select id="presetSel">
+      <option value="field">Field log</option>
+      <option value="work">Work day</option>
+      <option value="week">Weekly</option>
+      <option value="quiet">Reflection</option>
+      <option value="sketch">Sketchbook</option>
+      <option value="comic">Comic</option>
+      <option value="song">Songwriting</option>
+      <option value="table">Table night</option>
+      <option value="make">Idea book</option>
+      <option value="blank">All blank</option>
+    </select>
+  </label>
+  <label>Date <input type="text" id="dateIn" placeholder="Aug 7"></label>
+  <label><input type="checkbox" id="guideIn" checked> Guides</label>
+  <label><input type="checkbox" id="gridIn" checked> Rules</label>
+  <button id="printBtn">Print sheet</button>
+</div>
+
+<div class="wrap">
+  <aside class="slots">
+    <h2>Panels &mdash; reading order</h2>
+    <div id="slotList"></div>
+    <button class="ghost" id="resetBtn" style="width:100%">Reset to preset</button>
+  </aside>
+
+  <div class="stage">
+    <div class="scaler"><div class="sheet guides" id="sheet"><div class="cutline"></div></div></div>
+    <div class="fold">
+      <b>Fold</b>
+      <ol>
+        <li>Print landscape at actual size &mdash; 100% scale, not &ldquo;fit to page.&rdquo;</li>
+        <li>Fold in half the long way (hot dog), crease, open flat.</li>
+        <li>Fold in half short way, then again &mdash; eight rectangles.</li>
+        <li>Cut the dashed center line, middle two panels only.</li>
+        <li>Fold long way again, push the ends together, wrap into a booklet.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* =========================================================
+   Field Log panel builder
+   8 portrait panels -> one landscape letter sheet
+   Imposition (verified by folding):
+     top row, rotated 180, L->R : p6 p5 p4 p3
+     bottom row, upright,  L->R : back front p1 p2
+   ========================================================= */
+
+var G = {
+  slots: [],          // 8 x {tpl, heading}
+  date: '',
+  guides: true,
+  grid: true
+};
+
+var SLOT_LABELS = ['Front cover','Page 1','Page 2','Page 3','Page 4','Page 5','Page 6','Back cover'];
+var SLOT_TAGS   = ['Cover','01','02','03','04','05','06','Back'];
+// [slotIndex, col, row, flipped]   slot 0 = front cover, 1-6 = pages, 7 = back cover
+var IMPOSITION = [
+  [6,0,0,true],[5,1,0,true],[4,2,0,true],[3,3,0,true],
+  [7,0,1,false],[0,1,1,false],[1,2,1,false],[2,3,1,false]
+];
+
+/* ---------- helpers ---------- */
+function rows(n,cells){ var s='',i,j; for(i=0;i<n;i++){ s+='<tr>'; for(j=0;j<cells.length;j++) s+=cells[j]; s+='</tr>'; } return s; }
+function lines(n,mark){ var s='',i; for(i=0;i<n;i++) s+='<div class="ln"><i>'+(mark||'')+'</i><u></u></div>'; return s; }
+function dateStr(){ return G.date ? 'Date&nbsp;&nbsp;'+G.date : 'Date ______________'; }
+function box(h,cls){ return '<div class="bx '+(cls||'')+'" style="height:'+h+'"></div>'; }
+function staff(n,cls){
+  var s='',i; for(i=0;i<n;i++) s+='<div class="st"></div>';
+  return '<div class="'+cls+'">'+s+'</div>';
+}
+function chordSVG(){
+  var s='<svg viewBox="0 0 40 50" width="100%" style="display:block">',i;
+  s+='<rect x="6" y="8" width="28" height="2" fill="#16150F"/>';
+  for(i=0;i<6;i++) s+='<line x1="'+(6+i*5.6)+'" y1="9" x2="'+(6+i*5.6)+'" y2="46" stroke="#B6B0A0" stroke-width=".7"/>';
+  for(i=1;i<=4;i++) s+='<line x1="6" y1="'+(9+i*9.25)+'" x2="34" y2="'+(9+i*9.25)+'" stroke="#B6B0A0" stroke-width=".7"/>';
+  s+='<line x1="4" y1="4" x2="36" y2="4" stroke="#E2DDD0" stroke-width=".7"/>';
+  return s+'</svg>';
+}
+function hexSVG(){
+  return '<svg width="100%" height="100%" style="display:block" preserveAspectRatio="none">'+
+    '<defs><pattern id="hx" width="24" height="27.7" patternUnits="userSpaceOnUse">'+
+    '<path d="M12 0 L24 6.9 L24 20.8 L12 27.7 L0 20.8 L0 6.9 Z" fill="none" stroke="#BDB7A6" stroke-width=".7"/>'+
+    '<path d="M24 6.9 L36 0 M24 20.8 L36 27.7" fill="none" stroke="#BDB7A6" stroke-width=".7"/>'+
+    '</pattern></defs><rect width="100%" height="100%" fill="url(#hx)"/></svg>';
+}
+function webSVG(){
+  var s='<svg viewBox="0 0 200 200" width="100%" style="display:block">',i,a,x,y;
+  s+='<ellipse cx="100" cy="100" rx="34" ry="21" fill="none" stroke="#16150F" stroke-width="1.6"/>';
+  for(i=0;i<6;i++){
+    a = (Math.PI*2/6)*i - Math.PI/2;
+    x = 100 + Math.cos(a)*72; y = 100 + Math.sin(a)*72;
+    s+='<line x1="'+(100+Math.cos(a)*33)+'" y1="'+(100+Math.sin(a)*21)+'" x2="'+x+'" y2="'+y+'" stroke="#B6B0A0" stroke-width=".9"/>';
+    s+='<ellipse cx="'+x+'" cy="'+y+'" rx="24" ry="15" fill="none" stroke="#B6B0A0" stroke-width=".9"/>';
+  }
+  return s+'</svg>';
+}
+
+/* ---------- section template library ---------- */
+var T = {
+  /* --- covers & structure --- */
+  cover:{ group:'Covers', name:'Cover — Field Log', head:'Field Log', cls:'cover', bare:true,
+    body:function(h){
+      var parts=h.split(' '); var a=parts.shift(); var b=parts.join(' ')||'';
+      return '<div class="eyebrow">One sheet &middot; eight panels</div>'+
+        '<div class="mark"><span>'+a+'</span>'+(b?'<span>'+b+'</span>':'')+'</div>'+
+        '<div class="sub js-date">'+dateStr()+'</div>'+
+        '<div class="blanks" style="margin-top:14px"><div>Week of</div><div>Where</div><div>Carried by</div></div>';
+    }},
+  covermin:{ group:'Covers', name:'Cover — minimal', head:'Notes', bare:true,
+    body:function(h){
+      return '<div class="fill" style="display:flex;flex-direction:column;justify-content:center;text-align:center">'+
+        '<div class="eyebrow" style="letter-spacing:.3em">&mdash;&nbsp;&nbsp;&mdash;&nbsp;&nbsp;&mdash;</div>'+
+        '<div style="font:700 22px/1.1 var(--sans);text-transform:uppercase;margin:10px 0 8px">'+h+'</div>'+
+        '<div class="sub js-date" style="font:9px/1.5 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)">'+dateStr()+'</div></div>';
+    }},
+  key:{ group:'Structure', name:'Key — rapid log legend', head:'Key',
+    body:function(){
+      return '<hr class="hr"><ul class="key">'+
+        '<li><b>&bull;</b> task</li><li><b>&times;</b> complete</li>'+
+        '<li><b>&gt;</b> migrated</li><li><b>&lt;</b> scheduled</li>'+
+        '<li><b>&#9675;</b> event</li><li><b>&ndash;</b> note</li>'+
+        '<li><b>&#9733;</b> priority</li><li><b>!</b> idea</li></ul>'+
+        '<div class="eyebrow" style="margin-top:10px">Three that matter</div>'+
+        '<div class="lines">'+lines(3,'&#9733;')+'</div>';
+    }},
+  index:{ group:'Structure', name:'Index — panel contents', head:'Index',
+    body:function(){
+      return '<hr class="hr"><table class="tbl">'+
+        '<tr><th class="tick">#</th><th>Contents</th></tr>'+
+        rows(8,['<td class="tick"></td>','<td></td>'])+'</table>'+
+        '<div class="prompt">Fill this in after the fold.</div>';
+    }},
+
+  /* --- logging --- */
+  daily:{ group:'Logging', name:'Daily log — dated + ruled', head:'Daily log',
+    body:function(){ return '<div class="datefield js-date">'+dateStr()+'</div><div class="fill ruled"></div>'; }},
+  tasks:{ group:'Logging', name:'Task list — bulleted rows', head:'Tasks',
+    body:function(){ return '<hr class="hr"><div class="lines">'+lines(14,'&bull;')+'</div>'; }},
+  priorities:{ group:'Logging', name:'Priorities — three that matter', head:'Priorities',
+    body:function(){
+      return '<hr class="hr"><div class="lines">'+lines(3,'&#9733;')+'</div>'+
+        '<hr class="hr thin" style="margin-top:14px"><div class="eyebrow">If time allows</div>'+
+        '<div class="lines">'+lines(6,'&bull;')+'</div>';
+    }},
+  hours:{ group:'Logging', name:'Time blocks — 6a to 8p', head:'Time blocks',
+    body:function(){
+      var labs=['6a','7a','8a','9a','10a','11a','12p','1p','2p','3p','4p','5p','6p','7p','8p'],s='',i;
+      for(i=0;i<labs.length;i++) s+='<tr><td>'+labs[i]+'</td><td></td></tr>';
+      return '<hr class="hr"><table class="tbl hours">'+s+'</table>';
+    }},
+  migrate:{ group:'Logging', name:'Migrate — carry forward', head:'Migrate',
+    body:function(){
+      return '<hr class="hr"><div class="lines">'+lines(6,'&gt;')+'</div>'+
+        '<hr class="hr thin" style="margin-top:12px"><div class="eyebrow">Scheduled</div>'+
+        '<div class="lines">'+lines(4,'&lt;')+'</div>';
+    }},
+
+  /* --- work --- */
+  stops:{ group:'Work', name:'Store log — site / issue / done', head:'Store log',
+    body:function(){
+      return '<hr class="hr"><table class="tbl">'+
+        '<tr><th class="narrow">Site</th><th>Issue</th><th class="tick">&#10003;</th></tr>'+
+        rows(12,['<td class="narrow"></td>','<td></td>','<td class="tick"></td>'])+'</table>';
+    }},
+  tickets:{ group:'Work', name:'Ticket log — # / site / status', head:'Tickets',
+    body:function(){
+      return '<hr class="hr"><table class="tbl">'+
+        '<tr><th class="narrow">Ticket</th><th>Site</th><th class="narrow">Status</th></tr>'+
+        rows(12,['<td class="narrow"></td>','<td></td>','<td class="narrow"></td>'])+'</table>';
+    }},
+  contacts:{ group:'Work', name:'Contacts — name / number', head:'Contacts',
+    body:function(){
+      return '<hr class="hr"><table class="tbl">'+
+        '<tr><th>Name</th><th class="narrow">Number</th></tr>'+
+        rows(12,['<td></td>','<td class="narrow"></td>'])+'</table>';
+    }},
+  mileage:{ group:'Work', name:'Mileage — from / to / miles', head:'Mileage',
+    body:function(){
+      return '<hr class="hr"><table class="tbl">'+
+        '<tr><th>From &rarr; to</th><th class="tick">Mi</th></tr>'+
+        rows(13,['<td></td>','<td class="tick"></td>'])+'</table>';
+    }},
+
+  /* --- trackers --- */
+  tracker:{ group:'Trackers', name:'Habit tracker — 7 day grid', head:'Tracker',
+    body:function(){
+      return '<hr class="hr"><table class="tbl">'+
+        '<tr><th>Habit</th><th class="tick">M</th><th class="tick">T</th><th class="tick">W</th>'+
+        '<th class="tick">T</th><th class="tick">F</th><th class="tick">S</th><th class="tick">S</th></tr>'+
+        rows(11,['<td></td>','<td class="tick"></td>','<td class="tick"></td>','<td class="tick"></td>',
+                 '<td class="tick"></td>','<td class="tick"></td>','<td class="tick"></td>','<td class="tick"></td>'])+
+        '</table>';
+    }},
+  weekly:{ group:'Trackers', name:'Weekly spread — Mon to Sun', head:'This week',
+    body:function(){
+      var d=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],s='',i;
+      for(i=0;i<d.length;i++) s+='<div class="eyebrow" style="margin-top:'+(i?7:0)+'px">'+d[i]+'</div>'+
+        '<div style="border-bottom:.75px solid var(--rule);height:.2in"></div>'+
+        '<div style="border-bottom:.75px solid var(--rule);height:.2in"></div>';
+      return '<hr class="hr">'+s;
+    }},
+
+  /* --- reflection --- */
+  close:{ group:'Reflection', name:'Close of day — three prompts', head:'Close of day',
+    body:function(){
+      return '<hr class="hr">'+
+        '<div class="prompt" style="margin-top:0">Where did the day go well?</div><div class="lines">'+lines(3)+'</div>'+
+        '<div class="prompt">What pulled me off?</div><div class="lines">'+lines(3)+'</div>'+
+        '<div class="prompt">Tomorrow&rsquo;s first move.</div><div class="lines">'+lines(2)+'</div>';
+    }},
+  reading:{ group:'Reflection', name:'Reading — passage + response', head:'Reading',
+    body:function(){
+      return '<hr class="hr">'+
+        '<div class="eyebrow">Passage</div><div class="lines">'+lines(2)+'</div>'+
+        '<div class="eyebrow" style="margin-top:10px">What it said</div><div class="lines">'+lines(4)+'</div>'+
+        '<div class="eyebrow" style="margin-top:10px">Carry</div><div class="lines">'+lines(3)+'</div>';
+    }},
+  gratitude:{ group:'Reflection', name:'Gratitude — five lines', head:'Grateful for',
+    body:function(){
+      return '<hr class="hr"><div class="lines">'+lines(5,'&#9675;')+'</div>'+
+        '<hr class="hr thin" style="margin-top:14px"><div class="eyebrow">Pray for</div>'+
+        '<div class="lines">'+lines(5,'&bull;')+'</div>';
+    }},
+
+  /* --- surfaces --- */
+  dots:{ group:'Surfaces', name:'Dot grid', head:'Notes',
+    body:function(){ return '<hr class="hr"><div class="fill dotted"></div>'; }},
+  ruled:{ group:'Surfaces', name:'Ruled lines', head:'Notes',
+    body:function(){ return '<hr class="hr"><div class="fill ruled"></div>'; }},
+  graph:{ group:'Surfaces', name:'Graph grid', head:'Sketch',
+    body:function(){ return '<hr class="hr"><div class="fill graphed"></div>'; }},
+  half:{ group:'Surfaces', name:'Half sketch, half ruled', head:'Sketch + notes',
+    body:function(){
+      return '<hr class="hr"><div style="height:1.5in;border:.75px solid var(--rule)"></div>'+
+        '<div class="fill ruled" style="margin-top:8px"></div>';
+    }},
+  blank:{ group:'Surfaces', name:'Blank — heading only', head:'',
+    body:function(h){ return h?'<hr class="hr">':''; }},
+
+  /* --- covers, extended --- */
+  coverissue:{ group:'Covers', name:'Cover — issue number', head:'Field Log', bare:true,
+    body:function(h){
+      return '<div class="fill" style="display:flex;flex-direction:column;justify-content:center">'+
+        '<div class="eyebrow">Issue</div><div class="bignum">01</div>'+
+        '<hr class="hr" style="margin:10px 0 8px">'+
+        '<div style="font:700 15px/1.1 var(--sans);text-transform:uppercase">'+h+'</div>'+
+        '<div class="sub js-date" style="font:9px/1.5 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px">'+dateStr()+'</div></div>';
+    }},
+
+  /* --- draw --- */
+  frame:{ group:'Draw', name:'Frame — one big box', head:'',
+    body:function(h){ return (h?'<hr class="hr">':'')+'<div class="fill bx heavy"></div>'; }},
+  comic:{ group:'Draw', name:'Comic strip — three panels', head:'Strip',
+    body:function(){
+      return '<hr class="hr">'+box('1.02in','heavy')+'<div style="height:.07in"></div>'+
+        box('1.02in','heavy')+'<div style="height:.07in"></div>'+box('1.02in','heavy');
+    }},
+  storyboard:{ group:'Draw', name:'Storyboard — frame + caption', head:'Storyboard',
+    body:function(){
+      var unit = box('1.12in','heavy')+'<div class="lines">'+lines(2)+'</div>';
+      return '<hr class="hr">'+unit+'<div style="height:.1in"></div>'+unit;
+    }},
+  thumbs:{ group:'Draw', name:'Thumbnails — six boxes', head:'Thumbnails',
+    body:function(){
+      var r = '<div class="bxrow">'+box('.86in')+box('.86in')+'</div>';
+      return '<hr class="hr">'+r+'<div style="height:.07in"></div>'+r+'<div style="height:.07in"></div>'+r;
+    }},
+  iso:{ group:'Draw', name:'Isometric grid', head:'Iso',
+    body:function(){ return '<hr class="hr"><div class="fill iso"></div>'; }},
+  pixel:{ group:'Draw', name:'Pixel grid — fine', head:'Pixels',
+    body:function(){ return '<hr class="hr"><div class="fill pixel"></div>'; }},
+  values:{ group:'Draw', name:'Value scale + swatches', head:'Values',
+    body:function(){
+      var labs=['10','30','50','70','90','100','—','—'],s='',i;
+      for(i=0;i<8;i++) s+='<div class="chip"><span>'+labs[i]+'</span></div>';
+      return '<hr class="hr"><div class="eyebrow">Fill each darker</div>'+
+        '<div class="chips" style="margin-top:7px">'+s+'</div>'+
+        '<hr class="hr thin" style="margin-top:26px"><div class="eyebrow">Pen / ink used</div>'+
+        '<div class="lines">'+lines(3,'&ndash;')+'</div>';
+    }},
+
+  /* --- make --- */
+  masthead:{ group:'Make', name:'Masthead — title block', head:'Title', bare:true,
+    body:function(h){
+      return '<div class="fill" style="display:flex;flex-direction:column;justify-content:flex-end">'+
+        '<div class="eyebrow">Hand printed</div>'+
+        '<div style="font:700 26px/.95 var(--sans);text-transform:uppercase;letter-spacing:-.01em;margin:8px 0">'+h+'</div>'+
+        '<hr class="hr" style="margin:2px 0 8px">'+
+        '<div class="blanks"><div>Subtitle</div><div>Edition of</div></div></div>';
+    }},
+  quote:{ group:'Make', name:'Pull quote', head:'',
+    body:function(h){
+      return (h?'<hr class="hr">':'')+'<div class="fill" style="display:flex;flex-direction:column;justify-content:center">'+
+        '<div class="pull">&ldquo;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rdquo;</div>'+
+        '<div class="lines" style="margin-left:11px">'+lines(4)+'</div>'+
+        '<div class="lines" style="margin-top:14px"><div class="ln"><i>&mdash;</i><u></u></div></div></div>';
+    }},
+  colophon:{ group:'Make', name:'Colophon — how it was made', head:'Colophon',
+    body:function(){
+      return '<hr class="hr"><div class="colo">'+
+        '<b>Made by</b><br><span style="border-bottom:.75px solid var(--rule);display:block;height:14px"></span>'+
+        '<b style="display:block;margin-top:9px">Printed</b><span style="border-bottom:.75px solid var(--rule);display:block;height:14px"></span>'+
+        '<b style="display:block;margin-top:9px">Edition of</b><span style="border-bottom:.75px solid var(--rule);display:block;height:14px"></span>'+
+        '</div><hr class="hr thin" style="margin-top:12px">'+
+        '<div class="colo" style="font-size:7.5px;line-height:1.5">One sheet, folded in eight. '+
+        'Fold long, fold twice short, cut the center, push the ends together.</div>';
+    }},
+  idea:{ group:'Make', name:'Game idea — loop / hook / feel', head:'Idea',
+    body:function(){
+      return '<hr class="hr">'+
+        '<div class="eyebrow">Working name</div><div class="lines">'+lines(1)+'</div>'+
+        '<div class="eyebrow" style="margin-top:9px">The loop</div><div class="lines">'+lines(3)+'</div>'+
+        '<div class="eyebrow" style="margin-top:9px">The hook</div><div class="lines">'+lines(2)+'</div>'+
+        '<div class="eyebrow" style="margin-top:9px">Feels like</div><div class="lines">'+lines(2)+'</div>'+
+        '<div class="eyebrow" style="margin-top:9px">Smallest version</div><div class="lines">'+lines(2)+'</div>';
+    }},
+  web:{ group:'Make', name:'Mind map — hub and spokes', head:'Map it',
+    body:function(){ return '<hr class="hr"><div class="fill" style="display:flex;align-items:center">'+webSVG()+'</div>'; }},
+  overheard:{ group:'Make', name:'Overheard — collected lines', head:'Overheard',
+    body:function(){
+      return '<hr class="hr"><div class="prompt" style="margin-top:0">Things people actually said.</div>'+
+        '<div class="lines">'+lines(11,'&ldquo;')+'</div>';
+    }},
+
+  /* --- play --- */
+  chords:{ group:'Play', name:'Chord boxes — six diagrams', head:'Chords',
+    body:function(){
+      var cell='<div style="flex:1">'+chordSVG()+'<div style="border-bottom:.75px solid var(--rule);height:11px"></div></div>',
+          row='<div class="bxrow" style="gap:.1in">'+cell+cell+'</div>';
+      return '<hr class="hr">'+row+'<div style="height:.08in"></div>'+row+'<div style="height:.08in"></div>'+row;
+    }},
+  tab:{ group:'Play', name:'Guitar tab — six staves', head:'Tab',
+    body:function(){
+      var s='',i; for(i=0;i<6;i++) s+=staff(6,'tab');
+      return '<hr class="hr">'+s;
+    }},
+  notation:{ group:'Play', name:'Music staves — five line', head:'Staves',
+    body:function(){
+      var s='',i; for(i=0;i<7;i++) s+=staff(5,'staff');
+      return '<hr class="hr">'+s;
+    }},
+  hex:{ group:'Play', name:'Hex map', head:'Map',
+    body:function(){ return '<hr class="hr"><div class="fill">'+hexSVG()+'</div>'; }},
+  character:{ group:'Play', name:'Character — want / flaw / voice', head:'Character',
+    body:function(){
+      return '<hr class="hr">'+
+        '<div class="eyebrow">Name</div><div class="lines">'+lines(1)+'</div>'+
+        '<div class="eyebrow" style="margin-top:9px">Wants</div><div class="lines">'+lines(2)+'</div>'+
+        '<div class="eyebrow" style="margin-top:9px">In the way</div><div class="lines">'+lines(2)+'</div>'+
+        '<div class="eyebrow" style="margin-top:9px">Talks like</div><div class="lines">'+lines(2)+'</div>'+
+        '<div class="eyebrow" style="margin-top:9px">One detail</div><div class="lines">'+lines(2)+'</div>';
+    }},
+  initiative:{ group:'Play', name:'Initiative tracker', head:'Initiative',
+    body:function(){
+      return '<hr class="hr"><table class="tbl">'+
+        '<tr><th class="tick">#</th><th>Who</th><th class="tick">HP</th></tr>'+
+        rows(12,['<td class="tick"></td>','<td></td>','<td class="tick"></td>'])+'</table>';
+    }},
+
+  /* --- logging, extended --- */
+  twocol:{ group:'Logging', name:'Two columns — do / waiting', head:'Do &middot; waiting',
+    body:function(){
+      return '<hr class="hr"><div class="bxrow" style="gap:.1in">'+
+        '<div style="flex:1"><div class="eyebrow">Do</div><div class="lines">'+lines(11,'&bull;')+'</div></div>'+
+        '<div style="flex:1;border-left:.75px solid var(--rule);padding-left:.08in"><div class="eyebrow">Waiting</div><div class="lines">'+lines(11,'&lt;')+'</div></div>'+
+        '</div>';
+    }},
+  kanban:{ group:'Logging', name:'Kanban — three columns', head:'Board',
+    body:function(){
+      var col=function(t){ return '<div style="flex:1"><div class="eyebrow" style="font-size:7.5px">'+t+'</div>'+
+        '<div class="fill ruled" style="height:2.9in;margin-top:5px"></div></div>'; };
+      return '<hr class="hr"><div class="bxrow" style="gap:.07in">'+col('To do')+col('Doing')+col('Done')+'</div>';
+    }},
+  decision:{ group:'Logging', name:'Decision — two options weighed', head:'Decision',
+    body:function(){
+      return '<hr class="hr"><div class="eyebrow">The call</div><div class="lines">'+lines(2)+'</div>'+
+        '<hr class="hr thin" style="margin-top:10px">'+
+        '<div class="bxrow" style="gap:.1in">'+
+        '<div style="flex:1"><div class="eyebrow">Option A</div><div class="lines">'+lines(6)+'</div></div>'+
+        '<div style="flex:1;border-left:.75px solid var(--rule);padding-left:.08in"><div class="eyebrow">Option B</div><div class="lines">'+lines(6)+'</div></div>'+
+        '</div><hr class="hr thin" style="margin-top:10px"><div class="eyebrow">Decided</div><div class="lines">'+lines(1)+'</div>';
+    }},
+  meeting:{ group:'Work', name:'Meeting — who / notes / actions', head:'Meeting',
+    body:function(){
+      return '<div class="datefield js-date">'+dateStr()+'</div>'+
+        '<div class="eyebrow">Who</div><div class="lines">'+lines(2)+'</div>'+
+        '<div class="eyebrow" style="margin-top:8px">Notes</div><div class="ruled" style="height:1.45in;margin-top:5px"></div>'+
+        '<div class="eyebrow" style="margin-top:8px">Actions</div><div class="lines">'+lines(4,'&bull;')+'</div>';
+    }},
+  oneline:{ group:'Reflection', name:'One line a day — seven days', head:'One line a day',
+    body:function(){
+      var d=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],s='',i;
+      for(i=0;i<7;i++) s+='<div style="margin-top:'+(i?9:6)+'px"><span class="eyebrow" style="font-size:7.5px">'+d[i]+'</span>'+
+        '<div style="border-bottom:.75px solid var(--rule);height:.19in"></div>'+
+        '<div style="border-bottom:.75px solid var(--rule);height:.19in"></div></div>';
+      return '<hr class="hr">'+s;
+    }}
+};
+
+var PRESETS = {
+  field: ['cover','key','daily','daily','dots','dots','tracker','migrate'],
+  work:  ['cover','key','stops','tickets','daily','dots','mileage','migrate'],
+  week:  ['cover','weekly','priorities','tasks','tracker','dots','contacts','migrate'],
+  quiet: ['covermin','key','daily','reading','gratitude','dots','tracker','close'],
+  sketch:['masthead','thumbs','frame','frame','iso','pixel','values','colophon'],
+  comic: ['coverissue','character','comic','comic','comic','storyboard','overheard','colophon'],
+  song:  ['covermin','chords','tab','tab','notation','oneline','dots','colophon'],
+  table: ['coverissue','character','hex','initiative','dots','graph','tasks','colophon'],
+  make:  ['masthead','idea','web','thumbs','quote','dots','decision','colophon'],
+  blank: ['covermin','blank','blank','blank','blank','blank','blank','blank']
+};
+
+/* ---------- render ---------- */
+function renderPanel(i){
+  var s = G.slots[i], t = T[s.tpl] || T.blank;
+  var h = s.heading !== null ? s.heading : t.head;
+  var html = '';
+  if(!t.bare){
+    html += '<div class="eyebrow">'+SLOT_TAGS[i]+'</div>';
+    if(h) html += '<div class="title">'+h+'</div>';
+  }
+  html += t.body(h);
+  html += '<div class="foot"><span>'+(i===7?'Fold &middot; cut &middot; carry':'Field Log')+'</span><span>'+SLOT_TAGS[i]+'</span></div>';
+  return html;
+}
+
+function renderSheet(){
+  var sheet = document.getElementById('sheet');
+  var cut = sheet.querySelector('.cutline');
+  sheet.innerHTML = '';
+  sheet.appendChild(cut);
+  var byCell = IMPOSITION.slice().sort(function(a,b){ return (a[2]-b[2]) || (a[1]-b[1]); });
+  for(var k=0;k<byCell.length;k++){
+    var cell = byCell[k], idx = cell[0];
+    var sec = document.createElement('section');
+    sec.className = 'panel' + (cell[3] ? ' flip' : '') + (T[G.slots[idx].tpl] && T[G.slots[idx].tpl].cls==='cover' ? ' cover' : '');
+    sec.innerHTML = renderPanel(idx);
+    sheet.appendChild(sec);
+  }
+  sheet.classList.toggle('guides', G.guides);
+  sheet.classList.toggle('nogrid', !G.grid);
+  fit();
+}
+
+/* ---------- controls ---------- */
+function optionsHTML(sel){
+  var groups = {}, order = [], key;
+  for(key in T){
+    if(!groups[T[key].group]){ groups[T[key].group] = []; order.push(T[key].group); }
+    groups[T[key].group].push(key);
+  }
+  var out = '', g, i;
+  for(g=0;g<order.length;g++){
+    out += '<optgroup label="'+order[g]+'">';
+    var list = groups[order[g]];
+    for(i=0;i<list.length;i++){
+      out += '<option value="'+list[i]+'"'+(list[i]===sel?' selected':'')+'>'+T[list[i]].name+'</option>';
+    }
+    out += '</optgroup>';
+  }
+  return out;
+}
+
+function buildSlotList(){
+  var host = document.getElementById('slotList');
+  host.innerHTML = '';
+  for(var i=0;i<8;i++){
+    var row = document.createElement('div');
+    row.className = 'slot-row';
+    row.innerHTML =
+      '<span class="lab">'+SLOT_LABELS[i]+'</span>'+
+      '<select data-slot="'+i+'">'+optionsHTML(G.slots[i].tpl)+'</select>'+
+      '<input type="text" data-head="'+i+'" placeholder="Heading (optional)">';
+    host.appendChild(row);
+  }
+  host.addEventListener('change', function(e){
+    var t = e.target;
+    if(t.dataset.slot !== undefined){
+      var i = +t.dataset.slot;
+      G.slots[i].tpl = t.value;
+      G.slots[i].heading = null;
+      var inp = host.querySelector('[data-head="'+i+'"]');
+      if(inp) inp.value = '';
+      renderSheet();
+    }
+  });
+  host.addEventListener('input', function(e){
+    var t = e.target;
+    if(t.dataset.head !== undefined){
+      var i = +t.dataset.head;
+      G.slots[i].heading = t.value.trim() ? t.value.trim() : null;
+      renderSheet();
+    }
+  });
+}
+
+function applyPreset(name){
+  var p = PRESETS[name] || PRESETS.field;
+  G.slots = [];
+  for(var i=0;i<8;i++) G.slots.push({ tpl:p[i], heading:null });
+  buildSlotList();
+  renderSheet();
+}
+
+function fit(){
+  var scaler = document.querySelector('.scaler');
+  var avail = scaler.clientWidth || window.innerWidth - 32;
+  var s = Math.min(1, avail / (11*96));
+  var sheet = document.getElementById('sheet');
+  sheet.style.transform = 'scale('+s+')';
+  scaler.style.height = (8.5*96*s) + 'px';
+}
+
+/* ---------- wire up ---------- */
+document.getElementById('presetSel').addEventListener('change', function(e){ applyPreset(e.target.value); });
+document.getElementById('resetBtn').addEventListener('click', function(){
+  applyPreset(document.getElementById('presetSel').value);
+});
+document.getElementById('dateIn').addEventListener('input', function(e){
+  G.date = e.target.value.trim();
+  renderSheet();
+});
+document.getElementById('guideIn').addEventListener('change', function(e){
+  G.guides = e.target.checked; renderSheet();
+});
+document.getElementById('gridIn').addEventListener('change', function(e){
+  G.grid = e.target.checked; renderSheet();
+});
+document.getElementById('printBtn').addEventListener('click', function(){ window.print(); });
+window.addEventListener('resize', fit);
+
+applyPreset('field');
+})();
+</script>
+</body>
+</html>
