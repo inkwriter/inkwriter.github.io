@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inkwriter Forge</title>
+<style>
+:root{
+  --ink:#0e131a;      /* press-black ground */
+  --panel:#18212c;    /* cabinet */
+  --panel2:#1f2b38;
+  --line:#2d3d4d;
+  --silver:#95a5a6;   /* brand silver */
+  --navy:#2c3e50;     /* brand navy */
+  --paper:#efe9dc;    /* the sheet */
+  --brass:#c8973f;    /* set screw / active tool */
+  --text:#dfe6ee;
+  --danger:#c9564b;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"DejaVu Sans Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--ink);color:var(--text);font-family:var(--sans);font-size:14px;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+button,input,select,textarea{font-family:inherit;font-size:13px;color:var(--text)}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--brass)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+button.on{background:var(--brass);color:#1a1206;border-color:var(--brass);font-weight:600}
+input[type=text],input[type=number],select,textarea{background:#0d141c;border:1px solid var(--line);border-radius:3px;padding:5px 7px;width:100%}
+textarea{font-family:var(--mono);font-size:12px;line-height:1.45;resize:vertical}
+label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--silver);margin:0 0 3px}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+
+/* ---- masthead: a drawer front with a stamped plate ---- */
+header{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:8px 14px;background:linear-gradient(#1c2632,#141c25);
+  border-bottom:1px solid var(--line);box-shadow:0 1px 0 #000;
+}
+.plate{font-family:var(--serif);font-size:17px;letter-spacing:.02em}
+.plate b{color:var(--brass);font-weight:600}
+.plate span{color:var(--silver);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-left:8px}
+#projname{width:150px}
+.spacer{flex:1}
+
+/* ---- type-case tabs ---- */
+nav{display:flex;gap:0;background:#0b1016;border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{
+  border:0;border-right:1px solid var(--line);border-radius:0;background:transparent;
+  padding:9px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--silver);position:relative;white-space:nowrap;
+}
+nav button:hover{color:var(--text);background:#121a23}
+nav button.on{color:var(--brass);background:var(--panel);font-weight:600}
+nav button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--brass)}
+nav button small{display:block;font-size:9px;letter-spacing:.06em;color:#5f7285;text-transform:none;margin-top:2px}
+
+main{flex:1;overflow:hidden;position:relative}
+.module{display:none;height:100%;grid-template-columns:230px 1fr 230px;gap:0}
+.module.on{display:grid}
+@media(max-width:900px){.module.on{display:flex;flex-direction:column;overflow:auto}.rail{max-height:none!important}}
+.rail{background:var(--panel);border-right:1px solid var(--line);padding:12px;overflow:auto;max-height:100%}
+.rail.right{border-right:0;border-left:1px solid var(--line)}
+.stage{background:
+   repeating-linear-gradient(45deg,#0c1117 0 12px,#0e141b 12px 24px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;overflow:auto}
+.field{margin-bottom:10px}
+.row{display:flex;gap:6px}
+.row>*{flex:1}
+h3{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);
+   margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.hint{font-size:11px;color:#6b7d8f;line-height:1.5;margin:6px 0 0}
+
+/* tool grid */
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.tools button{padding:8px 2px;font-size:16px;line-height:1}
+/* palette */
+.swatches{display:grid;grid-template-columns:repeat(8,1fr);gap:3px}
+.sw{aspect-ratio:1;border:1px solid #000;border-radius:2px;cursor:pointer;position:relative}
+.sw.on{box-shadow:0 0 0 2px var(--brass);z-index:1}
+.sw.erase{background:
+  linear-gradient(45deg,#333 25%,transparent 25%,transparent 75%,#333 75%),
+  linear-gradient(45deg,#333 25%,#555 25%,#555 75%,#333 75%);
+  background-size:8px 8px;background-position:0 0,4px 4px}
+canvas{display:block;image-rendering:pixelated}
+#pxc{border:1px solid var(--line);background:#000;cursor:crosshair;touch-action:none}
+#tilec{border:1px solid var(--line);opacity:.9}
+.frames{display:flex;gap:4px;flex-wrap:wrap}
+.frames canvas{border:1px solid var(--line);cursor:pointer;width:40px;height:40px;background:#000}
+.frames canvas.on{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass)}
+.status{font-family:var(--mono);font-size:11px;color:var(--silver);min-height:16px}
+.previewwrap{background:#000;padding:10px;border:1px solid var(--line);box-shadow:0 10px 30px #0008}
+#cardc,#mockc{max-width:min(90vw,520px);max-height:calc(100vh - 190px);width:auto;height:auto;image-rendering:auto}
+.pager{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px}
+.stack{display:flex;flex-direction:column;gap:6px}
+.thumbs{display:flex;flex-wrap:wrap;gap:4px}
+.thumbs img{width:44px;height:44px;object-fit:cover;border:1px solid var(--line);cursor:pointer}
+.thumbs img.on{border-color:var(--brass)}
+.file{position:relative;overflow:hidden;display:inline-block;width:100%}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* print sheet */
+#sheet{display:none}
+@media print{
+  body>*{display:none!important}
+  #sheet{display:block!important;position:static}
+  .page{width:8.5in;height:11in;position:relative;page-break-after:always;overflow:hidden}
+  .page img{position:absolute}
+  .mark{position:absolute;background:#000}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="plate"><b>Inkwriter</b> Forge <span>production suite</span></div>
+  <input type="text" id="projname" value="Untitled Project" aria-label="Project name">
+  <button onclick="saveProject()">Save project</button>
+  <span class="file" style="width:auto"><button>Open project</button><input type="file" accept=".json" onchange="openProject(this)"></span>
+  <div class="spacer"></div>
+  <div class="status" id="status">Ready.</div>
+</header>
+
+<nav id="tabs"></nav>
+
+<main>
+  <!-- ============ PIXEL FORGE ============ -->
+  <section class="module" id="m-pixel">
+    <div class="rail">
+      <h3>Canvas</h3>
+      <div class="field"><label>Size</label>
+        <div class="row">
+          <button onclick="PX.resize(16)" id="sz16">16</button>
+          <button onclick="PX.resize(32)" id="sz32">32</button>
+          <button onclick="PX.resize(64)" id="sz64">64</button>
+        </div>
+      </div>
+      <div class="field"><label>Zoom</label>
+        <div class="row"><button onclick="PX.zoom(-1)">&minus;</button><button onclick="PX.zoom(1)">+</button></div>
+      </div>
+      <h3>Tools</h3>
+      <div class="tools" id="pxtools"></div>
+      <div class="field" style="margin-top:8px">
+        <button id="mirrorbtn" onclick="PX.toggleMirror()" style="width:100%">Mirror X: off</button>
+      </div>
+      <div class="field">
+        <button id="wrapbtn" onclick="PX.toggleWrap()" style="width:100%">Seamless tiling: off</button>
+        <p class="hint">Strokes wrap past the edges, so the pattern tiles.</p>
+      </div>
+      <h3>Shading</h3>
+      <div class="row">
+        <button onclick="PX.shadeStep(-1)">Darker</button>
+        <button onclick="PX.shadeStep(1)">Lighter</button>
+      </div>
+      <p class="hint">Moves along the hue ramp, not to a flat swatch. Shift+draw shades what's already there; Alt+draw lightens it.</p>
+      <h3>Import</h3>
+      <span class="file"><button style="width:100%">Import image → pixels</button><input type="file" accept="image/*" onchange="PX.importImage(this)"></span>
+      <p class="hint">Downsamples to the canvas and snaps every pixel to the current depth.</p>
+      <div class="row"><button onclick="PX.undo()">Undo</button><button onclick="PX.redo()">Redo</button></div>
+      <div class="row" style="margin-top:6px"><button onclick="PX.clear()">Clear frame</button></div>
+      <p class="hint">Keys: B pencil, E eraser, G fill, L line, R rect, I picker. Ctrl+Z / Ctrl+Y.</p>
+    </div>
+    <div class="stage">
+      <canvas id="pxc"></canvas>
+      <div class="status" id="pxstatus">&nbsp;</div>
+    </div>
+    <div class="rail right">
+      <h3>Palette</h3>
+      <div class="field"><label>Depth</label>
+        <select id="pxpalset" onchange="PX.setPalette(+this.value)">
+          <option value="16">16 colors — chunky, high contrast</option>
+          <option value="32" selected>32 colors — full ramps</option>
+          <option value="64">64 colors — soft shading</option>
+        </select>
+      </div>
+      <button id="lockbtn" style="width:100%;margin-bottom:8px" onclick="PX.toggleLock()">Follow canvas size: on</button>
+      <div class="swatches" id="pxpal"></div>
+      <div class="row" style="margin-top:8px">
+        <input type="color" id="pxnew" value="#c8973f" style="padding:2px;height:30px">
+        <button onclick="PX.addColor()">Add</button>
+      </div>
+      <button style="width:100%;margin-top:6px" onclick="PX.replaceColor()">Replace selected color</button>
+      <h3 style="margin-top:16px">Frames</h3>
+      <div class="frames" id="pxframes"></div>
+      <div class="row" style="margin-top:6px">
+        <button onclick="PX.addFrame()">Add</button>
+        <button onclick="PX.dupFrame()">Copy</button>
+        <button onclick="PX.delFrame()">Del</button>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button onclick="PX.toggleOnion()" id="onionbtn">Onion: off</button>
+        <button onclick="PX.play()" id="playbtn">Play</button>
+      </div>
+      <h3 style="margin-top:16px">Tiling</h3>
+      <canvas id="tilec" width="144" height="144" style="width:100%"></canvas>
+      <h3 style="margin-top:16px">Export</h3>
+      <div class="field"><label>Scale</label>
+        <select id="pxscale"><option>1</option><option selected>8</option><option>16</option><option>32</option></select>
+      </div>
+      <div class="stack">
+        <button onclick="PX.exportPNG()">Export frame PNG</button>
+        <button onclick="PX.exportSheet()">Export sprite sheet</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CARD FORGE ============ -->
+  <section class="module" id="m-card">
+    <div class="rail">
+      <h3>Stock</h3>
+      <div class="field"><label>Card size</label>
+        <select id="cdsize" onchange="CD.render()">
+          <option value="2.5,3.5">Poker 2.5 × 3.5 in</option>
+          <option value="2.75,4.75">Tarot 2.75 × 4.75 in</option>
+          <option value="1.75,2.5">Mini 1.75 × 2.5 in</option>
+          <option value="3.5,2">Landscape 3.5 × 2 in</option>
+        </select>
+      </div>
+      <div class="field"><label>Bleed (in)</label><input type="number" id="cdbleed" value="0.125" step="0.0625" onchange="CD.render()"></div>
+      <h3>Layout</h3>
+      <div class="field"><label>Frame style</label>
+        <select id="cdframe" onchange="CD.render()">
+          <option value="rule">Double rule</option>
+          <option value="corner">Corner brackets</option>
+          <option value="band">Title band</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+      <div class="field"><label>Colors</label>
+        <div class="row">
+          <input type="color" id="cdbg" value="#efe9dc" onchange="CD.render()" style="height:30px;padding:2px">
+          <input type="color" id="cdink" value="#2c3e50" onchange="CD.render()" style="height:30px;padding:2px">
+          <input type="color" id="cdacc" value="#c8973f" onchange="CD.render()" style="height:30px;padding:2px">
+        </div>
+        <p class="hint">Paper · ink · accent</p>
+      </div>
+      <div class="field">
+        <button style="width:100%" onclick="CD.toggleSprite()" id="cdspritebtn">Sprite icon: off</button>
+        <p class="hint">Pulls the current frame from Pixel Forge.</p>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="previewwrap"><canvas id="cardc"></canvas></div>
+      <div class="pager">
+        <button onclick="CD.step(-1)">&#8592;</button>
+        <span id="cdcount">1 / 1</span>
+        <button onclick="CD.step(1)">&#8594;</button>
+      </div>
+    </div>
+    <div class="rail right">
+      <h3>Template</h3>
+      <div class="field"><label>Title</label><input type="text" id="cdtitle" value="{{Name}}" oninput="CD.render()"></div>
+      <div class="field"><label>Subtitle</label><input type="text" id="cdsub" value="{{Type}} · {{Rarity}}" oninput="CD.render()"></div>
+      <div class="field"><label>Body</label><textarea id="cdbody" rows="4" oninput="CD.render()">{{Effect}}</textarea></div>
+      <div class="field"><label>Footer</label><input type="text" id="cdfoot" value="Inkwriter Studios" oninput="CD.render()"></div>
+      <p class="hint">Use {{Column}} to pull from your data.</p>
+      <h3 style="margin-top:16px">Data (CSV)</h3>
+      <textarea id="cdcsv" rows="6" oninput="CD.loadCSV()">Name,Type,Rarity,Effect
+Elixir of Emberlight,Potion,Uncommon,Drink to shed bright light for 10 minutes. Fire damage you deal gains +1.
+Tincture of Still Water,Potion,Common,Advantage on your next saving throw against being frightened.
+Vial of Hollow Root,Poison,Rare,A creature that ingests this is poisoned for 1 hour on a failed DC 13 save.</textarea>
+      <span class="file"><button style="width:100%;margin-top:6px">Load CSV file</button><input type="file" accept=".csv,.txt" onchange="CD.loadFile(this)"></span>
+      <h3 style="margin-top:16px">Product</h3>
+      <div class="field"><label>Product title</label><input type="text" id="pdtitle" value="The Gilded Satchel"></div>
+      <div class="field"><label>Subtitle</label><input type="text" id="pdsub" value="A potion shop deck for 5e"></div>
+      <div class="field"><label>Version</label><input type="text" id="pdver" value="v1.0"></div>
+      <div class="field"><label>License</label>
+        <select id="pdlic">
+          <option value="personal">Personal use</option>
+          <option value="srd">Personal use + SRD 5.1 attribution</option>
+          <option value="commercial">Commercial use with attribution</option>
+        </select>
+      </div>
+      <div class="stack">
+        <button onclick="CD.buildProduct(false)">Build full product</button>
+        <button onclick="CD.buildProduct(true)">Build 3-card free sampler</button>
+      </div>
+      <p class="hint">Adds cover, contents, print instructions, and license pages ahead of the card sheets.</p>
+      <h3 style="margin-top:16px">Output</h3>
+      <div class="stack">
+        <button onclick="CD.exportPNG()">Export this card (300 dpi)</button>
+        <button onclick="CD.printSheet()">Print sheet with crop marks</button>
+        <button onclick="CD.sendToMockup()">Send set to Mockup Forge</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MOCKUP FORGE ============ -->
+  <section class="module" id="m-mockup">
+    <div class="rail">
+      <h3>Shot</h3>
+      <div class="field"><label>Layout</label>
+        <select id="mklayout" onchange="MK.render()">
+          <option value="hero">Hero — single product</option>
+          <option value="grid">Contents grid</option>
+          <option value="detail">Detail close-up</option>
+          <option value="fan">Fanned stack</option>
+        </select>
+      </div>
+      <div class="field"><label>Backdrop</label>
+        <div class="row">
+          <input type="color" id="mkbg" value="#2c3e50" onchange="MK.render()" style="height:30px;padding:2px">
+          <input type="color" id="mkbg2" value="#141c25" onchange="MK.render()" style="height:30px;padding:2px">
+        </div>
+      </div>
+      <div class="field"><label>Accent</label><input type="color" id="mkacc" value="#c8973f" onchange="MK.render()" style="height:30px;padding:2px"></div>
+      <div class="field"><label>Size</label>
+        <select id="mksize" onchange="MK.render()">
+          <option value="2000">2000 × 2000 (Etsy)</option>
+          <option value="1600">1600 × 1600</option>
+        </select>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="previewwrap"><canvas id="mockc"></canvas></div>
+      <div class="status" id="mkstatus">Load images, or send a card set over from Card Forge.</div>
+    </div>
+    <div class="rail right">
+      <h3>Copy</h3>
+      <div class="field"><label>Headline</label><input type="text" id="mktitle" value="The Gilded Satchel" oninput="MK.render()"></div>
+      <div class="field"><label>Subhead</label><input type="text" id="mksub" value="63 printable potion cards for 5e" oninput="MK.render()"></div>
+      <div class="field"><label>Badge</label><input type="text" id="mkbadge" value="INSTANT DOWNLOAD" oninput="MK.render()"></div>
+      <h3 style="margin-top:16px">Images</h3>
+      <span class="file"><button style="width:100%">Add images</button><input type="file" accept="image/*" multiple onchange="MK.addFiles(this)"></span>
+      <div class="thumbs" id="mkthumbs" style="margin-top:8px"></div>
+      <button style="width:100%;margin-top:6px" onclick="MK.clearImgs()">Remove all</button>
+      <p class="hint">Click a thumbnail to make it the feature image.</p>
+      <h3 style="margin-top:16px">Output</h3>
+      <button style="width:100%" onclick="MK.exportPNG()">Export listing image</button>
+    </div>
+  </section>
+</main>
+
+<div id="sheet"></div>
+
+<script>
+"use strict";
+/* =========================================================
+   G — one state object, the whole app hangs off it.
+   No build step, no storage APIs. Save/load is a JSON file.
+   ========================================================= */
+const G = {
+  active: "pixel",
+  name: "Untitled Project",
+  palette: ["#0e131a","#2c3e50","#3f5a73","#6b8299","#95a5a6","#d8dee3","#efe9dc","#ffffff",
+            "#5a2f22","#9c5b3a","#c8973f","#e9c46a","#3d5a3a","#6f9c50","#7d2f3c","#c9564b"],
+  px: { w:32, h:32, pal:32, lock:true, frames:[], f:0, z:12, color:10, tool:"pencil", mirror:false, onion:false,
+        undo:[], redo:[], drawing:false, start:null, preview:null, timer:null },
+  cd: { rows:[], i:0, sprite:false },
+  mk: { imgs:[], feature:0 }
+};
+const $ = id => document.getElementById(id);
+const say = t => { $("status").textContent = t; };
+const MODULES = [
+  {id:"pixel",  name:"Pixel Forge",  sub:"sprites & icons"},
+  {id:"card",   name:"Card Forge",   sub:"data → print PDF"},
+  {id:"mockup", name:"Mockup Forge", sub:"listing images"}
+];
+
+/* ---------- shell ---------- */
+function buildTabs(){
+  $("tabs").innerHTML = MODULES.map(m =>
+    `<button onclick="show('${m.id}')" id="tab-${m.id}">${m.name}<small>${m.sub}</small></button>`).join("");
+  show(G.active);
+}
+function show(id){
+  G.active = id;
+  MODULES.forEach(m=>{
+    $("m-"+m.id).classList.toggle("on", m.id===id);
+    $("tab-"+m.id).classList.toggle("on", m.id===id);
+  });
+  if(id==="pixel") PX.fit();
+  if(id==="card")  CD.render();
+  if(id==="mockup")MK.render();
+}
+function download(name, dataURL){
+  const a=document.createElement("a"); a.href=dataURL; a.download=name; a.click();
+  say("Saved "+name);
+}
+function saveProject(){
+  G.name = $("projname").value;
+  const data = {
+    v:1, name:G.name, palette:G.palette,
+    px:{w:G.px.w,h:G.px.h,pal:G.px.pal,lock:G.px.lock,wrap:!!G.px.wrap,f:G.px.f,frames:G.px.frames.map(a=>Array.from(a))},
+    cd:{csv:$("cdcsv").value, title:$("cdtitle").value, sub:$("cdsub").value,
+        body:$("cdbody").value, foot:$("cdfoot").value, size:$("cdsize").value,
+        frame:$("cdframe").value, bg:$("cdbg").value, ink:$("cdink").value, acc:$("cdacc").value,
+        bleed:$("cdbleed").value, sprite:G.cd.sprite,
+        pdtitle:$("pdtitle").value, pdsub:$("pdsub").value, pdver:$("pdver").value, pdlic:$("pdlic").value},
+    mk:{title:$("mktitle").value, sub:$("mksub").value, badge:$("mkbadge").value,
+        layout:$("mklayout").value, bg:$("mkbg").value, bg2:$("mkbg2").value, acc:$("mkacc").value}
+  };
+  const blob = "data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(data));
+  download(G.name.replace(/[^\w-]+/g,"_")+".forge.json", blob);
+}
+function openProject(input){
+  const file = input.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const d = JSON.parse(r.result);
+      G.name = d.name||"Untitled Project"; $("projname").value = G.name;
+      if(d.palette) G.palette = d.palette;
+      if(d.px){ G.px.w=d.px.w; G.px.h=d.px.h; G.px.frames=d.px.frames.map(a=>Int16Array.from(a)); G.px.f=d.px.f||0;
+                G.px.pal=d.px.pal||32; G.px.lock=d.px.lock!==false; G.px.wrap=!!d.px.wrap;
+                $("pxpalset").value=G.px.pal;
+                document.documentElement.style.setProperty("--brass", PAL.accent[G.px.pal]); }
+      if(d.cd){ $("cdcsv").value=d.cd.csv; $("cdtitle").value=d.cd.title; $("cdsub").value=d.cd.sub;
+                $("cdbody").value=d.cd.body; $("cdfoot").value=d.cd.foot; $("cdsize").value=d.cd.size;
+                $("cdframe").value=d.cd.frame; $("cdbg").value=d.cd.bg; $("cdink").value=d.cd.ink;
+                $("cdacc").value=d.cd.acc; $("cdbleed").value=d.cd.bleed; G.cd.sprite=!!d.cd.sprite;
+                if(d.cd.pdtitle){ $("pdtitle").value=d.cd.pdtitle; $("pdsub").value=d.cd.pdsub;
+                  $("pdver").value=d.cd.pdver; $("pdlic").value=d.cd.pdlic; } }
+      if(d.mk){ $("mktitle").value=d.mk.title; $("mksub").value=d.mk.sub; $("mkbadge").value=d.mk.badge;
+                $("mklayout").value=d.mk.layout; $("mkbg").value=d.mk.bg; $("mkbg2").value=d.mk.bg2; $("mkacc").value=d.mk.acc; }
+      PX.paint(); CD.loadCSV(); MK.render();
+      say("Opened "+G.name);
+    }catch(e){ say("That file didn't parse as a Forge project."); }
+  };
+  r.readAsText(file); input.value="";
+}
+
+/* =========================================================
+   PAL — depth-based palettes. Ramps are hue-shifted the way
+   hand-drawn pixel art shades: shadows cool, highlights warm.
+   ========================================================= */
+const PAL = {
+  accent:{16:"#c8973f", 32:"#3fa9a0", 64:"#9b7ae6"},
+  hues:{16:[6,30,48,110,215,285], 32:[6,30,48,110,175,215,285], 64:[6,30,48,110,175,215,285]},
+  cfg:{16:{grays:4,steps:2}, 32:{grays:4,steps:4}, 64:{grays:8,steps:8}},
+  cache:{},
+  hex(h,s,l){
+    h=((h%360)+360)%360; s/=100; l/=100;
+    const a=s*Math.min(l,1-l);
+    const f=n=>{ const k=(n+h/30)%12, c=l-a*Math.max(-1,Math.min(k-3,Math.min(9-k,1)));
+      return Math.round(255*c).toString(16).padStart(2,"0"); };
+    return "#"+f(0)+f(8)+f(4);
+  },
+  get(n){
+    if(this.cache[n]) return this.cache[n];
+    const {grays,steps}=this.cfg[n], out=[];    for(let i=0;i<grays;i++){ const t=i/(grays-1); out.push(this.hex(215,10-t*6,7+t*88)); }
+    this.hues[n].forEach(h=>{
+      for(let i=0;i<steps;i++){
+        // two-step ramps stay in the punchy middle instead of running to near-black/near-white
+        const t = steps===1 ? 0.5 : steps===2 ? (i?0.72:0.28) : i/(steps-1);
+        out.push(this.hex(h+(t-0.5)*26, 70-t*24, 22+t*60));
+      }
+    });
+    return this.cache[n]=out;
+  },
+  /* Which ramp does index i belong to, and where in it? Lets shading
+     step along a hue ramp instead of jumping to an unrelated swatch. */
+  ramp(i,n){
+    const {grays,steps}=this.cfg[n];
+    if(i<grays) return {base:0, len:grays, off:i};
+    const k=i-grays;
+    return {base:grays+Math.floor(k/steps)*steps, len:steps, off:k%steps};
+  },
+  step(i,n,dir){
+    const r=this.ramp(i,n);
+    const off=Math.max(0,Math.min(r.len-1,r.off+dir));
+    return r.base+off;
+  },
+  rgb(c){ return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)]; },
+  nearest(c,list){
+    const [r,g,b]=this.rgb(c); let best=0,bd=Infinity;
+    list.forEach((o,i)=>{ const [R,G_,B]=this.rgb(o);
+      const d=2*(r-R)**2+4*(g-G_)**2+3*(b-B)**2; if(d<bd){bd=d;best=i} });
+    return best;
+  }
+};
+
+/* =========================================================
+   PIXEL FORGE
+   ========================================================= */
+const TOOLS = [["pencil","✏"],["eraser","⌫"],["fill","▩"],["line","╱"],["rect","▭"],["ellipse","◯"],["picker","⌖"],["shift","✥"]];
+const PX = {
+  init(){
+    $("pxtools").innerHTML = TOOLS.map(([t,g])=>
+      `<button id="tl-${t}" title="${t}" onclick="PX.setTool('${t}')">${g}</button>`).join("");
+    this.newFrames();
+    this.setTool("pencil");
+    const c = $("pxc");
+    c.addEventListener("pointerdown", e=>this.down(e));
+    c.addEventListener("pointermove", e=>this.move(e));
+    window.addEventListener("pointerup", e=>this.up(e));
+    this.fit(); this.paint();
+  },
+  newFrames(){ G.px.frames=[new Int16Array(G.px.w*G.px.h).fill(-1)]; G.px.f=0; G.px.undo=[]; G.px.redo=[]; },
+  cur(){ return G.px.frames[G.px.f]; },
+  fit(){
+    const p=G.px, c=$("pxc");
+    c.width=p.w*p.z; c.height=p.h*p.z;
+    c.style.width=c.width+"px"; c.style.height=c.height+"px";
+    ["16","32","64"].forEach(s=>$("sz"+s).classList.toggle("on", p.w==+s));
+  },
+  zoom(d){ G.px.z=Math.max(2,Math.min(28,G.px.z+d*2)); this.fit(); this.paint(); },
+  resize(n){
+    const p=G.px, old=this.cur(), ow=p.w, oh=p.h;
+    p.w=n; p.h=n;
+    p.frames = p.frames.map(fr=>{
+      const nf=new Int16Array(n*n).fill(-1);
+      for(let y=0;y<Math.min(oh,n);y++) for(let x=0;x<Math.min(ow,n);x++) nf[y*n+x]=fr[y*ow+x];
+      return nf;
+    });
+    p.undo=[]; p.redo=[]; this.fit();
+    if(p.lock!==false) this.setPalette(n); else this.paint();
+    say("Canvas is now "+n+" × "+n+".");
+  },
+  setPalette(n, remap=true){
+    const next = PAL.get(n);
+    if(remap && G.palette.length){
+      const map = G.palette.map(c=>PAL.nearest(c,next));
+      G.px.frames = G.px.frames.map(fr=>{
+        const o=Int16Array.from(fr);
+        for(let i=0;i<o.length;i++) if(o[i]>=0) o[i]=map[o[i]]!==undefined?map[o[i]]:0;
+        return o;
+      });
+      G.px.color = map[G.px.color]!==undefined ? map[G.px.color] : 0;
+    }
+    G.palette=next; G.px.pal=n;
+    document.documentElement.style.setProperty("--brass", PAL.accent[n]);
+    $("pxpalset").value=n;
+    this.paint();
+  },
+  toggleLock(){
+    G.px.lock = G.px.lock===false;
+    $("lockbtn").textContent="Follow canvas size: "+(G.px.lock?"on":"off");
+    $("lockbtn").classList.toggle("on",G.px.lock);
+  },
+  setTool(t){ G.px.tool=t; TOOLS.forEach(([n])=>$("tl-"+n).classList.toggle("on",n===t)); },
+  toggleMirror(){ G.px.mirror=!G.px.mirror; $("mirrorbtn").textContent="Mirror X: "+(G.px.mirror?"on":"off"); $("mirrorbtn").classList.toggle("on",G.px.mirror); },
+  toggleOnion(){ G.px.onion=!G.px.onion; $("onionbtn").textContent="Onion: "+(G.px.onion?"on":"off"); $("onionbtn").classList.toggle("on",G.px.onion); this.paint(); },
+  snapshot(){ G.px.undo.push({f:G.px.f,data:Int16Array.from(this.cur())}); if(G.px.undo.length>60)G.px.undo.shift(); G.px.redo=[]; },
+  undo(){ const s=G.px.undo.pop(); if(!s)return; G.px.redo.push({f:s.f,data:Int16Array.from(G.px.frames[s.f])}); G.px.frames[s.f]=s.data; G.px.f=s.f; this.paint(); },
+  redo(){ const s=G.px.redo.pop(); if(!s)return; G.px.undo.push({f:s.f,data:Int16Array.from(G.px.frames[s.f])}); G.px.frames[s.f]=s.data; G.px.f=s.f; this.paint(); },
+  clear(){ this.snapshot(); this.cur().fill(-1); this.paint(); },
+  pos(e){
+    const r=$("pxc").getBoundingClientRect(), p=G.px;
+    return { x:Math.floor((e.clientX-r.left)/(r.width/p.w)), y:Math.floor((e.clientY-r.top)/(r.height/p.h)) };
+  },
+  set(x,y,v){
+    const p=G.px;
+    if(p.wrap){ x=((x%p.w)+p.w)%p.w; y=((y%p.h)+p.h)%p.h; }
+    if(x<0||y<0||x>=p.w||y>=p.h) return;
+    this.cur()[y*p.w+x]=v;
+    if(p.mirror){ const mx=p.w-1-x; if(mx>=0&&mx<p.w) this.cur()[y*p.w+mx]=v; }
+  },
+  /* Shift/Alt drawing shades the pixel that's already there, one step
+     along its own ramp — the thing that makes sprites look drawn. */
+  shadeAt(x,y,dir){
+    const p=G.px;
+    if(p.wrap){ x=((x%p.w)+p.w)%p.w; y=((y%p.h)+p.h)%p.h; }
+    if(x<0||y<0||x>=p.w||y>=p.h) return;
+    const cur=this.cur()[y*p.w+x];
+    const from = cur<0 ? p.color : cur;
+    this.set(x,y, PAL.step(from, p.pal, dir));
+  },
+  shadeStep(dir){ G.px.color = PAL.step(G.px.color, G.px.pal, dir); this.paintPalette(); },
+  toggleWrap(){
+    G.px.wrap=!G.px.wrap;
+    $("wrapbtn").textContent="Seamless tiling: "+(G.px.wrap?"on":"off");
+    $("wrapbtn").classList.toggle("on",G.px.wrap);
+  },
+  importImage(input){
+    const f=input.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{
+      const im=new Image();
+      im.onload=()=>{
+        const p=G.px, c=document.createElement("canvas");
+        c.width=p.w; c.height=p.h;
+        const g=c.getContext("2d");
+        g.imageSmoothingEnabled=true; g.imageSmoothingQuality="high";
+        // cover-fit so the subject fills the grid
+        const s=Math.max(p.w/im.naturalWidth, p.h/im.naturalHeight);
+        const dw=im.naturalWidth*s, dh=im.naturalHeight*s;
+        g.drawImage(im,(p.w-dw)/2,(p.h-dh)/2,dw,dh);
+        const d=g.getImageData(0,0,p.w,p.h).data;
+        const out=new Int16Array(p.w*p.h).fill(-1);
+        const hx=n=>n.toString(16).padStart(2,"0");
+        for(let i=0;i<p.w*p.h;i++){
+          if(d[i*4+3]<128) continue;
+          out[i]=PAL.nearest("#"+hx(d[i*4])+hx(d[i*4+1])+hx(d[i*4+2]), G.palette);
+        }
+        this.snapshot();
+        G.px.frames[G.px.f]=out;
+        this.paint();
+        say("Imported and quantized to "+G.palette.length+" colors.");
+      };
+      im.src=r.result;
+    };
+    r.readAsDataURL(f); input.value="";
+  },
+  down(e){
+    e.preventDefault();
+    const p=G.px, {x,y}=this.pos(e);
+    if(p.tool==="picker"){ const v=this.cur()[y*p.w+x]; if(v>=0){ p.color=v; this.paintPalette(); } return; }
+    this.snapshot(); p.drawing=true; p.start={x,y}; p.shade = e.shiftKey?-1 : e.altKey?1 : 0;
+    if(p.shade) this.shadeAt(x,y,p.shade);
+    else if(p.tool==="pencil") this.set(x,y,p.color);
+    else if(p.tool==="eraser") this.set(x,y,-1);
+    else if(p.tool==="fill") this.flood(x,y,p.color);
+    this.paint();
+  },
+  move(e){
+    const p=G.px, {x,y}=this.pos(e);
+    $("pxstatus").textContent = (x>=0&&y>=0&&x<p.w&&y<p.h) ? x+", "+y : " ";
+    if(!p.drawing) return;
+    if(p.shade){ this.shadeLine(p.start.x,p.start.y,x,y,p.shade); p.start={x,y}; }
+    else if(p.tool==="pencil") this.line(p.start.x,p.start.y,x,y,p.color), p.start={x,y};
+    else if(p.tool==="eraser") this.line(p.start.x,p.start.y,x,y,-1), p.start={x,y};
+    else if(["line","rect","ellipse","shift"].includes(p.tool)) p.preview={x0:p.start.x,y0:p.start.y,x1:x,y1:y};
+    this.paint();
+  },
+  up(e){
+    const p=G.px; if(!p.drawing) return; p.drawing=false; p.shade=0;
+    if(p.preview){
+      const {x0,y0,x1,y1}=p.preview;
+      if(p.tool==="line") this.line(x0,y0,x1,y1,p.color);
+      if(p.tool==="rect") this.rect(x0,y0,x1,y1,p.color);
+      if(p.tool==="ellipse") this.ellipse(x0,y0,x1,y1,p.color);
+      if(p.tool==="shift") this.shift(x1-x0,y1-y0);
+      p.preview=null;
+    }
+    this.paint();
+  },
+  shadeLine(x0,y0,x1,y1,dir){
+    let dx=Math.abs(x1-x0), dy=-Math.abs(y1-y0), sx=x0<x1?1:-1, sy=y0<y1?1:-1, err=dx+dy;
+    for(;;){ this.shadeAt(x0,y0,dir); if(x0===x1&&y0===y1)break; const e2=2*err;
+      if(e2>=dy){err+=dy;x0+=sx} if(e2<=dx){err+=dx;y0+=sy} }
+  },
+  line(x0,y0,x1,y1,v){
+    let dx=Math.abs(x1-x0), dy=-Math.abs(y1-y0), sx=x0<x1?1:-1, sy=y0<y1?1:-1, err=dx+dy;
+    for(;;){ this.set(x0,y0,v); if(x0===x1&&y0===y1)break; const e2=2*err;
+      if(e2>=dy){err+=dy;x0+=sx} if(e2<=dx){err+=dx;y0+=sy} }
+  },
+  rect(x0,y0,x1,y1,v){
+    const a=Math.min(x0,x1),b=Math.max(x0,x1),c=Math.min(y0,y1),d=Math.max(y0,y1);
+    for(let x=a;x<=b;x++){this.set(x,c,v);this.set(x,d,v)}
+    for(let y=c;y<=d;y++){this.set(a,y,v);this.set(b,y,v)}
+  },
+  ellipse(x0,y0,x1,y1,v){
+    const cx=(x0+x1)/2, cy=(y0+y1)/2, rx=Math.abs(x1-x0)/2, ry=Math.abs(y1-y0)/2;
+    if(rx<0.5||ry<0.5){ this.line(x0,y0,x1,y1,v); return; }
+    for(let t=0;t<360;t+=1.5){ const r=t*Math.PI/180;
+      this.set(Math.round(cx+rx*Math.cos(r)), Math.round(cy+ry*Math.sin(r)), v); }
+  },
+  shift(dx,dy){
+    const p=G.px, src=Int16Array.from(this.cur()), out=this.cur(); out.fill(-1);
+    for(let y=0;y<p.h;y++) for(let x=0;x<p.w;x++){
+      const nx=(x+dx+p.w*4)%p.w, ny=(y+dy+p.h*4)%p.h;
+      out[ny*p.w+nx]=src[y*p.w+x];
+    }
+  },
+  flood(x,y,v){
+    const p=G.px, d=this.cur(), t=d[y*p.w+x]; if(t===v) return;
+    const st=[[x,y]];
+    while(st.length){
+      const [a,b]=st.pop(); if(a<0||b<0||a>=p.w||b>=p.h) continue;
+      if(d[b*p.w+a]!==t) continue;
+      d[b*p.w+a]=v; st.push([a+1,b],[a-1,b],[a,b+1],[a,b-1]);
+    }
+  },
+  paint(){
+    const p=G.px, c=$("pxc"), g=c.getContext("2d"), z=p.z;
+    g.clearRect(0,0,c.width,c.height);
+    // transparency checker
+    for(let y=0;y<p.h;y++) for(let x=0;x<p.w;x++){
+      g.fillStyle = ((x+y)%2) ? "#151b22" : "#1c242d";
+      g.fillRect(x*z,y*z,z,z);
+    }
+    if(p.onion && p.frames[p.f-1]){
+      g.globalAlpha=.3; this.blit(g,p.frames[p.f-1],z); g.globalAlpha=1;
+    }
+    this.blit(g,this.cur(),z);
+    if(p.preview){
+      const {x0,y0,x1,y1}=p.preview;
+      g.strokeStyle="#c8973f"; g.lineWidth=1;
+      const a=Math.min(x0,x1)*z,b=Math.min(y0,y1)*z;
+      g.strokeRect(a+.5,b+.5,(Math.abs(x1-x0)+1)*z-1,(Math.abs(y1-y0)+1)*z-1);
+    }
+    if(z>=8){ g.strokeStyle="rgba(255,255,255,.05)";
+      for(let x=0;x<=p.w;x++){g.beginPath();g.moveTo(x*z,0);g.lineTo(x*z,c.height);g.stroke()}
+      for(let y=0;y<=p.h;y++){g.beginPath();g.moveTo(0,y*z);g.lineTo(c.width,y*z);g.stroke()} }
+    this.paintPalette(); this.paintFrames(); this.paintTile();
+  },
+  blit(g,data,z,ox=0,oy=0){
+    const p=G.px;
+    for(let y=0;y<p.h;y++) for(let x=0;x<p.w;x++){
+      const v=data[y*p.w+x]; if(v<0) continue;
+      g.fillStyle=G.palette[v]||"#f0f"; g.fillRect(ox+x*z,oy+y*z,z,z);
+    }
+  },
+  paintPalette(){
+    $("pxpal").innerHTML = G.palette.map((c,i)=>
+      `<div class="sw${i===G.px.color?" on":""}" style="background:${c}" title="${c}" onclick="PX.pick(${i})"></div>`).join("");
+  },
+  pick(i){ G.px.color=i; this.paintPalette(); },
+  addColor(){ G.palette.push($("pxnew").value); G.px.color=G.palette.length-1; this.paintPalette(); },
+  replaceColor(){ G.palette[G.px.color]=$("pxnew").value; this.paint(); },
+  paintFrames(){
+    const wrap=$("pxframes"); wrap.innerHTML="";
+    G.px.frames.forEach((fr,i)=>{
+      const c=document.createElement("canvas"); c.width=G.px.w; c.height=G.px.h;
+      if(i===G.px.f) c.className="on";
+      const g=c.getContext("2d");
+      for(let y=0;y<G.px.h;y++) for(let x=0;x<G.px.w;x++){
+        const v=fr[y*G.px.w+x]; if(v<0)continue; g.fillStyle=G.palette[v]; g.fillRect(x,y,1,1);
+      }
+      c.onclick=()=>{ G.px.f=i; PX.paint(); };
+      wrap.appendChild(c);
+    });
+  },
+  addFrame(){ G.px.frames.push(new Int16Array(G.px.w*G.px.h).fill(-1)); G.px.f=G.px.frames.length-1; this.paint(); },
+  dupFrame(){ G.px.frames.splice(G.px.f+1,0,Int16Array.from(this.cur())); G.px.f++; this.paint(); },
+  delFrame(){ if(G.px.frames.length<2){say("A sprite needs at least one frame.");return}
+    G.px.frames.splice(G.px.f,1); G.px.f=Math.max(0,G.px.f-1); this.paint(); },
+  play(){
+    if(G.px.timer){ clearInterval(G.px.timer); G.px.timer=null; $("playbtn").textContent="Play"; $("playbtn").classList.remove("on"); return; }
+    $("playbtn").textContent="Stop"; $("playbtn").classList.add("on");
+    G.px.timer=setInterval(()=>{ G.px.f=(G.px.f+1)%G.px.frames.length; PX.paint(); },140);
+  },
+  paintTile(){
+    const c=$("tilec"), g=c.getContext("2d"), p=G.px, z=Math.max(1,Math.floor(c.width/(p.w*3)));
+    c.width=p.w*3*z; c.height=p.h*3*z;
+    g.fillStyle="#0d141c"; g.fillRect(0,0,c.width,c.height);
+    for(let ty=0;ty<3;ty++) for(let tx=0;tx<3;tx++) this.blit(g,this.cur(),z,tx*p.w*z,ty*p.h*z);
+  },
+  frameCanvas(i, scale){
+    const p=G.px, c=document.createElement("canvas");
+    c.width=p.w*scale; c.height=p.h*scale;
+    this.blit(c.getContext("2d"), p.frames[i], scale);
+    return c;
+  },
+  exportPNG(){
+    const s=+$("pxscale").value;
+    download("sprite_"+G.px.w+"x"+G.px.h+"_f"+(G.px.f+1)+".png", this.frameCanvas(G.px.f,s).toDataURL());
+  },
+  exportSheet(){
+    const s=+$("pxscale").value, p=G.px, n=p.frames.length;
+    const c=document.createElement("canvas"); c.width=p.w*s*n; c.height=p.h*s;
+    const g=c.getContext("2d");
+    p.frames.forEach((fr,i)=>this.blit(g,fr,s,i*p.w*s,0));
+    download("spritesheet_"+n+"f.png", c.toDataURL());
+  }
+};
+
+/* =========================================================
+   CARD FORGE
+   ========================================================= */
+const CD = {
+  parseCSV(text){
+    const rows=[]; let row=[], cell="", q=false;
+    for(let i=0;i<text.length;i++){
+      const ch=text[i];
+      if(q){ if(ch==='"'){ if(text[i+1]==='"'){cell+='"';i++} else q=false } else cell+=ch }
+      else if(ch==='"') q=true;
+      else if(ch===","){ row.push(cell); cell="" }
+      else if(ch==="\n"){ row.push(cell); rows.push(row); row=[]; cell="" }
+      else if(ch!=="\r") cell+=ch;
+    }
+    if(cell.length||row.length){ row.push(cell); rows.push(row) }
+    if(!rows.length) return [];
+    const head=rows.shift().map(h=>h.trim());
+    return rows.filter(r=>r.some(v=>v.trim())).map(r=>{
+      const o={}; head.forEach((h,i)=>o[h]=(r[i]||"").trim()); return o;
+    });
+  },
+  loadCSV(){
+    G.cd.rows = this.parseCSV($("cdcsv").value);
+    G.cd.i = Math.min(G.cd.i, Math.max(0,G.cd.rows.length-1));
+    this.render();
+  },
+  loadFile(input){
+    const f=input.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{ $("cdcsv").value=r.result; this.loadCSV(); say("Loaded "+G.cd.rows.length+" rows."); };
+    r.readAsText(f); input.value="";
+  },
+  step(d){ const n=G.cd.rows.length||1; G.cd.i=(G.cd.i+d+n)%n; this.render(); },
+  toggleSprite(){ G.cd.sprite=!G.cd.sprite; $("cdspritebtn").textContent="Sprite icon: "+(G.cd.sprite?"on":"off");
+    $("cdspritebtn").classList.toggle("on",G.cd.sprite); this.render(); },
+  merge(tpl,row){ return tpl.replace(/\{\{([^}]+)\}\}/g,(m,k)=>(row&&row[k.trim()]!==undefined)?row[k.trim()]:""); },
+  dims(){
+    const [w,h]=$("cdsize").value.split(",").map(Number);
+    const bleed=Math.max(0,+$("cdbleed").value||0);
+    return {w,h,bleed,W:Math.round((w+bleed*2)*300),H:Math.round((h+bleed*2)*300)};
+  },
+  wrap(g,text,x,y,maxW,lh){
+    let line="", yy=y;
+    text.split(/\s+/).forEach(word=>{
+      const test=line?line+" "+word:word;
+      if(g.measureText(test).width>maxW && line){ g.fillText(line,x,yy); yy+=lh; line=word }
+      else line=test;
+    });
+    if(line) g.fillText(line,x,yy);
+    return yy+lh;
+  },
+  draw(canvas, row, dpi){
+    const d=this.dims(), s=dpi/300;
+    const W=Math.round(d.W*s), H=Math.round(d.H*s), bl=Math.round(d.bleed*dpi);
+    canvas.width=W; canvas.height=H;
+    const g=canvas.getContext("2d");
+    const bg=$("cdbg").value, ink=$("cdink").value, acc=$("cdacc").value;
+    const style=$("cdframe").value;
+    g.fillStyle=bg; g.fillRect(0,0,W,H);
+    const m=Math.round(0.16*dpi)+bl;           // inner margin from trim
+    const iw=W-m*2;
+    // frame
+    g.strokeStyle=ink;
+    if(style==="rule"){
+      g.lineWidth=Math.max(1,dpi/100); g.strokeRect(m*0.7,m*0.7,W-m*1.4,H-m*1.4);
+      g.lineWidth=Math.max(1,dpi/300); g.strokeRect(m*0.7+dpi*0.035,m*0.7+dpi*0.035,W-m*1.4-dpi*0.07,H-m*1.4-dpi*0.07);
+    } else if(style==="corner"){
+      const L=dpi*0.28, o=m*0.7; g.lineWidth=Math.max(1,dpi/90); g.strokeStyle=acc;
+      [[o,o,1,1],[W-o,o,-1,1],[o,H-o,1,-1],[W-o,H-o,-1,-1]].forEach(([x,y,sx,sy])=>{
+        g.beginPath(); g.moveTo(x+L*sx,y); g.lineTo(x,y); g.lineTo(x,y+L*sy); g.stroke();
+      });
+    } else if(style==="band"){
+      g.fillStyle=ink; g.fillRect(0,m*0.55,W,dpi*0.34);
+    }
+    let y=m+dpi*0.14;
+    if(style==="band") y=m*0.55+dpi*0.245;
+    // title
+    const title=this.merge($("cdtitle").value,row);
+    g.textAlign="center"; g.fillStyle=(style==="band")?bg:ink;
+    let ts=dpi*0.115;
+    g.font="600 "+ts+"px "+'"Iowan Old Style",Palatino,Georgia,serif';
+    while(g.measureText(title).width>iw && ts>dpi*0.05){ ts-=dpi*0.006; g.font="600 "+ts+"px Georgia,serif"; }
+    g.fillText(title,W/2,y); y+=dpi*0.1;
+    // subtitle
+    const sub=this.merge($("cdsub").value,row);
+    if(sub.replace(/[·\s]/g,"")){
+      g.fillStyle=acc; g.font="italic "+(dpi*0.062)+"px Georgia,serif";
+      g.fillText(sub,W/2,y); y+=dpi*0.07;
+    }
+    // rule
+    g.strokeStyle=acc; g.lineWidth=Math.max(1,dpi/220);
+    g.beginPath(); g.moveTo(m+iw*0.15,y); g.lineTo(m+iw*0.85,y); g.stroke(); y+=dpi*0.12;
+    // sprite
+    if(G.cd.sprite && G.px.frames[G.px.f]){
+      const box=Math.min(iw*0.5, H*0.22), sc=Math.max(1,Math.floor(box/G.px.w));
+      const spr=PX.frameCanvas(G.px.f, sc);
+      g.imageSmoothingEnabled=false;
+      g.drawImage(spr, (W-spr.width)/2, y);
+      g.imageSmoothingEnabled=true;
+      y+=spr.height+dpi*0.09;
+    }
+    // body
+    g.textAlign="left"; g.fillStyle=ink; g.font=(dpi*0.062)+"px "+'Georgia,serif';
+    y=this.wrap(g,this.merge($("cdbody").value,row),m,y,iw,dpi*0.082);
+    // footer
+    const foot=this.merge($("cdfoot").value,row);
+    g.textAlign="center"; g.fillStyle=acc; g.font=(dpi*0.038)+"px system-ui,sans-serif";
+    g.fillText(foot.toUpperCase(),W/2,H-m*0.62);
+    // bleed guide (screen only)
+    if(dpi<300 && d.bleed>0){
+      g.strokeStyle="rgba(200,151,63,.55)"; g.setLineDash([4,4]); g.lineWidth=1;
+      g.strokeRect(bl,bl,W-bl*2,H-bl*2); g.setLineDash([]);
+    }
+    return canvas;
+  },
+  render(){
+    const row=G.cd.rows[G.cd.i]||null;
+    this.draw($("cardc"), row, 140);
+    $("cdcount").textContent = (G.cd.rows.length? (G.cd.i+1):0)+" / "+G.cd.rows.length;
+  },
+  exportPNG(){
+    const c=document.createElement("canvas");
+    this.draw(c, G.cd.rows[G.cd.i]||null, 300);
+    const n=(G.cd.rows[G.cd.i]&&Object.values(G.cd.rows[G.cd.i])[0])||"card";
+    download(String(n).replace(/[^\w-]+/g,"_")+".png", c.toDataURL());
+  },
+  cardPagesHTML(rows){
+    const d=this.dims(), margin=0.4;
+    const cols=Math.max(1,Math.floor((8.5-margin*2)/d.w)), rws=Math.max(1,Math.floor((11-margin*2)/d.h));
+    const per=cols*rws, pages=Math.ceil(rows.length/per);
+    let html="";
+    for(let p=0;p<pages;p++){
+      html+='<div class="page">';
+      for(let i=0;i<per;i++){
+        const idx=p*per+i; if(idx>=rows.length) break;
+        const c=document.createElement("canvas");
+        this.draw(c, rows[idx], 300);
+        const cx=margin+(i%cols)*d.w, cy=margin+Math.floor(i/cols)*d.h;
+        html+=`<img src="${c.toDataURL()}" style="left:${cx-d.bleed}in;top:${cy-d.bleed}in;width:${d.w+d.bleed*2}in;height:${d.h+d.bleed*2}in">`;
+        [[cx,cy],[cx+d.w,cy],[cx,cy+d.h],[cx+d.w,cy+d.h]].forEach(([mx,my])=>{
+          html+=`<div class="mark" style="left:${mx-0.14}in;top:${my}in;width:.1in;height:.5pt"></div>`;
+          html+=`<div class="mark" style="left:${mx}in;top:${my-0.14}in;width:.5pt;height:.1in"></div>`;
+        });
+      }
+      html+="</div>";
+      if(p>0 && p%12===0) break; // safety valve on very large sets
+    }
+    return {html, cols, rows:rws, pages};
+  },
+  printSheet(){
+    if(!G.cd.rows.length){ say("Add some CSV rows first."); return; }
+    const r=this.cardPagesHTML(G.cd.rows);
+    $("sheet").innerHTML=r.html;
+    say(`Sheet built: ${G.cd.rows.length} cards, ${r.cols}×${r.rows} per page, ${r.pages} page(s). Choose "Save as PDF" in the print dialog.`);
+    setTimeout(()=>window.print(),120);
+  },
+
+  /* ---- front matter: what turns a card set into a product ---- */
+  pageCanvas(){ const c=document.createElement("canvas"); c.width=8.5*150; c.height=11*150; return c; },
+  pageHTML(canvas){ return `<div class="page"><img src="${canvas.toDataURL()}" style="left:0;top:0;width:8.5in;height:11in"></div>`; },
+  textBlock(g,lines,x,y,size,lh,color,font){
+    g.fillStyle=color; g.font=size+"px "+font; g.textAlign="left";
+    lines.forEach(l=>{ g.fillText(l,x,y); y+=lh; });
+    return y;
+  },
+  coverPage(rows){
+    const c=this.pageCanvas(), g=c.getContext("2d"), D=150, W=c.width, H=c.height;
+    const ink=$("cdink").value, acc=$("cdacc").value, bg=$("cdbg").value;
+    g.fillStyle=ink; g.fillRect(0,0,W,H);
+    g.strokeStyle=acc; g.lineWidth=D*0.02; g.strokeRect(D*0.5,D*0.5,W-D,H-D);
+    // fanned sample cards
+    const n=Math.min(3,rows.length);
+    for(let i=0;i<n;i++){
+      const cc=document.createElement("canvas"); this.draw(cc,rows[i],150);
+      const cw=D*2.1, ch=cw*(cc.height/cc.width);
+      g.save(); g.translate(W/2+(i-(n-1)/2)*D*0.95, H*0.44);
+      g.rotate((i-(n-1)/2)*0.13);
+      g.shadowColor="rgba(0,0,0,.55)"; g.shadowBlur=D*0.25;
+      g.drawImage(cc,-cw/2,-ch/2,cw,ch); g.restore();
+    }
+    g.textAlign="center";
+    let ts=D*0.52; const t=$("pdtitle").value;
+    g.font="600 "+ts+'px "Iowan Old Style",Palatino,Georgia,serif'; g.fillStyle=bg;
+    while(g.measureText(t).width>W-D*1.6 && ts>D*0.2){ ts-=D*0.02; g.font="600 "+ts+"px Georgia,serif"; }
+    g.fillText(t,W/2,H*0.72);
+    g.fillStyle=acc; g.font="italic "+(D*0.2)+"px Georgia,serif";
+    g.fillText($("pdsub").value,W/2,H*0.79);
+    g.beginPath(); g.strokeStyle=acc; g.lineWidth=D*0.012;
+    g.moveTo(W*0.38,H*0.83); g.lineTo(W*0.62,H*0.83); g.stroke();
+    g.fillStyle="rgba(255,255,255,.6)"; g.font=(D*0.11)+"px system-ui,sans-serif";
+    g.fillText(rows.length+" cards · "+$("pdver").value+" · Inkwriter Studios",W/2,H*0.88);
+    return c;
+  },
+  contentsPage(rows){
+    const c=this.pageCanvas(), g=c.getContext("2d"), D=150, W=c.width;
+    g.fillStyle="#ffffff"; g.fillRect(0,0,W,c.height);
+    g.fillStyle=$("cdink").value; g.textAlign="left";
+    g.font="600 "+(D*0.3)+'px "Iowan Old Style",Palatino,Georgia,serif';
+    g.fillText("Contents",D,D*1.2);
+    g.strokeStyle=$("cdacc").value; g.lineWidth=2;
+    g.beginPath(); g.moveTo(D,D*1.35); g.lineTo(W-D,D*1.35); g.stroke();
+    const key=Object.keys(rows[0]||{})[0]||"Name";
+    const perCol=Math.ceil(rows.length/2), colW=(W-D*2)/2;
+    g.font=(D*0.1)+"px Georgia,serif";
+    rows.forEach((r,i)=>{
+      const x=D+Math.floor(i/perCol)*colW, y=D*1.75+(i%perCol)*(D*0.17);
+      if(y<c.height-D*0.8) g.fillText((i+1)+".  "+(r[key]||""),x,y);
+    });
+    return c;
+  },
+  instructionsPage(){
+    const c=this.pageCanvas(), g=c.getContext("2d"), D=150, W=c.width;
+    const d=this.dims();
+    g.fillStyle="#ffffff"; g.fillRect(0,0,W,c.height);
+    g.fillStyle=$("cdink").value; g.textAlign="left";
+    g.font="600 "+(D*0.3)+'px "Iowan Old Style",Palatino,Georgia,serif';
+    g.fillText("How to print",D,D*1.2);
+    g.strokeStyle=$("cdacc").value; g.lineWidth=2;
+    g.beginPath(); g.moveTo(D,D*1.35); g.lineTo(W-D,D*1.35); g.stroke();
+    const lines=[
+      "Paper: 65 lb cardstock or heavier. Matte holds ink best; glossy smudges.",
+      "",
+      "Scaling: set your printer to 100% or Actual Size. Do not use Fit to Page —",
+      "it will shrink the cards and the crop marks will no longer be accurate.",
+      "",
+      "Card size: "+d.w+" × "+d.h+" inches, with "+d.bleed+" in bleed on every edge.",
+      "",
+      "Cutting: the four short marks at each corner show the trim line. A paper",
+      "trimmer gives cleaner edges than scissors. Trim through the bleed, not",
+      "around it, so no white slivers remain.",
+      "",
+      "Duplex: if you print backs, choose flip on short edge. Print one test page",
+      "and hold it to a light to check alignment before running the full deck.",
+      "",
+      "Sleeving: these are sized for standard card sleeves. Backing them with a",
+      "regular playing card gives them a sturdier feel at the table.",
+      "",
+      "Trouble: if colors print dark, turn off any printer 'vivid' or 'photo'",
+      "enhancement. If text looks soft, confirm you're printing the PDF at full",
+      "resolution rather than a downsampled preview."
+    ];
+    this.textBlock(g,lines,D,D*1.75,D*0.105,D*0.17,"#333","Georgia,serif");
+    return c;
+  },
+  licensePage(){
+    const c=this.pageCanvas(), g=c.getContext("2d"), D=150, W=c.width;
+    g.fillStyle="#ffffff"; g.fillRect(0,0,W,c.height);
+    g.fillStyle=$("cdink").value; g.textAlign="left";
+    g.font="600 "+(D*0.3)+'px "Iowan Old Style",Palatino,Georgia,serif';
+    g.fillText("License & credits",D,D*1.2);
+    g.strokeStyle=$("cdacc").value; g.lineWidth=2;
+    g.beginPath(); g.moveTo(D,D*1.35); g.lineTo(W-D,D*1.35); g.stroke();
+    const mode=$("pdlic").value, title=$("pdtitle").value, yr=new Date().getFullYear();
+    let lines=[
+      title+" — "+$("pdver").value,
+      "© "+yr+" Inkwriter Studios. All rights reserved.",
+      ""
+    ];
+    if(mode==="personal") lines=lines.concat([
+      "You may print unlimited copies of these cards for your own personal use",
+      "and for the tables you play at. You may not resell, redistribute, or share",
+      "the source files, and you may not sell printed copies.",
+      "",
+      "Buying this once covers your whole group. Please don't pass the files on —",
+      "send people to the shop instead."
+    ]);
+    if(mode==="srd") lines=lines.concat([
+      "You may print unlimited copies for personal use and for your own table.",
+      "You may not resell or redistribute the files.",
+      "",
+      "This work includes material from the System Reference Document 5.1",
+      "('SRD 5.1') by Wizards of the Coast LLC, available under the Creative",
+      "Commons Attribution 4.0 International License (CC-BY-4.0):",
+      "creativecommons.org/licenses/by/4.0/legalcode",
+      "",
+      "This product is not affiliated with, endorsed, sponsored, or specifically",
+      "approved by Wizards of the Coast LLC."
+    ]);
+    if(mode==="commercial") lines=lines.concat([
+      "You may use these cards in your own commercial projects provided you",
+      "credit Inkwriter Studios and do not resell the files themselves as a",
+      "standalone product.",
+      "",
+      "Attribution: 'Card assets by Inkwriter Studios.'"
+    ]);
+    lines=lines.concat(["","Questions, errata, or a print that came out wrong?","Reach out and I'll make it right. — Inkwriter Studios"]);
+    this.textBlock(g,lines,D,D*1.75,D*0.105,D*0.17,"#333","Georgia,serif");
+    return c;
+  },
+  buildProduct(sampler){
+    if(!G.cd.rows.length){ say("Add some CSV rows first."); return; }
+    const rows = sampler ? G.cd.rows.slice(0,3) : G.cd.rows;
+    const cards = this.cardPagesHTML(rows);
+    let html = this.pageHTML(this.coverPage(rows));
+    if(!sampler) html += this.pageHTML(this.contentsPage(rows));
+    html += this.pageHTML(this.instructionsPage());
+    html += this.pageHTML(this.licensePage());
+    html += cards.html;
+    $("sheet").innerHTML = html;
+    const front = sampler?3:4;
+    say(`${sampler?"Sampler":"Product"} built: ${front} front pages + ${cards.pages} card page(s), ${rows.length} cards. Print to PDF and that file is your listing.`);
+    setTimeout(()=>window.print(),150);
+  },
+  sendToMockup(){
+    if(!G.cd.rows.length){ say("Add some CSV rows first."); return; }
+    G.mk.imgs=[];
+    G.cd.rows.slice(0,9).forEach(r=>{
+      const c=document.createElement("canvas"); this.draw(c,r,150);
+      const im=new Image(); im.src=c.toDataURL(); G.mk.imgs.push(im);
+    });
+    G.mk.feature=0;
+    setTimeout(()=>{ show("mockup"); MK.paintThumbs(); MK.render();
+      say("Sent "+G.mk.imgs.length+" cards to Mockup Forge."); },200);
+  }
+};
+
+/* =========================================================
+   MOCKUP FORGE
+   ========================================================= */
+const MK = {
+  addFiles(input){
+    [...input.files].forEach(f=>{
+      const r=new FileReader();
+      r.onload=()=>{ const im=new Image(); im.onload=()=>{ this.paintThumbs(); this.render(); }; im.src=r.result; G.mk.imgs.push(im); };
+      r.readAsDataURL(f);
+    });
+    input.value="";
+  },
+  clearImgs(){ G.mk.imgs=[]; G.mk.feature=0; this.paintThumbs(); this.render(); },
+  paintThumbs(){
+    $("mkthumbs").innerHTML = G.mk.imgs.map((im,i)=>
+      `<img src="${im.src}" class="${i===G.mk.feature?"on":""}" onclick="G.mk.feature=${i};MK.paintThumbs();MK.render()">`).join("");
+  },
+  shadowImg(g,im,x,y,w,h,rot){
+    g.save(); g.translate(x+w/2,y+h/2); if(rot) g.rotate(rot*Math.PI/180);
+    g.shadowColor="rgba(0,0,0,.45)"; g.shadowBlur=w*0.09; g.shadowOffsetY=h*0.03;
+    g.drawImage(im,-w/2,-h/2,w,h); g.restore();
+  },
+  render(){
+    const S=+$("mksize").value, c=$("mockc"), g=c.getContext("2d");
+    c.width=S; c.height=S;
+    const bg=$("mkbg").value, bg2=$("mkbg2").value, acc=$("mkacc").value;
+    const grad=g.createLinearGradient(0,0,S,S); grad.addColorStop(0,bg); grad.addColorStop(1,bg2);
+    g.fillStyle=grad; g.fillRect(0,0,S,S);
+    const imgs=G.mk.imgs.filter(i=>i.complete&&i.naturalWidth);
+    const layout=$("mklayout").value;
+    const fit=(im,maxW,maxH)=>{ const r=Math.min(maxW/im.naturalWidth,maxH/im.naturalHeight);
+      return {w:im.naturalWidth*r,h:im.naturalHeight*r}; };
+
+    if(!imgs.length){
+      g.fillStyle="rgba(255,255,255,.16)"; g.textAlign="center";
+      g.font=(S*0.035)+"px system-ui,sans-serif";
+      g.fillText("Add images to build this shot",S/2,S/2);
+    } else if(layout==="hero"){
+      const im=imgs[Math.min(G.mk.feature,imgs.length-1)], d=fit(im,S*0.52,S*0.52);
+      this.shadowImg(g,im,S/2-d.w/2,S*0.20,d.w,d.h,-4);
+    } else if(layout==="fan"){
+      const n=Math.min(5,imgs.length);
+      for(let i=0;i<n;i++){ const im=imgs[i], d=fit(im,S*0.40,S*0.44);
+        this.shadowImg(g,im,S/2-d.w/2+(i-(n-1)/2)*S*0.085,S*0.22,d.w,d.h,(i-(n-1)/2)*7); }
+    } else if(layout==="grid"){
+      const n=Math.min(9,imgs.length), cols=n<=4?2:3, rows=Math.ceil(n/cols);
+      const cell=S*0.62/cols, top=S*0.19;
+      for(let i=0;i<n;i++){ const im=imgs[i], d=fit(im,cell*0.86,cell*1.18);
+        const x=S/2-(cols*cell)/2+(i%cols)*cell+(cell-d.w)/2;
+        const y=top+Math.floor(i/cols)*(cell*1.28)+(cell*1.18-d.h)/2;
+        this.shadowImg(g,im,x,y,d.w,d.h,0); }
+      if(rows>2){ /* leave headline room */ }
+    } else if(layout==="detail"){
+      const im=imgs[Math.min(G.mk.feature,imgs.length-1)];
+      const side=S*0.72, sw=im.naturalWidth*0.55, sh=sw*(1);
+      g.save(); g.shadowColor="rgba(0,0,0,.5)"; g.shadowBlur=S*0.04;
+      g.drawImage(im,(im.naturalWidth-sw)/2,im.naturalHeight*0.06,sw,Math.min(sh,im.naturalHeight*0.6),
+                    S/2-side/2,S*0.19,side,side*0.62);
+      g.restore();
+      g.strokeStyle=acc; g.lineWidth=S*0.004; g.strokeRect(S/2-side/2,S*0.19,side,side*0.62);
+    }
+
+    // badge
+    const badge=$("mkbadge").value.trim();
+    if(badge){
+      g.font="600 "+(S*0.020)+"px system-ui,sans-serif"; g.textAlign="center";
+      const w=g.measureText(badge).width+S*0.05, h=S*0.045;
+      g.fillStyle=acc; g.fillRect(S/2-w/2,S*0.085,w,h);
+      g.fillStyle="#1a1206"; g.fillText(badge.toUpperCase(),S/2,S*0.085+h*0.66);
+      g.save(); g.strokeStyle="rgba(255,255,255,.25)"; g.lineWidth=1;
+      g.strokeRect(S/2-w/2,S*0.085,w,h); g.restore();
+    }
+    // headline block
+    const t=$("mktitle").value, sub=$("mksub").value;
+    g.textAlign="center"; g.fillStyle="#fff";
+    let ts=S*0.072; g.font="600 "+ts+'px "Iowan Old Style",Palatino,Georgia,serif';
+    while(g.measureText(t).width>S*0.86 && ts>S*0.03){ ts-=S*0.004; g.font="600 "+ts+"px Georgia,serif"; }
+    g.fillText(t,S/2,S*0.845);
+    g.fillStyle=acc; g.lineWidth=S*0.003; g.strokeStyle=acc;
+    g.beginPath(); g.moveTo(S*0.40,S*0.868); g.lineTo(S*0.60,S*0.868); g.stroke();
+    g.fillStyle="rgba(255,255,255,.82)"; g.font=(S*0.030)+"px system-ui,sans-serif";
+    g.fillText(sub,S/2,S*0.915);
+  },
+  exportPNG(){
+    download("listing_"+$("mklayout").value+".png", $("mockc").toDataURL());
+  }
+};
+
+/* ---------- keys ---------- */
+document.addEventListener("keydown", e=>{
+  if(/input|textarea|select/i.test(e.target.tagName)) return;
+  if(G.active!=="pixel") return;
+  if(e.ctrlKey&&e.key.toLowerCase()==="z"){ e.preventDefault(); PX.undo(); return; }
+  if(e.ctrlKey&&e.key.toLowerCase()==="y"){ e.preventDefault(); PX.redo(); return; }
+  const map={b:"pencil",e:"eraser",g:"fill",l:"line",r:"rect",o:"ellipse",i:"picker"};
+  if(map[e.key.toLowerCase()]) PX.setTool(map[e.key.toLowerCase()]);
+});
+
+/* ---------- boot ---------- */
+buildTabs();
+PX.init();
+PX.setPalette(32, false);
+$("lockbtn").classList.add("on");
+CD.loadCSV();
+MK.render();
+say("Forge ready. Pixel · Card · Mockup share one palette and one project file.");
+</script>
+</body>
+</html>
