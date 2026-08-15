@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM Dashboard</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header>
+  <h1>Dungeon Master Dashboard</h1>
+  <nav class="topnav">
+    <a href="#home" data-sec="home">Home</a>
+    <a href="#characters" data-sec="characters">Characters</a>
+    <a href="#npcs" data-sec="npcs">NPCs</a>
+    <a href="#dice" data-sec="dice">Dice</a>
+    <a href="#initiative" data-sec="initiative">Initiative</a>
+    <a href="#notes" data-sec="notes">Notes</a>
+    <a href="#reference" data-sec="reference">Reference</a>
+    <a href="editor.html">Editor</a>
+    <a href="#settings" data-sec="settings">Settings</a>
+  </nav>
+</header>
+<main>
+
+<!-- HOME -->
+<section id="sec-home">
+  <h2>Dashboard</h2>
+  <div class="cardgrid">
+    <a href="#characters">Character Studio</a>
+    <a href="#npcs">NPC Generator</a>
+    <a href="#dice">Dice Roller</a>
+    <a href="#initiative">Initiative Tracker</a>
+    <a href="#notes">Session Notes</a>
+    <a href="#reference">D&amp;D Reference</a>
+    <a href="editor.html">Content Editor</a>
+    <a href="#settings">Backup &amp; Settings</a>
+    <a class="disabled" title="Coming in Phase Two">Encounter Generator</a>
+    <a class="disabled" title="Coming in Phase Two">Loot Generator</a>
+    <a class="disabled" title="Coming in Phase Two">Tavern Generator</a>
+    <a class="disabled" title="Coming in Phase Two">Shop Generator</a>
+    <a class="disabled" title="Coming in Phase Two">Rule Lookup</a>
+    <a class="disabled" title="Coming in Phase Three">Monster Generator</a>
+    <a class="disabled" title="Coming in Phase Three">Spell Lookup</a>
+    <a class="disabled" title="Coming in Phase Three">DM Screen</a>
+  </div>
+  <p class="muted">Grayed-out modules are planned for later phases. Everything else works now.</p>
+</section>
+
+<!-- CHARACTER STUDIO -->
+<section id="sec-characters" hidden>
+  <h2>Character Studio</h2>
+  <div class="card">
+    <div class="btnrow">
+      <label>Level
+        <select id="gen-level">
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+        </select></label>
+      <button class="primary" onclick="locks={}; draft=null; generateCharacter()">Generate Random Character</button>
+      <button onclick="startGuide()">Guided Character Creator</button>
+      <button onclick="importChar()">Import from JSON</button>
+    </div>
+    <p class="muted">Use the 🔓 buttons on a generated character to lock fields, then reroll the rest.</p>
+  </div>
+  <div id="guide-box" hidden></div>
+  <div id="char-draft"></div>
+  <h3>Saved Characters</h3>
+  <ul class="plainlist" id="char-list"></ul>
+  <div id="char-sheet"></div>
+</section>
+
+<!-- NPC GENERATOR -->
+<section id="sec-npcs" hidden>
+  <h2>NPC Generator</h2>
+  <div class="card">
+    <div class="btnrow">
+      <button class="primary" onclick="generateNPC()">Generate NPC</button>
+    </div>
+    <p class="muted">Use the 🎲 button beside any field to reroll only that field.</p>
+  </div>
+  <div id="npc-draft"></div>
+  <h3>Saved NPCs</h3>
+  <ul class="plainlist" id="npc-list"></ul>
+</section>
+
+<!-- DICE -->
+<section id="sec-dice" hidden>
+  <h2>Dice Roller</h2>
+  <div class="card">
+    <div class="btnrow">
+      <label>Dice <input id="dice-count" type="number" min="1" max="100" value="1" style="width:4.5rem"></label>
+      <label>Modifier <input id="dice-mod" type="number" value="0" style="width:4.5rem"></label>
+      <label>Mode
+        <select id="dice-adv">
+          <option value="none">Normal</option>
+          <option value="adv">Advantage (d20)</option>
+          <option value="dis">Disadvantage (d20)</option>
+        </select></label>
+    </div>
+    <div class="btnrow">
+      <button onclick="quickRoll(4)">d4</button><button onclick="quickRoll(6)">d6</button>
+      <button onclick="quickRoll(8)">d8</button><button onclick="quickRoll(10)">d10</button>
+      <button onclick="quickRoll(12)">d12</button><button class="primary" onclick="quickRoll(20)">d20</button>
+      <button onclick="quickRoll(100)">d100</button>
+    </div>
+    <div class="btnrow">
+      <input id="dice-expr" placeholder="Custom, e.g. 2d6+3" style="flex:1; min-width:150px">
+      <button onclick="rollCustom(false)">Roll</button>
+      <button onclick="rollCustom(true)" title="Result hidden from the table view">Secret DM Roll</button>
+    </div>
+    <div id="dice-result" class="card"><span class="muted">Roll something.</span></div>
+  </div>
+  <h3>History <button onclick="clearDiceHistory()" style="min-height:34px">Clear</button></h3>
+  <ul class="plainlist" id="dice-history"></ul>
+</section>
+
+<!-- INITIATIVE -->
+<section id="sec-initiative" hidden>
+  <h2>Initiative Tracker <span id="combat-round" class="muted"></span></h2>
+  <div class="btnrow">
+    <button onclick="addCombatant()">Add Combatant</button>
+    <button onclick="addSavedCharacter()">Add Saved Character</button>
+    <button onclick="addSavedNPC()">Add Saved NPC</button>
+    <button onclick="sortInit()">Sort by Initiative</button>
+  </div>
+  <div class="btnrow">
+    <button class="primary" onclick="nextTurn()">Next Turn ▶</button>
+    <button onclick="prevTurn()">◀ Previous</button>
+    <button class="danger" onclick="resetEncounter()">Reset Encounter</button>
+  </div>
+  <div id="combat-table"></div>
+  <p class="muted">The encounter is saved automatically — refreshing the page will not lose it. Tap a condition chip to remove it.</p>
+</section>
+
+<!-- NOTES -->
+<section id="sec-notes" hidden>
+  <h2>Session Notes</h2>
+  <div class="btnrow">
+    <button class="primary" onclick="newNote()">New Note</button>
+    <input id="note-search" placeholder="Search notes…" oninput="renderNoteList()" style="flex:1; min-width:150px">
+    <button onclick="exportNotes()">Export All</button>
+    <button onclick="importNotes()">Import</button>
+  </div>
+  <ul class="plainlist" id="note-list"></ul>
+  <div id="note-editor" class="card" hidden>
+    <div class="btnrow">
+      <input id="note-title" placeholder="Session title" oninput="noteTyped()" style="flex:2; min-width:140px">
+      <input id="note-date" type="date" onchange="noteChanged()">
+    </div>
+    <input id="note-tags" placeholder="Tags — e.g. npc:Marla, location:Old Mill, item:silver key, hook:missing son" oninput="noteTyped()" style="width:100%; margin-bottom:0.5rem">
+    <textarea id="note-body" rows="12" placeholder="Notes autosave as you type. Handy headings: NPCs met, Locations, Items found, Decisions, Unresolved hooks." oninput="noteTyped()"></textarea>
+    <div class="btnrow">
+      <button onclick="noteChanged()">Save Now</button>
+      <button id="note-copy" onclick="copyNote()">Copy</button>
+      <button onclick="downloadNote()">Download as Text</button>
+      <button class="danger" onclick="deleteNote()">Delete</button>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENCE -->
+<section id="sec-reference" hidden>
+  <h2>D&amp;D Reference</h2>
+  <div class="card">
+    <p>External reference (opens in a new tab so your dashboard data stays put):</p>
+    <div class="btnrow">
+      <a href="https://dnd5e.wikidot.com" target="_blank" rel="noopener"><button class="primary">dnd5e.wikidot.com</button></a>
+      <a href="https://dnd5e.wikidot.com/#toc4" target="_blank" rel="noopener"><button>Classes</button></a>
+      <a href="https://dnd5e.wikidot.com/#toc57" target="_blank" rel="noopener"><button>Species / Races</button></a>
+      <a href="https://dnd5e.wikidot.com/#toc65" target="_blank" rel="noopener"><button>Backgrounds</button></a>
+      <a href="https://dnd5e.wikidot.com/#toc66" target="_blank" rel="noopener"><button>Feats</button></a>
+      <a href="https://dnd5e.wikidot.com/spells" target="_blank" rel="noopener"><button>Spells</button></a>
+      <a href="https://dnd5e.wikidot.com/#toc62" target="_blank" rel="noopener"><button>Equipment</button></a>
+    </div>
+    <p class="muted">External reference sites may include unofficial, playtest, setting-specific, or homebrew material. Confirm with your table whether an option is allowed in your campaign.</p>
+  </div>
+</section>
+
+<!-- SETTINGS -->
+<section id="sec-settings" hidden>
+  <h2>Backup &amp; Settings</h2>
+  <div class="card">
+    <p>Everything you save (characters, NPCs, notes, combat state) lives in this browser's storage. Back it up regularly.</p>
+    <div class="btnrow">
+      <button class="primary" onclick="Store.exportBackup()">Export Full Backup</button>
+      <button onclick="document.getElementById('backup-box').hidden = false">Import Backup</button>
+      <button class="danger" onclick="Store.resetAll()">Reset All Data</button>
+    </div>
+    <div id="backup-box" hidden>
+      <textarea id="backup-json" placeholder="Paste the contents of dm-dashboard-backup.json here"></textarea>
+      <div class="btnrow"><button onclick="Store.importBackup(document.getElementById('backup-json').value)">Restore Backup</button></div>
+    </div>
+    <p class="muted">Campaign rules setting (2014 / 2024 / custom) affects reference links only for now:</p>
+    <select onchange="Store.set('dmd.settings',{rules:this.value})">
+      <option value="2014">2014 rules</option>
+      <option value="2024">2024 rules</option>
+      <option value="custom">Custom rules</option>
+    </select>
+  </div>
+</section>
+
+</main>
+<footer>DM Dashboard — Phase One · data stays in your browser</footer>
+
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/character.js"></script>
+<script src="js/generators.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

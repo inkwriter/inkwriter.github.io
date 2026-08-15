@@ -1,0 +1,16 @@
+{
+  "weather": [
+    "Clear skies",
+    "Overcast",
+    "Light rain",
+    "Heavy rain",
+    "Thunderstorm",
+    "Dense fog",
+    "Strong wind",
+    "Drizzle",
+    "Snow flurries",
+    "Bitter cold",
+    "Sweltering heat",
+    "Hail"
+  ]
+}

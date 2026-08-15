@@ -1,0 +1,325 @@
+/* =====================================================================
+   PIXEL SYNTH STUDIO — styles
+   Design language: dark handheld-console hardware. The sequencer sits
+   inside a "screen bezel" with a faint CRT scanline overlay; notes glow
+   like LEDs. Display font: Press Start 2P. Body font: IBM Plex Mono.
+   ===================================================================== */
+
+:root {
+  --bg: #0b0d12;            /* deep night-blue black */
+  --panel: #151a26;         /* raised panel plastic */
+  --panel-edge: #232b3d;
+  --screen: #0e1a10;        /* dark green phosphor screen */
+  --led: #8ef06a;           /* LED green — primary accent */
+  --led-dim: #3d6b33;
+  --magenta: #ff4fa3;       /* playhead sweep */
+  --amber: #ffc24b;         /* solo / warnings */
+  --text: #cfe0d0;
+  --text-dim: #7d8a80;
+  --font-px: 'Press Start 2P', monospace;
+  --font-body: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  background-image: radial-gradient(ellipse at 50% -10%, #16203055 0%, transparent 60%);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* ---------------- header / transport ---------------- */
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--panel-edge);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-pixel { color: var(--led); font-size: 22px; text-shadow: 0 0 8px var(--led); }
+.brand h1 {
+  font-family: var(--font-px);
+  font-size: 14px;
+  margin: 0;
+  letter-spacing: 1px;
+  color: var(--led);
+  text-shadow: 0 0 10px #8ef06a55;
+}
+.brand h1 span { color: var(--magenta); text-shadow: 0 0 10px #ff4fa355; }
+
+.transport { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+
+/* ---------------- generic controls ---------------- */
+
+.ctl { display: flex; flex-direction: column; gap: 4px; }
+.ctl > span {
+  font-family: var(--font-px);
+  font-size: 8px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.ctl em { font-style: normal; color: var(--led); margin-left: auto; }
+
+input[type="number"], select {
+  background: #0a0e16;
+  color: var(--text);
+  border: 1px solid var(--panel-edge);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 5px 6px;
+  min-width: 64px;
+}
+input[type="number"]:focus-visible, select:focus-visible,
+button:focus-visible, input[type="range"]:focus-visible, input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--led);
+  outline-offset: 1px;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #0a0e16;
+  border: 1px solid var(--panel-edge);
+  border-radius: 3px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  background: var(--led);
+  border-radius: 2px;
+  box-shadow: 0 0 6px #8ef06a88;
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px;
+  background: var(--led);
+  border: none; border-radius: 2px;
+  box-shadow: 0 0 6px #8ef06a88;
+  cursor: pointer;
+}
+
+input[type="checkbox"] { accent-color: var(--led); width: 15px; height: 15px; }
+
+.btn {
+  font-family: var(--font-px);
+  font-size: 9px;
+  padding: 10px 12px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--panel-edge);
+  border-bottom-width: 3px;
+  border-radius: 5px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: transform .05s, background .1s;
+}
+.btn:hover { background: #1c2333; }
+.btn:active { transform: translateY(2px); border-bottom-width: 1px; }
+.btn-play {
+  background: var(--led);
+  color: #08120a;
+  border-color: #5aa044;
+  box-shadow: 0 0 14px #8ef06a44;
+}
+.btn-play:hover { background: #a4ff82; }
+.btn-play.on { background: var(--magenta); border-color: #a83c73; box-shadow: 0 0 14px #ff4fa355; color: #1c0511; }
+.btn-small { display: block; width: 100%; margin-top: 8px; text-align: left; font-size: 8px; }
+.btn-lofi { background: #2b1a2a; border-color: #5c2c53; color: var(--magenta); margin-left: 10px; }
+.btn-lofi:hover { background: #3a2138; }
+
+/* ---------------- layout ---------------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-areas:
+    "tracks screen"
+    "synth  synth"
+    "fx     fx"
+    "export export";
+  gap: 16px;
+  padding: 16px 20px 30px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+.tracks-panel { grid-area: tracks; }
+.screen-wrap  { grid-area: screen; min-width: 0; }
+.synth-panel  { grid-area: synth; }
+.fx-panel     { grid-area: fx; }
+.export-panel { grid-area: export; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  padding: 14px;
+}
+.panel-title {
+  font-family: var(--font-px);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+}
+
+/* ---------------- track list ---------------- */
+
+.track-row {
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  background: #10141f;
+}
+.track-row.selected { border-color: var(--led); box-shadow: 0 0 8px #8ef06a33 inset; }
+.track-row-top { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.track-name { font-family: var(--font-px); font-size: 8px; letter-spacing: 1px; flex: 1; }
+.track-row.selected .track-name { color: var(--led); }
+
+.tbtn {
+  font-family: var(--font-px);
+  font-size: 8px;
+  width: 22px; height: 22px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 3px;
+  background: #0a0e16;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.tbtn.on-mute { background: var(--magenta); color: #1c0511; border-color: #a83c73; }
+.tbtn.on-solo { background: var(--amber); color: #241a05; border-color: #a37c2e; }
+
+.track-row select { width: 100%; margin-bottom: 6px; font-size: 12px; }
+.track-vol { display: flex; align-items: center; gap: 6px; }
+.track-vol input { flex: 1; }
+.track-vol span { font-size: 10px; color: var(--text-dim); }
+
+.helpers { margin-top: 16px; }
+
+/* ---------------- the screen (piano roll) ---------------- */
+
+.screen-bezel {
+  background: linear-gradient(180deg, #1b2130, #12161f);
+  border: 2px solid var(--panel-edge);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: inset 0 2px 6px #00000088, 0 4px 14px #00000066;
+}
+.screen-head, .screen-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 2px 4px;
+}
+.screen-label {
+  font-family: var(--font-px);
+  font-size: 9px;
+  color: var(--led);
+  text-shadow: 0 0 8px #8ef06a66;
+  letter-spacing: 2px;
+}
+.ctl-screen { flex-direction: row; align-items: center; gap: 8px; }
+
+.piano-roll {
+  position: relative;
+  margin: 8px 0;
+  background: var(--screen);
+  border: 1px solid #1e3820;
+  border-radius: 6px;
+  overflow-x: auto;
+  /* CRT scanlines — the signature */
+  background-image: repeating-linear-gradient(
+    0deg, transparent 0 2px, #00000030 2px 3px);
+}
+
+.roll-grid { display: grid; min-width: 560px; }
+
+.roll-cell, .roll-label {
+  height: 22px;
+  border-right: 1px solid #16301a;
+  border-bottom: 1px solid #16301a;
+}
+.roll-label {
+  font-size: 10px;
+  color: #5f8f63;
+  padding: 3px 6px;
+  cursor: pointer;
+  user-select: none;
+  background: #0b140c;
+  position: sticky;
+  left: 0;
+}
+.roll-label:hover { color: var(--led); }
+.roll-label.in-scale { color: #9fd8a2; background: #0f1c10; }
+.roll-label.root { color: var(--led); font-weight: 600; }
+
+.roll-cell { cursor: pointer; }
+.roll-cell.beat { background-color: #ffffff08; }
+.roll-cell:hover { background-color: #8ef06a22; }
+.roll-cell.note {
+  background-color: var(--led);
+  box-shadow: 0 0 8px #8ef06a99, inset 0 0 3px #d6ffc4;
+  border-radius: 3px;
+}
+.roll-cell.note-body {
+  background-color: var(--led-dim);
+  box-shadow: 0 0 5px #8ef06a44;
+  border-radius: 0 3px 3px 0;
+}
+.roll-cell.playcol { background-color: #ff4fa31c; }
+.roll-cell.note.playcol, .roll-cell.note-body.playcol {
+  background-color: #d9ff9c;
+  box-shadow: 0 0 12px #d9ff9ccc;
+}
+
+.hint { font-size: 11px; color: var(--text-dim); }
+
+/* ---------------- synth + fx panels ---------------- */
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px 18px;
+}
+.ctl.toggle { flex-direction: row; align-items: center; gap: 10px; }
+.ctl.fx > span { width: 100%; }
+
+/* ---------------- export ---------------- */
+
+.export-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.foot {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 11px;
+  padding: 10px 0 24px;
+}
+
+/* ---------------- responsive ---------------- */
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-areas: "screen" "tracks" "synth" "fx" "export";
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}

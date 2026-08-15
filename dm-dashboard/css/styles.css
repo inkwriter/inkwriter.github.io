@@ -1,0 +1,107 @@
+/* styles.css — one plain, responsive stylesheet for dashboard and editor. */
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px; line-height: 1.45;
+  background: #f4f4f2; color: #222;
+}
+header {
+  background: #2f2a3a; color: #fff;
+  padding: 0.6rem 1rem;
+}
+header h1 { font-size: 1.15rem; margin: 0 0 0.4rem; }
+.topnav { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.topnav a {
+  color: #ddd; text-decoration: none; padding: 0.45rem 0.7rem;
+  border-radius: 6px; font-size: 0.9rem;
+}
+.topnav a.active, .topnav a:hover { background: #4a4360; color: #fff; }
+
+main { max-width: 900px; margin: 0 auto; padding: 1rem; }
+section h2 { margin-top: 0.3rem; }
+
+.card {
+  background: #fff; border: 1px solid #ddd; border-radius: 8px;
+  padding: 0.9rem 1rem; margin: 0.8rem 0;
+}
+.cardgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem; }
+.cardgrid a {
+  display: block; background: #fff; border: 1px solid #ccc; border-radius: 8px;
+  padding: 1rem 0.7rem; text-align: center; text-decoration: none; color: #222; font-weight: 600;
+}
+.cardgrid a:active { background: #eee; }
+.cardgrid a.disabled { color: #999; border-style: dashed; font-weight: 400; }
+
+button, select, input, textarea {
+  font: inherit; padding: 0.55rem 0.8rem; border-radius: 6px;
+  border: 1px solid #bbb; background: #fff; color: #222;
+}
+button { cursor: pointer; min-height: 44px; }
+button:active { background: #e8e8e8; }
+button.primary { background: #2f6b3f; border-color: #2f6b3f; color: #fff; }
+button.danger { color: #a12626; }
+button.linklike { border: none; background: none; padding: 0.3rem 0.2rem; color: #2a4d8f; text-decoration: underline; min-height: 0; }
+button.lock { min-height: 0; padding: 0.15rem 0.35rem; border: none; background: none; font-size: 1rem; }
+button.lock.locked { filter: none; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.6rem 0; }
+.rowbtns { display: inline-flex; gap: 0.25rem; float: right; }
+.rowbtns button { min-height: 34px; padding: 0.25rem 0.55rem; }
+
+ul.plainlist { list-style: none; padding: 0; }
+ul.plainlist li { padding: 0.45rem 0.2rem; border-bottom: 1px solid #eee; }
+
+table { border-collapse: collapse; width: 100%; margin: 0.5rem 0; }
+th, td { border: 1px solid #ddd; padding: 0.4rem 0.5rem; text-align: left; font-size: 0.95rem; }
+tr.prof td { font-weight: 700; }
+.skilltable { max-width: 380px; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+@media (max-width: 600px){ .grid2 { grid-template-columns: 1fr; } }
+
+.muted { color: #777; font-size: 0.9rem; }
+.small { font-size: 0.85rem; }
+.big { font-size: 1.9rem; font-weight: 700; }
+.hint { background: #fdf6df; border: 1px solid #e8d89a; border-radius: 6px; padding: 0.5rem 0.7rem; }
+
+.statline { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; margin: 0.5rem 0; }
+.statline.big span { font-size: 1.1rem; }
+
+.sheet details { margin: 0.45rem 0; }
+.sheet summary { cursor: pointer; font-weight: 600; padding: 0.3rem 0; }
+.sheet.simple { text-align: left; }
+.sheet.simple .portrait {
+  width: 84px; height: 84px; border: 2px dashed #bbb; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 0.4rem;
+}
+.atkcard { border: 1px solid #ddd; border-radius: 6px; padding: 0.5rem 0.7rem; margin: 0.4rem 0; background: #fafafa; }
+.atkcard h4 { margin: 0 0 0.3rem; }
+.spellbtn { background: #eef1fa; }
+
+/* combat */
+table.combat td { vertical-align: top; }
+tr.active { background: #fff7d6; outline: 2px solid #d9b428; }
+tr.side-ally td:first-child { border-left: 4px solid #2f6b3f; }
+tr.side-enemy td:first-child { border-left: 4px solid #a12626; }
+tr.side-neutral td:first-child { border-left: 4px solid #888; }
+.chip {
+  display: inline-block; background: #eee; border-radius: 10px;
+  padding: 0.1rem 0.5rem; font-size: 0.8rem; margin: 0.1rem 0; cursor: pointer;
+}
+td.dead { color: #a12626; font-weight: 700; }
+
+/* editor */
+textarea { width: 100%; min-height: 140px; }
+pre.output {
+  background: #1f1f28; color: #d7ffd7; padding: 0.8rem; border-radius: 8px;
+  overflow-x: auto; font-size: 0.85rem; white-space: pre-wrap;
+}
+.steps li { margin: 0.3rem 0; }
+
+footer { text-align: center; color: #999; font-size: 0.8rem; padding: 1.5rem 0; }
+
+@media (max-width: 480px){
+  .rowbtns { float: none; display: flex; margin-top: 0.3rem; }
+  th, td { font-size: 0.85rem; padding: 0.3rem; }
+}

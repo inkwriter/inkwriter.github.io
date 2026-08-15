@@ -1,0 +1,173 @@
+:root{
+  --ink:#1a1028;
+  --paper:#f6ead0;
+  --hero-red:#e8433f;
+  --hero-blue:#2e63d8;
+  --hero-yellow:#ffc93c;
+  --sky:#6ec5e9;
+  --pow-green:#3fbf6e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--ink);
+  background-image:radial-gradient(#3a2b55 1.5px, transparent 1.5px);
+  background-size:14px 14px;
+  display:flex;justify-content:center;align-items:center;
+  min-height:100vh;
+  font-family:"Special Elite", "Courier New", monospace;
+  color:var(--ink);
+}
+#game-wrap{position:relative;width:960px;max-width:100vw}
+canvas#game{
+  display:block;width:100%;
+  image-rendering:pixelated;
+  border:6px solid var(--ink);
+  box-shadow:12px 12px 0 rgba(0,0,0,.45);
+  background:#000;
+}
+
+/* ---------- overlays ---------- */
+.overlay{
+  position:absolute;inset:0;
+  display:flex;justify-content:center;align-items:center;
+  background:rgba(20,10,35,.82);
+  z-index:10;
+}
+.overlay.hidden{display:none}
+.btn{
+  font-family:"Bangers","Arial Black",sans-serif;
+  font-size:22px;letter-spacing:2px;
+  background:var(--hero-yellow);color:var(--ink);
+  border:4px solid var(--ink);
+  padding:8px 22px;cursor:pointer;
+  box-shadow:5px 5px 0 var(--ink);
+  transition:transform .06s;
+}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink)}
+.btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.btn:focus-visible{outline:3px dashed var(--hero-red);outline-offset:3px}
+.btn.big{font-size:30px;background:var(--hero-red);color:#fff;margin-top:16px}
+.btn.small{font-size:15px;padding:4px 12px;margin:6px 0 2px}
+.btn.hidden{display:none}
+
+/* ---------- comic cover ---------- */
+.cover-frame{
+  width:640px;max-width:94%;
+  background:var(--sky);
+  background-image:radial-gradient(rgba(255,255,255,.55) 2px, transparent 2px);
+  background-size:12px 12px;
+  border:6px solid var(--ink);
+  box-shadow:10px 10px 0 var(--hero-red);
+  padding:18px 26px 22px;
+  text-align:center;
+}
+.cover-top{
+  display:flex;justify-content:space-between;align-items:baseline;
+  font-family:"Bangers",sans-serif;letter-spacing:2px;
+}
+.cover-logo{font-size:30px;color:var(--hero-red);-webkit-text-stroke:1.2px var(--ink)}
+.cover-logo em{color:var(--hero-blue);font-style:normal}
+.cover-issue{font-size:14px;background:var(--hero-yellow);border:2px solid var(--ink);padding:1px 8px}
+.cover-title{
+  font-family:"Bangers",sans-serif;
+  font-size:32px;line-height:1.05;margin:10px 0 2px;
+  color:#fff;-webkit-text-stroke:1.5px var(--ink);
+  text-shadow:4px 4px 0 var(--ink);
+  letter-spacing:2px;
+}
+.cover-title span{font-size:44px;color:var(--hero-yellow)}
+.pick-label{
+  font-family:"Bangers",sans-serif;font-size:19px;letter-spacing:2px;
+  margin:14px 0 6px;color:var(--ink);
+}
+.pick-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.pick-card{
+  background:var(--paper);border:4px solid var(--ink);
+  width:128px;padding:8px 6px;cursor:pointer;
+  box-shadow:4px 4px 0 var(--ink);
+  font-size:12px;line-height:1.25;
+}
+.pick-card:hover{transform:translate(-2px,-2px)}
+.pick-card.sel{background:var(--hero-yellow);box-shadow:4px 4px 0 var(--hero-red);outline:3px solid var(--hero-red)}
+.pick-card h3{font-family:"Bangers",sans-serif;font-size:17px;letter-spacing:1px;margin-bottom:3px}
+.pick-card .swatch{width:100%;height:10px;border:2px solid var(--ink);margin-bottom:5px}
+.cover-hint{margin-top:14px;font-size:11px;opacity:.85}
+
+/* ---------- d20 ---------- */
+.d20-frame{text-align:center}
+.d20-label{
+  font-family:"Bangers",sans-serif;font-size:30px;letter-spacing:3px;color:var(--hero-yellow);
+  text-shadow:3px 3px 0 var(--ink);margin-bottom:14px;
+}
+#d20-die{
+  width:130px;height:130px;margin:0 auto;
+  background:var(--hero-red);border:6px solid var(--ink);
+  transform:rotate(45deg);
+  display:flex;justify-content:center;align-items:center;
+  box-shadow:8px 8px 0 rgba(0,0,0,.5);
+}
+#d20-die::after{content:attr(data-n);
+  transform:rotate(-45deg);
+  font-family:"Bangers",sans-serif;font-size:56px;color:#fff;
+  -webkit-text-stroke:2px var(--ink);
+}
+#d20-result{
+  margin:22px auto 14px;max-width:460px;
+  background:var(--paper);border:4px solid var(--ink);
+  padding:12px 16px;font-size:15px;min-height:20px;
+  box-shadow:5px 5px 0 var(--ink);
+}
+#d20-result:empty{visibility:hidden}
+#d20-result strong{font-family:"Bangers",sans-serif;font-size:20px;letter-spacing:1px;color:var(--hero-red)}
+
+/* ---------- choice ---------- */
+.choice-frame{
+  background:var(--sky);border:6px solid var(--ink);
+  box-shadow:10px 10px 0 var(--hero-blue);
+  padding:20px 26px;text-align:center;max-width:640px;
+}
+
+/* ---------- newspaper ---------- */
+.paper-frame{
+  width:680px;max-width:96%;
+  background:var(--paper);
+  border:5px solid var(--ink);
+  box-shadow:10px 10px 0 rgba(0,0,0,.5);
+  padding:18px 28px 22px;
+  transform:rotate(-.6deg);
+}
+.paper-masthead{
+  font-family:"Bangers",sans-serif;font-size:44px;letter-spacing:4px;
+  text-align:center;border-bottom:4px double var(--ink);padding-bottom:4px;
+}
+.paper-date{font-size:11px;text-align:center;border-bottom:2px solid var(--ink);padding:3px 0;margin-bottom:10px;letter-spacing:2px}
+#paper-headline{
+  font-family:"Bangers",sans-serif;font-size:34px;line-height:1.05;
+  text-align:center;letter-spacing:2px;margin-bottom:12px;
+}
+.paper-cols{
+  column-count:2;column-gap:22px;column-rule:1px solid var(--ink);
+  font-size:13px;line-height:1.5;text-align:justify;
+}
+.paper-cols p{margin-bottom:8px}
+.paper-cols .stat{font-weight:bold}
+.paper-btns{display:flex;gap:14px;justify-content:center;margin-top:16px}
+
+/* ---------- ticker ---------- */
+#ticker{
+  position:absolute;left:0;right:0;bottom:-38px;
+  font-family:"Bangers",sans-serif;font-size:16px;letter-spacing:1px;
+  color:var(--hero-yellow);text-align:center;
+  text-shadow:2px 2px 0 var(--ink);
+  min-height:24px;
+  transition:opacity .8s;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .btn,.pick-card{transition:none}
+}
+@media (max-width:700px){
+  .paper-cols{column-count:1}
+  .cover-title{font-size:24px}
+  .cover-title span{font-size:32px}
+}

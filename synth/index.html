@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Synth Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===================== HEADER + TRANSPORT ===================== -->
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-pixel">▚</span>
+    <h1>PIXEL SYNTH <span>STUDIO</span></h1>
+  </div>
+
+  <div class="transport">
+    <button id="btn-play" class="btn btn-play" title="Play / stop the loop (Space)">► PLAY</button>
+
+    <label class="ctl">
+      <span>BPM</span>
+      <input id="inp-bpm" type="number" min="40" max="240" value="110">
+    </label>
+
+    <label class="ctl">
+      <span>STEPS</span>
+      <select id="sel-steps">
+        <option value="4">4</option>
+        <option value="8">8</option>
+        <option value="16" selected>16</option>
+        <option value="32">32</option>
+      </select>
+    </label>
+
+    <label class="ctl">
+      <span>KEY</span>
+      <select id="sel-key"></select>
+    </label>
+
+    <label class="ctl">
+      <span>SCALE</span>
+      <select id="sel-scale">
+        <option value="major">Major</option>
+        <option value="minor">Minor</option>
+        <option value="pentatonic">Pentatonic</option>
+        <option value="blues">Blues</option>
+      </select>
+    </label>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- ===================== TRACK LIST ===================== -->
+  <aside class="tracks-panel panel">
+    <h2 class="panel-title">TRACKS</h2>
+    <div id="track-list"></div>
+
+    <div class="helpers">
+      <h2 class="panel-title">HELPERS</h2>
+      <button id="btn-snap" class="btn btn-small" title="Move every note on the selected track onto the chosen key and scale">Snap to scale</button>
+      <button id="btn-rand-melody" class="btn btn-small">Random melody</button>
+      <button id="btn-rand-bass" class="btn btn-small">Random bassline</button>
+      <button id="btn-rand-drums" class="btn btn-small">Random drums</button>
+      <button id="btn-duplicate" class="btn btn-small" title="Double the loop length and copy all notes into the new half">Duplicate loop</button>
+    </div>
+  </aside>
+
+  <!-- ===================== SEQUENCER SCREEN ===================== -->
+  <section class="screen-wrap">
+    <div class="screen-bezel">
+      <div class="screen-head">
+        <span id="screen-track-name" class="screen-label">MELODY</span>
+        <label class="ctl ctl-screen">
+          <span>NOTE LEN</span>
+          <select id="sel-notelen">
+            <option value="1" selected>1 step</option>
+            <option value="2">2 steps</option>
+            <option value="4">4 steps</option>
+          </select>
+        </label>
+      </div>
+      <div id="piano-roll" class="piano-roll"></div>
+      <div class="screen-foot">
+        <span class="hint">Click a cell to add a note · click a note to remove it · click a row label to preview the pitch</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== INSTRUMENT CONTROLS ===================== -->
+  <section class="panel synth-panel">
+    <h2 class="panel-title">INSTRUMENT · <span id="synth-track-name">MELODY</span></h2>
+    <div id="synth-controls" class="controls-grid">
+
+      <label class="ctl">
+        <span>WAVE</span>
+        <select id="syn-wave">
+          <option value="square">Square</option>
+          <option value="pulse">Pulse</option>
+          <option value="triangle">Triangle</option>
+          <option value="sawtooth">Sawtooth</option>
+          <option value="sine">Sine</option>
+          <option value="noise">Noise</option>
+        </select>
+      </label>
+
+      <label class="ctl slider">
+        <span>PULSE WIDTH <em id="val-duty">25%</em></span>
+        <input id="syn-duty" type="range" min="0.05" max="0.5" step="0.01" value="0.25">
+      </label>
+
+      <label class="ctl">
+        <span>OCTAVE</span>
+        <select id="syn-octave">
+          <option value="1">1</option><option value="2">2</option>
+          <option value="3">3</option><option value="4" selected>4</option>
+          <option value="5">5</option><option value="6">6</option>
+        </select>
+      </label>
+
+      <label class="ctl slider">
+        <span>ATTACK <em id="val-a">5ms</em></span>
+        <input id="syn-a" type="range" min="0.001" max="0.5" step="0.001" value="0.005">
+      </label>
+      <label class="ctl slider">
+        <span>DECAY <em id="val-d">80ms</em></span>
+        <input id="syn-d" type="range" min="0.01" max="1" step="0.01" value="0.08">
+      </label>
+      <label class="ctl slider">
+        <span>SUSTAIN <em id="val-s">60%</em></span>
+        <input id="syn-s" type="range" min="0" max="1" step="0.01" value="0.6">
+      </label>
+      <label class="ctl slider">
+        <span>RELEASE <em id="val-r">80ms</em></span>
+        <input id="syn-r" type="range" min="0.01" max="1.5" step="0.01" value="0.08">
+      </label>
+
+      <label class="ctl slider">
+        <span>VIBRATO <em id="val-vib">0%</em></span>
+        <input id="syn-vib" type="range" min="0" max="1" step="0.01" value="0">
+      </label>
+      <label class="ctl slider">
+        <span>PITCH BEND <em id="val-bend">0%</em></span>
+        <input id="syn-bend" type="range" min="0" max="1" step="0.01" value="0">
+      </label>
+
+      <label class="ctl toggle">
+        <span>ARPEGGIO</span>
+        <input id="syn-arp" type="checkbox">
+      </label>
+      <label class="ctl slider">
+        <span>ARP SPEED <em id="val-arpspd">8/beat</em></span>
+        <input id="syn-arpspd" type="range" min="2" max="16" step="1" value="8">
+      </label>
+    </div>
+    <p id="synth-drum-note" class="hint" hidden>Drum kit tracks use the built-in 8-bit kick, snare, hi-hat and noise rows. Envelope controls are ignored.</p>
+  </section>
+
+  <!-- ===================== EFFECTS PANEL ===================== -->
+  <section class="panel fx-panel">
+    <h2 class="panel-title">EFFECTS <button id="btn-lofi" class="btn btn-lofi" title="Apply a warm lofi preset to the effects">✦ MAKE IT LOFI</button></h2>
+    <div class="controls-grid">
+
+      <label class="ctl fx"><span><input id="fx-reverb-on" type="checkbox"> REVERB <em id="val-reverb">30%</em></span>
+        <input id="fx-reverb" type="range" min="0" max="1" step="0.01" value="0.3"></label>
+
+      <label class="ctl fx"><span><input id="fx-delay-on" type="checkbox"> DELAY <em id="val-delay">25%</em></span>
+        <input id="fx-delay" type="range" min="0" max="1" step="0.01" value="0.25"></label>
+
+      <label class="ctl fx"><span><input id="fx-filter-on" type="checkbox"> LOW-PASS <em id="val-filter">3000Hz</em></span>
+        <input id="fx-filter" type="range" min="200" max="12000" step="50" value="3000"></label>
+
+      <label class="ctl fx"><span><input id="fx-crush-on" type="checkbox"> BITCRUSH <em id="val-crush">6 bit</em></span>
+        <input id="fx-crush" type="range" min="2" max="12" step="1" value="6"></label>
+
+      <label class="ctl fx"><span><input id="fx-wobble-on" type="checkbox"> TAPE WOBBLE <em id="val-wobble">30%</em></span>
+        <input id="fx-wobble" type="range" min="0" max="1" step="0.01" value="0.3"></label>
+
+      <label class="ctl fx"><span><input id="fx-vinyl-on" type="checkbox"> VINYL NOISE <em id="val-vinyl">20%</em></span>
+        <input id="fx-vinyl" type="range" min="0" max="1" step="0.01" value="0.2"></label>
+
+      <label class="ctl fx"><span><input id="fx-sat-on" type="checkbox"> SATURATION <em id="val-sat">30%</em></span>
+        <input id="fx-sat" type="range" min="0" max="1" step="0.01" value="0.3"></label>
+
+      <label class="ctl fx"><span>MASTER VOLUME <em id="val-master">80%</em></span>
+        <input id="fx-master" type="range" min="0" max="1" step="0.01" value="0.8"></label>
+    </div>
+  </section>
+
+  <!-- ===================== EXPORT / SAVE ===================== -->
+  <section class="panel export-panel">
+    <h2 class="panel-title">EXPORT &amp; SAVE</h2>
+    <div class="export-row">
+      <button id="btn-wav" class="btn">⬇ Export WAV</button>
+      <button id="btn-save" class="btn">⬇ Save project (JSON)</button>
+      <button id="btn-load" class="btn">⬆ Load project</button>
+      <button id="btn-copy" class="btn">⧉ Copy project data</button>
+      <input id="inp-load" type="file" accept=".json,application/json" hidden>
+      <span id="status-msg" class="hint" role="status"></span>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <span>Pixel Synth Studio · all sounds generated live in your browser with the Web Audio API</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

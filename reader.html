@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Narrator — Human-Style Reader</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:wght@300;400;600&display=swap');
+
+  :root {
+    --ink: #1a1410;
+    --paper: #f5f0e8;
+    --paper-shadow: #e8e0d0;
+    --accent: #8b3a2a;
+    --accent-light: #c4623f;
+    --muted: #7a6f62;
+    --highlight: rgba(196, 98, 63, 0.2);
+    --highlight-active: rgba(139, 58, 42, 0.35);
+    --card: #faf6ef;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(139,58,42,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(139,58,42,0.05) 0%, transparent 60%);
+  }
+
+  header {
+    padding: 2.5rem 2rem 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--paper-shadow);
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: var(--accent);
+    margin: 1rem auto 0;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  h1 em {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .subtitle {
+    margin-top: 0.4rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--paper-shadow);
+    margin-bottom: 1.5rem;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+    color: var(--muted);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .tab-btn.active {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* DROP ZONE */
+  .drop-zone {
+    border: 2px dashed var(--paper-shadow);
+    border-radius: 8px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: var(--card);
+    position: relative;
+  }
+
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent-light);
+    background: rgba(196,98,63,0.04);
+  }
+
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drop-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.5;
+  }
+
+  .drop-zone p {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .drop-zone strong {
+    color: var(--accent);
+  }
+
+  #pdf-status {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    min-height: 1.2em;
+  }
+
+  /* TEXT AREA */
+  textarea {
+    width: 100%;
+    min-height: 180px;
+    border: 2px solid var(--paper-shadow);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 1rem;
+    color: var(--ink);
+    background: var(--card);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.7;
+  }
+
+  textarea:focus {
+    border-color: var(--accent-light);
+  }
+
+  textarea::placeholder { color: var(--muted); }
+
+  /* CONTROLS CARD */
+  .controls-card {
+    background: var(--card);
+    border: 1px solid var(--paper-shadow);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .controls-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.02em;
+  }
+
+  .control-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin-bottom: 1.2rem;
+    align-items: flex-end;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 140px;
+  }
+
+  label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  select, input[type="range"] {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+  }
+
+  select {
+    border: 1.5px solid var(--paper-shadow);
+    border-radius: 6px;
+    padding: 0.5rem 0.8rem;
+    background: white;
+    color: var(--ink);
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  select:focus { border-color: var(--accent-light); }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    height: 4px;
+    cursor: pointer;
+  }
+
+  .range-value {
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 600;
+    text-align: right;
+    min-width: 2.5rem;
+  }
+
+  .range-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  /* PLAYBACK BUTTONS */
+  .playback-row {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 6px;
+    padding: 0.7rem 1.6rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139,58,42,0.3);
+  }
+
+  .btn-secondary {
+    background: var(--paper-shadow);
+    color: var(--ink);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: #d5cfc5;
+  }
+
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* READING DISPLAY */
+  .reading-display {
+    margin-top: 1.5rem;
+    background: var(--card);
+    border: 1px solid var(--paper-shadow);
+    border-radius: 10px;
+    padding: 1.5rem 1.8rem;
+    max-height: 400px;
+    overflow-y: auto;
+    line-height: 1.9;
+    font-size: 1.05rem;
+    scroll-behavior: smooth;
+  }
+
+  .reading-display:empty::before {
+    content: 'Your text will appear here as it reads…';
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .sentence {
+    display: inline;
+    border-radius: 3px;
+    transition: background 0.3s;
+    padding: 0 2px;
+  }
+
+  .sentence.active {
+    background: var(--highlight-active);
+    color: var(--ink);
+  }
+
+  .sentence.done {
+    color: var(--muted);
+  }
+
+  /* PROGRESS */
+  .progress-bar-wrap {
+    margin-top: 1rem;
+    background: var(--paper-shadow);
+    border-radius: 99px;
+    height: 4px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.3s;
+    border-radius: 99px;
+  }
+
+  .progress-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* NO SPEECH API WARNING */
+  .warn-box {
+    background: #fff4e5;
+    border: 1px solid #e8a030;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-size: 0.9rem;
+    color: #7a5000;
+    margin-top: 1rem;
+    display: none;
+  }
+
+  /* SCROLLBAR */
+  .reading-display::-webkit-scrollbar { width: 5px; }
+  .reading-display::-webkit-scrollbar-track { background: transparent; }
+  .reading-display::-webkit-scrollbar-thumb { background: var(--paper-shadow); border-radius: 99px; }
+
+  @media (max-width: 540px) {
+    .control-row { flex-direction: column; }
+    .playback-row { justify-content: center; }
+    h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Nar<em>rator</em></h1>
+  <p class="subtitle">Upload a PDF or paste text — hear it read like a human</p>
+</header>
+
+<div class="container">
+
+  <div id="no-speech-warn" class="warn-box">
+    ⚠️ Your browser doesn't support the Web Speech API. Please use Chrome, Edge, or Safari for this feature.
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="paste">Paste Text</button>
+    <button class="tab-btn" data-tab="pdf">Upload PDF</button>
+  </div>
+
+  <!-- PASTE TAB -->
+  <div class="tab-panel active" id="tab-paste">
+    <textarea id="paste-input" placeholder="Paste or type any text here and press Read aloud…" spellcheck="false"></textarea>
+  </div>
+
+  <!-- PDF TAB -->
+  <div class="tab-panel" id="tab-pdf">
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="pdf-file" accept=".pdf" />
+      <div class="drop-icon">📄</div>
+      <p><strong>Click to choose</strong> or drag & drop a PDF here</p>
+      <p style="margin-top:0.4rem;font-size:0.82rem;">Your file stays on your device — nothing is uploaded.</p>
+    </div>
+    <div id="pdf-status"></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls-card">
+    <h2>Voice Settings</h2>
+
+    <div class="control-row">
+      <div class="control-group" style="flex: 2; min-width: 200px;">
+        <label for="voice-select">Voice</label>
+        <select id="voice-select">
+          <option value="">Loading voices…</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="control-row">
+      <div class="control-group">
+        <label>Speed</label>
+        <div class="range-row">
+          <input type="range" id="rate-slider" min="0.6" max="1.6" step="0.05" value="0.9">
+          <span class="range-value" id="rate-val">0.9×</span>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Pitch</label>
+        <div class="range-row">
+          <input type="range" id="pitch-slider" min="0.7" max="1.4" step="0.05" value="1.05">
+          <span class="range-value" id="pitch-val">1.05</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="playback-row">
+      <button class="btn btn-primary" id="btn-play">▶ Read Aloud</button>
+      <button class="btn btn-secondary" id="btn-pause" disabled>⏸ Pause</button>
+      <button class="btn btn-secondary" id="btn-stop" disabled>■ Stop</button>
+    </div>
+  </div>
+
+  <!-- READING DISPLAY -->
+  <div class="reading-display" id="reading-display"></div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <div class="progress-label" id="progress-label"></div>
+
+</div>
+
+<script>
+// ─── PDF.js setup ───────────────────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let sentences = [];
+let currentIndex = 0;
+let isPaused = false;
+let activeTab = 'paste';
+let extractedPdfText = '';
+let voices = [];
+
+// ─── Speech API check ────────────────────────────────────────────────────────
+if (!('speechSynthesis' in window)) {
+  document.getElementById('no-speech-warn').style.display = 'block';
+}
+
+// ─── Tabs ────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    activeTab = btn.dataset.tab;
+    document.getElementById('tab-' + activeTab).classList.add('active');
+  });
+});
+
+// ─── Voices ──────────────────────────────────────────────────────────────────
+function loadVoices() {
+  voices = window.speechSynthesis.getVoices();
+  const sel = document.getElementById('voice-select');
+  if (!voices.length) return;
+
+  // Prefer English voices, natural-sounding ones first
+  const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+  const allVoices = englishVoices.length ? englishVoices : voices;
+
+  sel.innerHTML = '';
+  allVoices.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = v.name;
+    opt.textContent = `${v.name} (${v.lang})`;
+    // Prefer non-default named voices that sound more natural
+    if (v.name.toLowerCase().includes('samantha') ||
+        v.name.toLowerCase().includes('karen') ||
+        v.name.toLowerCase().includes('daniel') ||
+        v.name.toLowerCase().includes('alex') ||
+        v.name.toLowerCase().includes('ava')) {
+      opt.setAttribute('data-preferred', 'true');
+    }
+    sel.appendChild(opt);
+  });
+
+  // Auto-select a preferred voice if available
+  const preferred = sel.querySelector('[data-preferred]');
+  if (preferred) sel.value = preferred.value;
+}
+
+if (typeof speechSynthesis !== 'undefined') {
+  speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+}
+
+// ─── Sliders ─────────────────────────────────────────────────────────────────
+const rateSlider = document.getElementById('rate-slider');
+const pitchSlider = document.getElementById('pitch-slider');
+const rateVal = document.getElementById('rate-val');
+const pitchVal = document.getElementById('pitch-val');
+
+rateSlider.addEventListener('input', () => { rateVal.textContent = parseFloat(rateSlider.value).toFixed(2) + '×'; });
+pitchSlider.addEventListener('input', () => { pitchVal.textContent = parseFloat(pitchSlider.value).toFixed(2); });
+
+// ─── PDF Upload ───────────────────────────────────────────────────────────────
+const dropZone = document.getElementById('drop-zone');
+const pdfInput = document.getElementById('pdf-file');
+const pdfStatus = document.getElementById('pdf-status');
+
+pdfInput.addEventListener('change', e => {
+  if (e.target.files[0]) handlePdfFile(e.target.files[0]);
+});
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') handlePdfFile(file);
+  else pdfStatus.textContent = 'Please drop a valid PDF file.';
+});
+
+async function handlePdfFile(file) {
+  pdfStatus.textContent = `Loading "${file.name}"…`;
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map(item => item.str).join(' ');
+      fullText += pageText + '\n\n';
+    }
+    extractedPdfText = cleanText(fullText);
+    pdfStatus.textContent = `✓ Loaded: ${file.name} (${pdf.numPages} page${pdf.numPages !== 1 ? 's' : ''}, ~${countWords(extractedPdfText)} words)`;
+  } catch (err) {
+    pdfStatus.textContent = '✗ Could not read PDF. Make sure it contains selectable text (not a scanned image).';
+    console.error(err);
+  }
+}
+
+// ─── Text helpers ─────────────────────────────────────────────────────────────
+function cleanText(text) {
+  return text
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')           // collapse multiple spaces
+    .replace(/\n{3,}/g, '\n\n')        // collapse excess blank lines
+    .replace(/- \n/g, '')              // rejoin hyphenated line breaks
+    .trim();
+}
+
+function countWords(text) {
+  return text.trim().split(/\s+/).length;
+}
+
+// Smarter sentence splitting that respects abbreviations
+function splitSentences(text) {
+  // Handle common abbreviations to avoid false splits
+  const abbrevs = ['Mr', 'Mrs', 'Ms', 'Dr', 'Prof', 'Sr', 'Jr', 'vs', 'etc', 'i.e', 'e.g', 'St', 'Ave', 'Blvd'];
+  let processedText = text;
+  abbrevs.forEach(a => {
+    processedText = processedText.replace(new RegExp(`\\b${a}\\.`, 'g'), a + '##DOT##');
+  });
+
+  // Split on sentence-ending punctuation
+  const raw = processedText.match(/[^.!?]+[.!?]+["']?|[^.!?]+$/g) || [text];
+
+  return raw
+    .map(s => s.replace(/##DOT##/g, '.').trim())
+    .filter(s => s.length > 1);
+}
+
+// ─── Human-like speech ────────────────────────────────────────────────────────
+// Adds natural pauses using SSML-lite via pause injection via chunking
+function speakSentences() {
+  if (currentIndex >= sentences.length) {
+    resetUI();
+    return;
+  }
+
+  const sentence = sentences[currentIndex];
+  highlightSentence(currentIndex);
+
+  const utterance = new SpeechSynthesisUtterance(sentence);
+
+  // Apply voice
+  const voiceName = document.getElementById('voice-select').value;
+  if (voiceName) {
+    const voice = voices.find(v => v.name === voiceName);
+    if (voice) utterance.voice = voice;
+  }
+
+  // Apply settings
+  utterance.rate = parseFloat(rateSlider.value);
+  utterance.pitch = parseFloat(pitchSlider.value);
+
+  // Natural variation: slightly vary pitch and rate per sentence for less robotic feel
+  const pitchJitter = (Math.random() - 0.5) * 0.06;
+  const rateJitter = (Math.random() - 0.5) * 0.04;
+  utterance.pitch = Math.max(0.5, Math.min(2, utterance.pitch + pitchJitter));
+  utterance.rate = Math.max(0.3, Math.min(2, utterance.rate + rateJitter));
+
+  utterance.onend = () => {
+    if (!isPaused) {
+      markDone(currentIndex);
+      currentIndex++;
+      updateProgress();
+
+      // Natural pause between sentences (longer after .!?)
+      const delay = sentence.endsWith('?') || sentence.endsWith('!') ? 400 :
+                    sentence.endsWith(':') ? 350 : 200;
+      setTimeout(() => {
+        if (!isPaused) speakSentences();
+      }, delay);
+    }
+  };
+
+  utterance.onerror = (e) => {
+    // 'interrupted' is expected on stop/pause — ignore it
+    if (e.error === 'interrupted') return;
+    console.warn('Speech error:', e.error);
+    markDone(currentIndex);
+    currentIndex++;
+    if (!isPaused) speakSentences();
+  };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── Highlighting ─────────────────────────────────────────────────────────────
+function renderSentences(sents) {
+  const display = document.getElementById('reading-display');
+  display.innerHTML = sents.map((s, i) =>
+    `<span class="sentence" id="sent-${i}">${escapeHtml(s)} </span>`
+  ).join('');
+}
+
+function highlightSentence(i) {
+  document.querySelectorAll('.sentence').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('sent-' + i);
+  if (el) {
+    el.classList.add('active');
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function markDone(i) {
+  const el = document.getElementById('sent-' + i);
+  if (el) { el.classList.remove('active'); el.classList.add('done'); }
+}
+
+// ─── Progress ─────────────────────────────────────────────────────────────────
+function updateProgress() {
+  const pct = sentences.length ? (currentIndex / sentences.length) * 100 : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-label').textContent =
+    sentences.length ? `Sentence ${Math.min(currentIndex + 1, sentences.length)} of ${sentences.length}` : '';
+}
+
+// ─── UI state ─────────────────────────────────────────────────────────────────
+function setPlaying() {
+  document.getElementById('btn-play').disabled = true;
+  document.getElementById('btn-pause').disabled = false;
+  document.getElementById('btn-stop').disabled = false;
+  document.getElementById('btn-pause').textContent = '⏸ Pause';
+}
+
+function resetUI() {
+  document.getElementById('btn-play').disabled = false;
+  document.getElementById('btn-pause').disabled = true;
+  document.getElementById('btn-stop').disabled = true;
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('progress-label').textContent = '';
+  isPaused = false;
+}
+
+// ─── Buttons ──────────────────────────────────────────────────────────────────
+document.getElementById('btn-play').addEventListener('click', () => {
+  if (!('speechSynthesis' in window)) return;
+
+  // Get text based on active tab
+  let rawText = '';
+  if (activeTab === 'paste') {
+    rawText = document.getElementById('paste-input').value.trim();
+  } else {
+    rawText = extractedPdfText;
+  }
+
+  if (!rawText) {
+    alert(activeTab === 'paste'
+      ? 'Please paste some text first.'
+      : 'Please upload a PDF first.');
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  isPaused = false;
+
+  sentences = splitSentences(cleanText(rawText));
+  currentIndex = 0;
+
+  renderSentences(sentences);
+  updateProgress();
+  setPlaying();
+
+  // Small delay before starting — feels more natural
+  setTimeout(() => speakSentences(), 300);
+});
+
+document.getElementById('btn-pause').addEventListener('click', () => {
+  if (!('speechSynthesis' in window)) return;
+  const btn = document.getElementById('btn-pause');
+
+  if (isPaused) {
+    isPaused = false;
+    btn.textContent = '⏸ Pause';
+    window.speechSynthesis.resume();
+    // If speechSynthesis resume doesn't continue our chain (some browsers), restart from current
+    setTimeout(() => {
+      if (!window.speechSynthesis.speaking && !isPaused) {
+        speakSentences();
+      }
+    }, 400);
+  } else {
+    isPaused = true;
+    btn.textContent = '▶ Resume';
+    window.speechSynthesis.cancel();
+  }
+});
+
+document.getElementById('btn-stop').addEventListener('click', () => {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  isPaused = false;
+  document.querySelectorAll('.sentence').forEach(el => {
+    el.classList.remove('active', 'done');
+  });
+  currentIndex = 0;
+  resetUI();
+});
+
+// ─── Chrome bug workaround: speechSynthesis pauses after ~15s ────────────────
+// Keep it alive with a periodic no-op check
+setInterval(() => {
+  if (window.speechSynthesis && window.speechSynthesis.speaking && !isPaused) {
+    window.speechSynthesis.pause();
+    window.speechSynthesis.resume();
+  }
+}, 10000);
+</script>
+</body>
+</html>
