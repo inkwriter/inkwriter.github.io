@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beastmarch: Wardens of the Thornwood</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="wrap">
+  <header id="title-bar">
+    <span class="thorn">&#10047;</span> BEASTMARCH <span class="sub">Wardens of the Thornwood</span>
+    <span id="region-name">The Thornwood Marches</span>
+  </header>
+
+  <div id="stage">
+    <canvas id="game" width="960" height="600"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-row"><span class="hud-label">WARDEN</span><div class="bar"><div id="hp-bar" class="bar-fill hp"></div></div><span id="hp-text"></span></div>
+      <div class="hud-row"><span id="warden-line" class="warden-line"></span></div>
+      <div class="hud-row"><span class="hud-label">GOLD</span><span id="gold-text" class="gold">0</span><span id="fort-status"></span></div>
+      <div id="raid-warning" style="display:none"></div>
+    </div>
+
+    <!-- Minimap -->
+    <canvas id="minimap"></canvas>
+
+    <!-- Action bar: abilities 1-4, Focus, warband -->
+    <div id="action-bar">
+      <div id="ability-slots"></div>
+      <div id="focus-wrap"><div id="focus-bar"></div><span id="focus-text"></span><span id="focus-label">FOCUS</span></div>
+      <div id="warband-wrap"><span id="warband-label"></span><div id="warband-chips"></div></div>
+    </div>
+
+    <!-- War Chronicle ticker (signature element) -->
+    <div id="chronicle"><span class="chron-label">WAR CHRONICLE</span><span id="chron-text">The Marches are quiet... for now.</span></div>
+
+    <!-- Controls hint -->
+    <div id="controls-hint">WASD move &middot; LMB sword &middot; RMB bow &middot; SPACE dodge &middot; 1-4 skills &middot; TAB warband &middot; C capture &middot; E interact &middot; K skills &middot; R roster &middot; M captains &middot; I invade &middot; L log</div>
+
+    <!-- Panels -->
+    <div id="panel-roster" class="panel" style="display:none">
+      <h2>Army Roster</h2>
+      <div id="roster-list" class="panel-body"></div>
+      <div class="panel-foot">
+        <button id="btn-save">Save game</button>
+        <button id="btn-load">Load game</button>
+        <button id="btn-reset" class="danger">Reset world</button>
+      </div>
+    </div>
+
+    <div id="panel-captains" class="panel" style="display:none">
+      <h2>Enemy Hierarchy &mdash; Thornwood Marches</h2>
+      <div id="captain-list" class="panel-body"></div>
+    </div>
+
+    <div id="panel-log" class="panel" style="display:none">
+      <h2>Battle Chronicle</h2>
+      <div id="log-list" class="panel-body"></div>
+    </div>
+
+    <div id="panel-skills" class="panel panel-wide" style="display:none">
+      <h2>The Warden's Path &mdash; Skill Tree (K)</h2>
+      <div id="skills-head" class="panel-body-note"></div>
+      <div id="skills-cols" class="panel-body skills-body"></div>
+    </div>
+
+    <div id="panel-invasion" class="panel" style="display:none">
+      <h2>Invasion: Bramblefang Fort</h2>
+      <div id="invasion-info" class="panel-body-note"></div>
+      <div id="invasion-list" class="panel-body"></div>
+      <div class="panel-foot"><button id="btn-start-invasion">March on the fort</button></div>
+    </div>
+
+    <div id="toast"></div>
+  </div>
+</div>
+
+<!-- Data (load first) -->
+<script src="assets/manifest.js"></script>
+<script src="js/util.js"></script>
+<script src="js/sprites.js"></script>
+<script src="data/traits.js"></script>
+<script src="data/creatures.js"></script>
+<script src="data/captains.js"></script>
+<script src="data/maps.js"></script>
+<script src="data/skills.js"></script>
+<!-- Systems -->
+<script src="js/map.js"></script>
+<script src="js/projectiles.js"></script>
+<script src="js/creatures.js"></script>
+<script src="js/captains.js"></script>
+<script src="js/rivalSystem.js"></script>
+<script src="js/army.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/invasion.js"></script>
+<script src="js/player.js"></script>
+<script src="js/save.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

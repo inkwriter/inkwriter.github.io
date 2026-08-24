@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fretkit — Guitar Tuner, Tab Player & Practice Tools</title>
+  <meta name="description" content="A free browser guitar toolkit: tuner, custom tunings, tab playback, chords, metronome, and practice games. No login, no backend.">
+
+  <!-- Fonts: fall back to system fonts if offline -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,500;10..72,700;10..72,800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER — styled like a tube-amp control panel.
+       The "pilot lamp" glows amber once audio is powered on
+       (browsers require a click before any sound can play).
+       ============================================================ -->
+  <header class="amp-head">
+    <div class="amp-brand">
+      <h1 class="logo">FRETKIT</h1>
+      <span class="logo-sub">guitar utility hub</span>
+    </div>
+
+    <button id="power-btn" class="pilot" title="Click to power on audio" aria-pressed="false">
+      <span class="pilot-lamp" id="pilot-lamp" aria-hidden="true"></span>
+      <span class="pilot-label" id="pilot-label">POWER ON AUDIO</span>
+    </button>
+
+    <!-- Main navigation: each button shows one section -->
+    <nav class="channels" aria-label="Main sections">
+      <button class="channel active" data-panel="tuner">Tuner</button>
+      <button class="channel" data-panel="custom">Custom Tuning</button>
+      <button class="channel" data-panel="tabplayer">Tab Player</button>
+      <button class="channel" data-panel="chords">Chords</button>
+      <button class="channel" data-panel="metronome">Metronome</button>
+      <button class="channel" data-panel="practice">Practice</button>
+      <button class="channel" data-panel="library">Library</button>
+    </nav>
+  </header>
+
+  <!-- Global helper toggles (saved to localStorage) -->
+  <div class="helper-bar">
+    <label class="helper-toggle"><input type="checkbox" id="pref-note-names" checked> Note names</label>
+    <label class="helper-toggle"><input type="checkbox" id="pref-string-numbers" checked> String numbers</label>
+    <label class="helper-toggle"><input type="checkbox" id="pref-fret-numbers" checked> Fret numbers</label>
+    <label class="helper-toggle"><input type="checkbox" id="pref-explanations" checked> Tuning explanations</label>
+    <label class="helper-toggle"><input type="checkbox" id="pref-lefty"> Left-handed</label>
+
+    <label class="helper-toggle sound-select">
+      Sound
+      <select id="pref-sound">
+        <option value="pluck">Clean pluck</option>
+        <option value="acoustic">Acoustic pluck</option>
+        <option value="sine">Simple tone</option>
+        <option value="muted">Muted practice</option>
+      </select>
+    </label>
+  </div>
+
+  <main>
+
+    <!-- ============================================================
+         TUNER
+         ============================================================ -->
+    <section id="panel-tuner" class="panel active">
+      <div class="panel-head">
+        <h2>Tuner</h2>
+        <p class="panel-desc">Pick a tuning, then pluck each string button and match your guitar to it by ear. Strings run low (thick, top) to high (thin, bottom) — string 6 down to string 1.</p>
+      </div>
+
+      <div class="tuner-controls">
+        <label for="tuning-select" class="field-label">Tuning</label>
+        <select id="tuning-select" class="big-select"></select>
+      </div>
+
+      <p id="tuning-explanation" class="explanation"></p>
+
+      <!-- String buttons are injected here by app.js -->
+      <div id="string-rack" class="string-rack" aria-label="Guitar strings"></div>
+    </section>
+
+    <!-- ============================================================
+         CUSTOM TUNING CREATOR
+         ============================================================ -->
+    <section id="panel-custom" class="panel">
+      <div class="panel-head">
+        <h2>Custom Tuning</h2>
+        <p class="panel-desc">Build your own tuning. Pick a note and octave for each string, test it, name it, and save it. Saved tunings show up in the Tuner and Tab Player.</p>
+      </div>
+
+      <div id="custom-builder" class="custom-builder">
+        <!-- Six rows of note/octave pickers injected by app.js -->
+      </div>
+
+      <div class="custom-save-row">
+        <input type="text" id="custom-name" class="text-input" placeholder="Name this tuning (e.g. My Open C)" maxlength="30">
+        <button id="custom-save" class="btn btn-primary">Save tuning</button>
+      </div>
+      <p id="custom-msg" class="msg" role="status"></p>
+
+      <h3 class="subhead">Saved tunings</h3>
+      <div id="custom-saved-list" class="saved-list"></div>
+    </section>
+
+    <!-- ============================================================
+         TAB PLAYER
+         ============================================================ -->
+    <section id="panel-tabplayer" class="panel">
+      <div class="panel-head">
+        <h2>Tab Player</h2>
+        <p class="panel-desc">Paste a standard six-line guitar tab and press play. Each character column is one sixteenth-note step. Notes stacked in the same column play together as a chord.</p>
+      </div>
+
+      <div class="tab-layout">
+        <div class="tab-input-col">
+          <label for="tab-input" class="field-label">Your tab</label>
+          <textarea id="tab-input" class="tab-textarea" spellcheck="false" rows="8">e|----------------|
+B|----------------|
+G|----------------|
+D|--------2-------|
+A|----2-3---3-2---|
+E|--0-------------|</textarea>
+
+          <div class="tab-controls">
+            <button id="tab-play" class="btn btn-primary">&#9654; Play</button>
+            <button id="tab-stop" class="btn">&#9632; Stop</button>
+
+            <label class="inline-field">
+              <span>Tempo <strong id="tab-bpm-value">90</strong> BPM</span>
+              <input type="range" id="tab-bpm" min="40" max="240" value="90">
+            </label>
+
+            <label class="helper-toggle"><input type="checkbox" id="tab-loop"> Loop</label>
+
+            <label class="inline-field">
+              <span>Tab tuning</span>
+              <select id="tab-tuning-select"></select>
+            </label>
+          </div>
+
+          <div class="tab-save-row">
+            <input type="text" id="tab-save-name" class="text-input" placeholder="Name this tab to save it" maxlength="40">
+            <button id="tab-save" class="btn">Save to library</button>
+          </div>
+
+          <p id="tab-msg" class="msg" role="status"></p>
+        </div>
+
+        <div class="tab-visual-col">
+          <!-- Highlighted copy of the tab during playback -->
+          <label class="field-label">Playback view</label>
+          <pre id="tab-display" class="tab-display" aria-live="off"></pre>
+        </div>
+      </div>
+
+      <!-- Shared visual fretboard -->
+      <h3 class="subhead">Fretboard</h3>
+      <div id="fretboard-wrap" class="fretboard-wrap">
+        <div id="fretboard" class="fretboard"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CHORD LIBRARY
+         ============================================================ -->
+    <section id="panel-chords" class="panel">
+      <div class="panel-head">
+        <h2>Chords</h2>
+        <p class="panel-desc">Common open chords (shown in standard tuning). Click a card to hear the chord strummed. X means don't play that string, 0 means play it open.</p>
+      </div>
+
+      <div id="chord-grid" class="chord-grid"></div>
+
+      <h3 class="subhead">Progression player</h3>
+      <p class="panel-desc">Type a progression and it plays one chord per bar at the chosen tempo.</p>
+      <div class="progression-row">
+        <input type="text" id="prog-input" class="text-input" value="G - D - Em - C" placeholder="e.g. G - D - Em - C">
+        <label class="inline-field">
+          <span><strong id="prog-bpm-value">90</strong> BPM</span>
+          <input type="range" id="prog-bpm" min="40" max="200" value="90">
+        </label>
+        <button id="prog-play" class="btn btn-primary">&#9654; Play</button>
+        <button id="prog-stop" class="btn">&#9632; Stop</button>
+      </div>
+      <p id="prog-msg" class="msg" role="status"></p>
+      <div id="prog-now" class="prog-now"></div>
+    </section>
+
+    <!-- ============================================================
+         METRONOME
+         ============================================================ -->
+    <section id="panel-metronome" class="panel">
+      <div class="panel-head">
+        <h2>Metronome</h2>
+        <p class="panel-desc">Steady clicks from the Web Audio clock, so timing stays tight even in the background.</p>
+      </div>
+
+      <div class="metro-panel">
+        <div class="metro-bpm-display"><span id="metro-bpm-value">100</span><small>BPM</small></div>
+
+        <input type="range" id="metro-bpm" min="30" max="250" value="100" class="metro-slider">
+
+        <div class="metro-controls">
+          <button id="metro-toggle" class="btn btn-primary btn-big">&#9654; Start</button>
+          <button id="metro-tap" class="btn btn-big">Tap tempo</button>
+        </div>
+
+        <div class="metro-options">
+          <label class="inline-field">
+            <span>Time signature</span>
+            <select id="metro-sig">
+              <option value="4">4/4</option>
+              <option value="3">3/4</option>
+              <option value="6">6/8</option>
+            </select>
+          </label>
+          <label class="helper-toggle"><input type="checkbox" id="metro-accent" checked> Accent beat 1</label>
+        </div>
+
+        <!-- Beat dots light up as the metronome runs -->
+        <div id="metro-beats" class="metro-beats" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PRACTICE TOOLS
+         ============================================================ -->
+    <section id="panel-practice" class="panel">
+      <div class="panel-head">
+        <h2>Practice</h2>
+        <p class="panel-desc">Short drills to build fretboard knowledge and your ear. All of them use whatever tuning is selected in the Tuner.</p>
+      </div>
+
+      <div class="practice-grid">
+
+        <div class="practice-card">
+          <h3>String trainer</h3>
+          <p class="practice-desc">Play the named string on your guitar, then check yourself.</p>
+          <div class="practice-prompt" id="pt-string-prompt">—</div>
+          <div class="practice-actions">
+            <button class="btn" id="pt-string-hear">Hear it</button>
+            <button class="btn btn-primary" id="pt-string-next">Next string</button>
+          </div>
+        </div>
+
+        <div class="practice-card">
+          <h3>Note finder</h3>
+          <p class="practice-desc">Find every spot this note lives between frets 0 and 12.</p>
+          <div class="practice-prompt" id="pt-note-prompt">—</div>
+          <div class="practice-actions">
+            <button class="btn" id="pt-note-reveal">Reveal on fretboard</button>
+            <button class="btn btn-primary" id="pt-note-next">Next note</button>
+          </div>
+          <p class="practice-hint" id="pt-note-answer"></p>
+        </div>
+
+        <div class="practice-card">
+          <h3>Tuning challenge</h3>
+          <p class="practice-desc">A random tuning appears — listen through its strings and try re-tuning to it.</p>
+          <div class="practice-prompt" id="pt-tuning-prompt">—</div>
+          <div class="practice-actions" id="pt-tuning-strings"></div>
+          <div class="practice-actions">
+            <button class="btn btn-primary" id="pt-tuning-next">New tuning</button>
+          </div>
+        </div>
+
+        <div class="practice-card">
+          <h3>Ear training</h3>
+          <p class="practice-desc">Hear a note, guess which note it is.</p>
+          <div class="practice-actions">
+            <button class="btn" id="pt-ear-play">&#9654; Play mystery note</button>
+          </div>
+          <div class="practice-actions" id="pt-ear-choices"></div>
+          <p class="practice-hint" id="pt-ear-result"></p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         LIBRARY — saved tabs, import/export
+         ============================================================ -->
+    <section id="panel-library" class="panel">
+      <div class="panel-head">
+        <h2>Library</h2>
+        <p class="panel-desc">Everything you've saved lives in your browser's localStorage — nothing leaves your device. Export a backup before clearing browser data.</p>
+      </div>
+
+      <h3 class="subhead">Saved tabs</h3>
+      <div id="library-tabs" class="saved-list"></div>
+
+      <h3 class="subhead">Saved custom tunings</h3>
+      <div id="library-tunings" class="saved-list"></div>
+
+      <h3 class="subhead">Backup</h3>
+      <div class="backup-row">
+        <button id="export-json" class="btn">Export everything as JSON</button>
+        <label class="btn file-btn">
+          Import from JSON
+          <input type="file" id="import-json" accept=".json,application/json" hidden>
+        </label>
+      </div>
+      <p id="library-msg" class="msg" role="status"></p>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Fretkit runs entirely in your browser. No accounts, no tracking, no backend. Once loaded, it works offline.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

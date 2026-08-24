@@ -1,0 +1,679 @@
+/* ==========================================================================
+   FRETKIT — styles.css
+   Visual direction: tube-amp control panel.
+   Warm near-black "tolex" background, cream panel text, amber pilot lamp,
+   and string buttons drawn as real gauge-varying steel strings.
+   ========================================================================== */
+
+/* ---- Design tokens ------------------------------------------------------ */
+:root {
+  --tolex:   #1a1613;   /* page background — warm amp-covering black   */
+  --panel:   #241e18;   /* section panel background                     */
+  --panel-2: #2d2620;   /* raised elements (cards, inputs)              */
+  --line:    #3d332a;   /* hairline borders                             */
+  --cream:   #f2e9d8;   /* primary text — control-panel cream           */
+  --muted:   #a4988a;   /* secondary text                               */
+  --amber:   #ffa028;   /* pilot lamp / primary action                  */
+  --amber-glow: rgba(255, 160, 40, 0.45);
+  --brass:   #c9a227;   /* accents, active states                       */
+  --steel:   #c6cbd2;   /* guitar-string silver                         */
+  --good:    #7bc47f;   /* success                                      */
+  --bad:     #e0685c;   /* errors                                       */
+
+  --font-display: "Big Shoulders", "Arial Narrow", sans-serif;
+  --font-body:    "Public Sans", system-ui, -apple-system, sans-serif;
+  --font-mono:    "IBM Plex Mono", "Consolas", monospace;
+
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--tolex);
+  /* subtle tolex texture using layered gradients — no image files needed */
+  background-image:
+    radial-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    radial-gradient(rgba(0,0,0,0.25) 1px, transparent 1px);
+  background-size: 5px 5px, 7px 7px;
+  background-position: 0 0, 3px 3px;
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+/* ---- Header / amp head --------------------------------------------------- */
+.amp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+  padding: 18px 24px 14px;
+  background: linear-gradient(180deg, #2b241d, #221c16);
+  border-bottom: 3px solid var(--brass);
+}
+
+.amp-brand { display: flex; align-items: baseline; gap: 10px; }
+
+.logo {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.4rem;
+  letter-spacing: 0.06em;
+  color: var(--cream);
+}
+
+.logo-sub {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Pilot lamp — glows amber once the AudioContext is running */
+.pilot {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+}
+
+.pilot-lamp {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #4a3a24;
+  border: 1px solid #6b5636;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.pilot.on .pilot-lamp {
+  background: var(--amber);
+  box-shadow: 0 0 10px 3px var(--amber-glow);
+}
+.pilot.on { color: var(--cream); }
+
+/* Navigation channel buttons */
+.channels { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+
+.channel {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.channel:hover { color: var(--cream); border-color: var(--brass); }
+
+.channel.active {
+  color: var(--tolex);
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+/* ---- Helper bar ---------------------------------------------------------- */
+.helper-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 10px 24px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.helper-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.helper-toggle input[type="checkbox"] { accent-color: var(--amber); }
+
+.sound-select select { margin-left: 4px; }
+
+/* ---- Panels -------------------------------------------------------------- */
+main { max-width: 1080px; margin: 0 auto; padding: 26px 20px 60px; }
+
+.panel { display: none; }
+.panel.active { display: block; animation: fade-in 0.25s ease; }
+
+@keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+
+.panel-head h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.2rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+
+.panel-desc { color: var(--muted); max-width: 62ch; margin: 0 0 20px; }
+
+.subhead {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 34px 0 12px;
+  color: var(--brass);
+}
+
+.explanation {
+  color: var(--muted);
+  font-size: 0.92rem;
+  border-left: 3px solid var(--brass);
+  padding-left: 12px;
+  max-width: 60ch;
+}
+
+body.hide-explanations .explanation { display: none; }
+
+/* ---- Form elements ------------------------------------------------------- */
+.field-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+select, .text-input {
+  background: var(--panel-2);
+  color: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+
+select:focus-visible, .text-input:focus-visible, button:focus-visible,
+input[type="range"]:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.big-select { font-size: 1.1rem; padding: 10px 14px; min-width: 260px; }
+
+.btn {
+  background: var(--panel-2);
+  color: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.05s;
+}
+
+.btn:hover { border-color: var(--brass); }
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--tolex);
+}
+.btn-primary:hover { background: #ffb04d; }
+
+.btn-big { font-size: 1.1rem; padding: 12px 22px; }
+
+.msg { min-height: 1.4em; font-size: 0.9rem; }
+.msg.ok { color: var(--good); }
+.msg.err { color: var(--bad); }
+
+input[type="range"] { accent-color: var(--amber); }
+
+/* ---- SIGNATURE: string rack ----------------------------------------------
+   Each string is a full-width button. The metal "wire" runs through it,
+   thick for low strings, thin for high strings, and vibrates when plucked. */
+.string-rack { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+
+.string-btn {
+  position: relative;
+  display: grid;
+  grid-template-columns: 64px 1fr 96px;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 62px;
+  padding: 8px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--cream);
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.string-btn:hover { border-color: var(--brass); background: var(--panel-2); }
+
+.string-note {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.string-meta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-align: right;
+}
+
+body.hide-string-numbers .string-meta .snum { display: none; }
+body.hide-note-names .string-note .octave { display: none; }
+
+/* The wire itself */
+.string-wire {
+  position: relative;
+  height: 24px;               /* room for the vibration to wiggle in */
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.string-wire::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: var(--gauge, 3px);  /* set per string in JS: thick low, thin high */
+  background: linear-gradient(180deg, #eef1f4, var(--steel) 45%, #6f757d);
+  border-radius: 99px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* Vibration: quick vertical shiver that decays */
+@keyframes string-vibrate {
+  0%   { transform: translateY(0) scaleY(2.6); filter: blur(0.6px); }
+  20%  { transform: translateY(-2px) scaleY(2.0); }
+  40%  { transform: translateY(2px)  scaleY(1.6); }
+  60%  { transform: translateY(-1px) scaleY(1.3); filter: blur(0.2px); }
+  80%  { transform: translateY(1px)  scaleY(1.1); }
+  100% { transform: translateY(0)    scaleY(1);   filter: none; }
+}
+
+.string-btn.plucked .string-wire::before {
+  animation: string-vibrate 0.9s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .string-btn.plucked .string-wire::before { animation: none; }
+  .panel.active { animation: none; }
+}
+
+/* ---- Custom tuning builder ------------------------------------------------ */
+.custom-builder { display: flex; flex-direction: column; gap: 8px; max-width: 560px; }
+
+.custom-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.custom-row .rlabel { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+
+.custom-save-row, .tab-save-row, .backup-row, .progression-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.text-input { flex: 1 1 220px; }
+
+.saved-list { display: flex; flex-direction: column; gap: 8px; max-width: 640px; }
+
+.saved-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.saved-item .sname { font-weight: 600; }
+.saved-item .sdetail { color: var(--muted); font-family: var(--font-mono); font-size: 0.8rem; }
+.saved-item .spacer { margin-left: auto; }
+.saved-empty { color: var(--muted); font-size: 0.9rem; }
+
+/* ---- Tab player ------------------------------------------------------------ */
+.tab-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+.tab-textarea {
+  width: 100%;
+  background: #14110e;
+  color: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  white-space: pre;
+  overflow-x: auto;
+  resize: vertical;
+}
+
+.tab-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.inline-field { display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--muted); }
+
+.tab-display {
+  background: #14110e;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  min-height: 160px;
+  margin: 0;
+}
+
+.tab-display .hit {
+  background: var(--amber);
+  color: var(--tolex);
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+/* ---- Fretboard --------------------------------------------------------------
+   CSS grid: column 0 is the nut (fret 0), columns 1–12 are frets.
+   Row of fret numbers on top; six string rows below.                      */
+.fretboard-wrap { overflow-x: auto; padding-bottom: 6px; }
+
+.fretboard {
+  display: grid;
+  grid-template-columns: 54px repeat(12, minmax(52px, 1fr));
+  min-width: 700px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #3a2b1c, #2c2013); /* rosewood-ish */
+  overflow: hidden;
+}
+
+.fret-cell {
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 2px solid #8d8578; /* the metal fret wire */
+}
+.fret-cell.nut { border-right: 5px solid #e8e0cf; background: rgba(0,0,0,0.25); }
+
+.fret-num-row {
+  height: 26px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  background: var(--panel);
+  border-right: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.hide-fret-numbers .fret-num-row { color: transparent; }
+
+/* The string line running through each cell */
+.fret-cell::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: var(--gauge, 2px);
+  transform: translateY(-50%);
+  background: linear-gradient(180deg, #eef1f4, var(--steel) 45%, #6f757d);
+  opacity: 0.8;
+}
+
+/* Inlay dots at frets 3, 5, 7, 9 (between strings 3–4) and double at 12 */
+.fret-cell.inlay::after {
+  content: "";
+  position: absolute;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #d8cdb4;
+  opacity: 0.5;
+  top: 100%;
+  transform: translate(0, -4px);
+}
+
+.note-dot {
+  position: relative;
+  z-index: 2;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: transparent;               /* label hidden until note names on */
+  background: transparent;
+  transition: background 0.1s;
+}
+
+body.show-note-names .note-dot { color: var(--muted); background: rgba(0,0,0,0.35); }
+
+.note-dot.lit {
+  background: var(--amber) !important;
+  color: var(--tolex) !important;
+  box-shadow: 0 0 10px 2px var(--amber-glow);
+}
+
+.note-dot.flash {
+  background: var(--good) !important;
+  color: var(--tolex) !important;
+}
+
+/* Left-handed mode: mirror the board and un-mirror the labels */
+body.lefty .fretboard { transform: scaleX(-1); }
+body.lefty .fretboard .note-dot,
+body.lefty .fretboard .fret-num-row { transform: scaleX(-1); }
+
+/* ---- Chords ------------------------------------------------------------------ */
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.chord-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.chord-card:hover { border-color: var(--brass); transform: translateY(-2px); }
+
+.chord-card h4 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+}
+
+.chord-diagram {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: pre;
+  text-align: center;
+}
+
+.chord-frets { font-family: var(--font-mono); font-size: 0.8rem; color: var(--brass); margin-top: 6px; }
+
+.prog-now {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 3rem;
+  min-height: 1.2em;
+  color: var(--amber);
+}
+
+/* ---- Metronome ---------------------------------------------------------------- */
+.metro-panel {
+  max-width: 520px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: center;
+}
+
+.metro-bpm-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 4.4rem;
+  line-height: 1;
+}
+.metro-bpm-display small { font-size: 1.1rem; color: var(--muted); margin-left: 8px; }
+
+.metro-slider { width: 100%; }
+
+.metro-controls, .metro-options { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: center; }
+
+.metro-beats { display: flex; gap: 12px; }
+
+.metro-beat {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  transition: background 0.05s, box-shadow 0.05s;
+}
+
+.metro-beat.on { background: var(--amber); box-shadow: 0 0 8px 2px var(--amber-glow); }
+.metro-beat.accent.on { background: var(--brass); }
+
+/* ---- Practice ------------------------------------------------------------------ */
+.practice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.practice-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.practice-card h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+
+.practice-desc { color: var(--muted); font-size: 0.85rem; margin: 0 0 12px; }
+
+.practice-prompt {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2rem;
+  min-height: 1.3em;
+  margin-bottom: 12px;
+}
+
+.practice-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+
+.practice-hint { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); min-height: 1.3em; }
+.practice-hint.ok { color: var(--good); }
+.practice-hint.err { color: var(--bad); }
+
+/* ---- Library / footer ------------------------------------------------------------ */
+.file-btn { display: inline-flex; align-items: center; }
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  padding: 18px 24px 30px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* ---- Responsive -------------------------------------------------------------------- */
+@media (max-width: 860px) {
+  .tab-layout { grid-template-columns: 1fr; }
+  .channels { margin-left: 0; }
+  .logo { font-size: 1.9rem; }
+}
+
+@media (max-width: 560px) {
+  .string-btn { grid-template-columns: 48px 1fr 70px; padding: 8px 12px; min-height: 56px; }
+  .string-note { font-size: 1.5rem; }
+  .custom-row { grid-template-columns: 64px 1fr 1fr auto; }
+  .metro-bpm-display { font-size: 3.2rem; }
+  main { padding: 18px 12px 50px; }
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAPE CITY COMICS — Issue #0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Special+Elite&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="game-wrap">
+  <canvas id="game" width="960" height="600"></canvas>
+
+  <!-- COMIC COVER / ORIGIN SCREEN -->
+  <div id="cover" class="overlay">
+    <div class="cover-frame">
+      <div class="cover-top">
+        <span class="cover-logo">CAPE CITY <em>COMICS</em></span>
+        <span class="cover-issue">ISSUE #0 &bull; 10&cent;</span>
+      </div>
+      <h1 class="cover-title">INTRODUCING...<br><span id="hero-name">CAPTAIN COMET</span></h1>
+      <button id="reroll-name" class="btn small">&#x21bb; New Name</button>
+      <div class="pick-label">CHOOSE YOUR CORE POWER</div>
+      <div id="core-picks" class="pick-row"></div>
+      <div class="pick-label">CHOOSE YOUR SUPPORT POWER</div>
+      <div id="support-picks" class="pick-row"></div>
+      <button id="start-btn" class="btn big">START PATROL!</button>
+      <div class="cover-hint">WASD move &bull; Mouse aim &bull; LMB basic &bull; RMB special &bull; SPACE mobility &bull; Q defense &bull; F support &bull; E rescue/interact</div>
+    </div>
+  </div>
+
+  <!-- D20 EVENT OVERLAY -->
+  <div id="d20" class="overlay hidden">
+    <div class="d20-frame">
+      <div class="d20-label">FATE ROLLS THE DIE...</div>
+      <div id="d20-die" data-n="?"></div>
+      <div id="d20-result"></div>
+      <button id="d20-ok" class="btn hidden">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- CHOICE OVERLAY (level 5 power / rare upgrades) -->
+  <div id="choice" class="overlay hidden">
+    <div class="choice-frame">
+      <div id="choice-title" class="pick-label">CHOOSE A NEW POWER</div>
+      <div id="choice-row" class="pick-row"></div>
+    </div>
+  </div>
+
+  <!-- NEWSPAPER END SCREEN -->
+  <div id="paper" class="overlay hidden">
+    <div class="paper-frame">
+      <div class="paper-masthead">THE DAILY CAPE</div>
+      <div class="paper-date" id="paper-date">MERIDIAN CITY — MORNING EDITION</div>
+      <h2 id="paper-headline">HERO SAVES CITY!</h2>
+      <div id="paper-body" class="paper-cols"></div>
+      <div class="paper-btns">
+        <button id="paper-continue" class="btn">KEEP PATROLLING</button>
+        <button id="paper-newrun" class="btn">NEW ISSUE (NEW RUN)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div id="ticker"></div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM Content Editor</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header>
+  <h1>DM Content Editor</h1>
+  <nav class="topnav">
+    <a href="index.html">← Back to Dashboard</a>
+  </nav>
+</header>
+<main>
+
+<section>
+  <h2>Paste-a-List → JSON</h2>
+  <div class="card">
+    <label>Category
+      <select id="ed-category" onchange="renderPreview()">
+        <option value="firstNames">Character first names</option>
+        <option value="lastNames">Character last names</option>
+        <option value="traits">Personality traits</option>
+        <option value="ideals">Ideals</option>
+        <option value="bonds">Bonds</option>
+        <option value="flaws">Flaws</option>
+        <option value="npcOccupations">Occupations</option>
+        <option value="npcAppearances">NPC appearances</option>
+        <option value="npcVoices">Voice styles</option>
+        <option value="npcGoals">NPC goals</option>
+        <option value="npcSecrets">NPC secrets</option>
+        <option value="questHooks">Quest hooks</option>
+        <option value="weather">Weather</option>
+        <option value="custom">Custom category</option>
+      </select>
+    </label>
+    <p class="muted">Paste a list below. Entries may be separated by new lines, commas, semicolons, or tabs. Extra spaces and empty lines are removed automatically.</p>
+    <textarea id="ed-input" placeholder="Ashfall
+Thunderstorm
+Heavy rain
+Dense fog"></textarea>
+    <div class="btnrow">
+      <button class="primary" onclick="processList()">Process List</button>
+      <button onclick="dedupeList()">Remove Duplicates</button>
+      <button onclick="sortList()">Sort Alphabetically</button>
+      <button onclick="shuffleList()">Shuffle Preview</button>
+      <button onclick="mergeExisting()">Add to Existing Category</button>
+      <button class="danger" onclick="clearList()">Clear</button>
+    </div>
+    <p><strong id="ed-count">0 entries</strong></p>
+    <label><input type="checkbox" id="ed-jsmode" onchange="renderPreview()"> Output as JavaScript constant (optional fallback — only needed if your browser blocks local JSON files)</label>
+    <pre class="output" id="ed-preview"></pre>
+    <div class="btnrow">
+      <button class="primary" onclick="copyOutput(this)">Copy</button>
+      <button onclick="downloadOutput()">Download</button>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Where does the file go?</h2>
+  <div class="card" id="ed-guide"></div>
+  <div class="card">
+    <ol class="steps">
+      <li>Copy or download the generated file.</li>
+      <li>Open your GitHub repository.</li>
+      <li>Open the <code>/data/generators/</code> folder.</li>
+      <li>Replace or add the corresponding JSON file.</li>
+      <li>Commit the changes.</li>
+      <li>Refresh the GitHub Pages website.</li>
+    </ol>
+    <p class="muted">The dashboard also ships with built-in defaults in <code>js/data.js</code>, so a missing JSON file never breaks anything — your JSON file simply overrides the defaults for that category.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Import Existing JSON</h2>
+  <div class="card">
+    <p class="muted">Paste a JSON file you exported earlier to continue editing it. Your current working list is kept — imported entries are added, never silently deleted.</p>
+    <textarea id="ed-import" placeholder='{"weather": ["Ashfall", "Thunderstorm"]}'></textarea>
+    <div class="btnrow"><button onclick="importExistingJSON()">Import into Working List</button></div>
+  </div>
+</section>
+
+<section>
+  <h2>Coming Later</h2>
+  <div class="card">
+    <p class="muted">The Structured Record Editor (monsters, spells, items, NPC templates) and combined data export arrive in Phase Three, per the development plan.</p>
+  </div>
+</section>
+
+</main>
+<footer>DM Content Editor — generates valid JSON for the dashboard</footer>
+
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/editor.js"></script>
+</body>
+</html>
