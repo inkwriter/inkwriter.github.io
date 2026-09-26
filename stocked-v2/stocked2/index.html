@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=3">
 </head>
 <body>
 
@@ -54,6 +54,14 @@
         <button class="btn btn-primary" id="btnAddItem">+ Add item</button>
       </div>
 
+      <div class="quick-add">
+        <div class="quick-row">
+          <input class="input" id="invQuickInput" placeholder="Type an item to add one…" aria-label="Quick add to inventory">
+          <button class="btn btn-scan" id="btnScanInv" aria-label="Scan barcodes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V4h3M18 4h3v3M21 17v3h-3M6 20H3v-3M7 8v8M10 8v8M13 8v8M17 8v8"/></svg><span>Scan</span></button>
+        </div>
+        <div class="chip-scroll quick-chips" id="invQuickChips" role="group" aria-label="Frequent items: tap to add one"></div>
+      </div>
+
       <div class="filter-row">
         <div class="chip-scroll" id="locationChips" role="group" aria-label="Filter by location"></div>
       </div>
@@ -79,7 +87,7 @@
         <button class="btn btn-primary" id="btnAddRecipe">+ Add recipe</button>
       </div>
 
-      <p class="view-hint">Select recipes, then build a shopping list. Stocked checks the pantry first and only lists what's missing.</p>
+      <p class="view-hint">Select recipes, then build a shopping list. Stocked checks the pantry first and only lists what's missing. Ingredients match your items by exact name or by a name you've linked once.</p>
 
       <div class="recipe-grid" id="recipeGrid"></div>
 
@@ -130,6 +138,14 @@
         </div>
       </div>
 
+      <div class="quick-add">
+        <div class="quick-row">
+          <input class="input" id="listQuickInput" placeholder="Type an item for the list…" aria-label="Quick add to shopping list">
+          <button class="btn btn-scan" id="btnScanList" aria-label="Scan barcodes to add to the list"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V4h3M18 4h3v3M21 17v3h-3M6 20H3v-3M7 8v8M10 8v8M13 8v8M17 8v8"/></svg><span>Scan</span></button>
+        </div>
+        <div class="chip-scroll quick-chips" id="listQuickChips" role="group" aria-label="Frequent items: tap to put on the list"></div>
+      </div>
+
       <div class="receipt-wrap">
         <div class="receipt" id="receipt">
           <!-- rendered by app.js -->
@@ -157,6 +173,8 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="js/config.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/match.js?v=3"></script>
+  <script src="js/scan.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>

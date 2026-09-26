@@ -9,13 +9,20 @@
  * Endpoints:
  *   GET  ?action=getAll&token=...   → all tabs as JSON
  *   POST { token, action, payload } → one mutation, logged
+ *
+ * v3 (quick add + barcodes + aliases): the first request after
+ * you deploy this version upgrades the Sheet by itself — adds a
+ * "Barcodes" column to Inventory and a new "Aliases" tab. Your
+ * existing rows are not touched.
  * ============================================================
  */
+
+const SCHEMA_VERSION = "3";
 
 // ---------- Tab definitions (single source of truth) ----------
 
 const TABS = {
-  Inventory: ["Item ID","Item Name","Category","Location","Quantity","Unit","Min Quantity","Expiration Date","Store Section","Staple","Default Location","Notes","Last Updated","Status"],
+  Inventory: ["Item ID","Item Name","Category","Location","Quantity","Unit","Min Quantity","Expiration Date","Store Section","Staple","Default Location","Notes","Last Updated","Status","Barcodes"],
   Locations: ["Location ID","Location Name","Zone","Sort Order","Status"],
   Categories: ["Category ID","Category Name","Type","Default Store Section","Status"],
   Recipes: ["Recipe ID","Recipe Name","Description","Servings","Meal Type","Tags","Instructions","Notes","Times Cooked","Status"],
@@ -24,17 +31,19 @@ const TABS = {
   MealPlan: ["Week Of","Day","Meal Slot","Recipe ID","Notes","Status"],
   Settings: ["Key","Value"],
   ChangeLog: ["Timestamp","Action","Target","Old Value","New Value","Source"],
+  Aliases: ["Alias","Item ID","Date Added","Source"],
 };
 
 // camelCase keys used in JSON, mapped per tab in header order
 const KEYS = {
-  Inventory: ["itemId","itemName","category","location","quantity","unit","minQuantity","expirationDate","storeSection","staple","defaultLocation","notes","lastUpdated","status"],
+  Inventory: ["itemId","itemName","category","location","quantity","unit","minQuantity","expirationDate","storeSection","staple","defaultLocation","notes","lastUpdated","status","barcodes"],
   Locations: ["locationId","locationName","zone","sortOrder","status"],
   Categories: ["categoryId","categoryName","type","defaultStoreSection","status"],
   Recipes: ["recipeId","recipeName","description","servings","mealType","tags","instructions","notes","timesCooked","status"],
   RecipeIngredients: ["recipeId","ingredientName","linkedItemId","quantity","unit","optional","substitutionNotes","storeSection"],
   ShoppingList: ["lineId","itemName","linkedItemId","quantityToBuy","unit","category","storeSection","whatFor","sourceType","status","dateAdded","notes"],
   MealPlan: ["weekOf","day","mealSlot","recipeId","notes","status"],
+  Aliases: ["alias","itemId","dateAdded","source"],
 };
 
 // ---------- One-time setup: builds every tab + sample data ----------
@@ -90,6 +99,53 @@ function setupSheet() {
       ["CAT-009","Household","household","Household","active"],
     ]);
   }
+
+  ensureSchema();
+}
+
+/**
+ * Brings an existing Sheet up to the current schema without
+ * touching data: creates missing tabs, appends missing header
+ * columns, and keeps barcode/alias columns as plain text so
+ * Sheets doesn't strip leading zeros off UPCs.
+ * Runs automatically on the first request after a deploy.
+ */
+function ensureSchema() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  Object.keys(TABS).forEach(function (name) {
+    let sh = ss.getSheetByName(name);
+    if (!sh) {
+      try { sh = ss.insertSheet(name); } catch (e) { sh = ss.getSheetByName(name); }
+    }
+    const want = TABS[name];
+    if (sh.getLastRow() === 0) {
+      sh.appendRow(want);
+      sh.getRange(1, 1, 1, want.length).setFontWeight("bold");
+      sh.setFrozenRows(1);
+      return;
+    }
+    const have = sh.getLastColumn();
+    if (have < want.length) {
+      if (sh.getMaxColumns() < want.length) {
+        sh.insertColumnsAfter(sh.getMaxColumns(), want.length - sh.getMaxColumns());
+      }
+      sh.getRange(1, have + 1, 1, want.length - have)
+        .setValues([want.slice(have)])
+        .setFontWeight("bold");
+    }
+  });
+
+  const inv = ss.getSheetByName("Inventory");
+  const bcCol = TABS.Inventory.indexOf("Barcodes") + 1;
+  inv.getRange(1, bcCol, inv.getMaxRows(), 1).setNumberFormat("@");
+  const al = ss.getSheetByName("Aliases");
+  al.getRange(1, 1, al.getMaxRows(), 1).setNumberFormat("@");
+
+  setSetting("schema_version", SCHEMA_VERSION);
+}
+
+function ensureSchemaIfNeeded(settings) {
+  if ((settings || readSettings()).schema_version !== SCHEMA_VERSION) ensureSchema();
 }
 
 // ---------- Helpers ----------
@@ -109,6 +165,7 @@ function readTab(name) {
     keys.forEach(function (k, i) {
       let v = row[i];
       if (v instanceof Date) v = Utilities.formatDate(v, Session.getScriptTimeZone(), "yyyy-MM-dd");
+      if (k === "barcodes" || k === "alias") v = String(v);
       obj[k] = v;
     });
     return obj;
@@ -177,8 +234,8 @@ function json(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function checkToken(token) {
-  const expected = readSettings().api_token || "";
+function checkToken(token, settings) {
+  const expected = (settings || readSettings()).api_token || "";
   return expected !== "" && token === expected;
 }
 
@@ -186,10 +243,19 @@ function checkToken(token) {
 
 function doGet(e) {
   try {
-    if (!checkToken(e.parameter.token)) return json({ error: "Bad token" });
+    const settings = readSettings();
+    if (!checkToken(e.parameter.token, settings)) return json({ error: "Bad token" });
     if (e.parameter.action !== "getAll") return json({ error: "Unknown action" });
+    if (settings.schema_version !== SCHEMA_VERSION) {
+      const lock = LockService.getScriptLock();
+      lock.waitLock(10000);
+      try { ensureSchemaIfNeeded(); } finally { lock.releaseLock(); }
+    }
+    const inventory = readTab("Inventory");
     return json({
-      inventory: readTab("Inventory"),
+      inventory: inventory,
+      aliases: readTab("Aliases"),
+      usage: usageCounts(inventory),
       locations: readTab("Locations"),
       categories: readTab("Categories"),
       recipes: readTab("Recipes"),
@@ -211,7 +277,9 @@ function doPost(e) {
   lock.waitLock(10000);
   try {
     const body = JSON.parse(e.postData.contents);
-    if (!checkToken(body.token)) return json({ error: "Bad token" });
+    const settings = readSettings();
+    if (!checkToken(body.token, settings)) return json({ error: "Bad token" });
+    ensureSchemaIfNeeded(settings);
     const p = body.payload || {};
 
     switch (body.action) {
@@ -263,13 +331,15 @@ function doPost(e) {
       }
 
       case "addLines": {
+        const lineIds = [];
         (p.lines || []).forEach(function (line) {
           const lineId = nextId("next_line_id", "SL", 4);
           const full = Object.assign({}, line, { lineId: lineId, dateAdded: todayStr(), status: "needed" });
           sheet("ShoppingList").appendRow(objToRow("ShoppingList", full));
-          log("add_line", lineId, "", full.itemName + " x" + full.quantityToBuy);
+          log("add_line", lineId, full.linkedItemId || "", full.itemName + " x" + full.quantityToBuy);
+          lineIds.push(lineId);
         });
-        return json({ ok: true });
+        return json({ ok: true, lineIds: lineIds });
       }
 
       case "updateLine": {
@@ -343,6 +413,95 @@ function doPost(e) {
         return json({ ok: true });
       }
 
+      // ---- v3: quick add, barcodes, aliases ----
+
+      // Relative change (+1 / -1) so two phones scanning at once
+      // can't overwrite each other's counts.
+      case "quickAdd": {
+        const row = findRow("Inventory", 1, p.itemId);
+        if (row < 0) return json({ error: "Item not found: " + p.itemId });
+        const cur = Number(sheet("Inventory").getRange(row, 5).getValue() || 0);
+        const next = Math.max(0, cur + Number(p.qty || 0));
+        updateFields("Inventory", row, { quantity: next, lastUpdated: todayStr() });
+        log(p.undo ? "quick_add_undo" : "quick_add", p.itemId, "qty=" + cur, "qty=" + next);
+        return json({ ok: true, quantity: next });
+      }
+
+      // Attach a barcode to an item (moving it off any other item),
+      // optionally bumping quantity in the same request.
+      case "linkBarcode": {
+        const code = String(p.barcode || "").trim();
+        if (!code) return json({ error: "Missing barcode" });
+        const key = barcodeKey(code);
+        const sh = sheet("Inventory");
+        const col = KEYS.Inventory.indexOf("barcodes") + 1;
+        const last = sh.getLastRow();
+        let target = -1;
+        if (last >= 2) {
+          const ids = sh.getRange(2, 1, last - 1, 1).getValues();
+          const codes = sh.getRange(2, col, last - 1, 1).getValues();
+          for (let i = 0; i < ids.length; i++) {
+            const list = splitCodes(codes[i][0]);
+            if (String(ids[i][0]) === String(p.itemId)) { target = i + 2; continue; }
+            const kept = list.filter(function (c) { return barcodeKey(c) !== key; });
+            if (kept.length !== list.length) {
+              sh.getRange(i + 2, col).setValue(kept.join(","));
+              log("move_barcode", String(ids[i][0]), code, "");
+            }
+          }
+        }
+        if (target < 0) return json({ error: "Item not found: " + p.itemId });
+        const mine = splitCodes(sh.getRange(target, col).getValue());
+        if (!mine.some(function (c) { return barcodeKey(c) === key; })) mine.push(code);
+        const fields = { barcodes: mine.join(","), lastUpdated: todayStr() };
+        let qty = null;
+        if (Number(p.qty)) {
+          const cur = Number(sh.getRange(target, 5).getValue() || 0);
+          qty = Math.max(0, cur + Number(p.qty));
+          fields.quantity = qty;
+        }
+        updateFields("Inventory", target, fields);
+        log("link_barcode", p.itemId, "", code);
+        return json({ ok: true, barcodes: fields.barcodes, quantity: qty });
+      }
+
+      // Upsert aliases: [{ alias, itemId }]. One alias → one item.
+      case "saveAliases": {
+        const sh = sheet("Aliases");
+        (p.aliases || []).forEach(function (a) {
+          const alias = String(a.alias || "").trim().toLowerCase();
+          if (!alias || !a.itemId) return;
+          const row = findRow("Aliases", 1, alias);
+          if (row > 0) {
+            const old = sh.getRange(row, 2).getValue();
+            sh.getRange(row, 2, 1, 3).setValues([[a.itemId, todayStr(), a.source || "confirmed"]]);
+            log("update_alias", alias, old, a.itemId);
+          } else {
+            sh.appendRow([alias, a.itemId, todayStr(), a.source || "confirmed"]);
+            log("add_alias", alias, "", a.itemId);
+          }
+        });
+        return json({ ok: true });
+      }
+
+      case "removeAlias": {
+        const alias = String(p.alias || "").trim().toLowerCase();
+        const row = findRow("Aliases", 1, alias);
+        if (row > 0) {
+          const old = sheet("Aliases").getRange(row, 2).getValue();
+          sheet("Aliases").deleteRow(row);
+          log("remove_alias", alias, old, "");
+        }
+        return json({ ok: true });
+      }
+
+      case "deleteLine": {
+        const row = findRow("ShoppingList", 1, p.lineId);
+        if (row > 0) sheet("ShoppingList").deleteRow(row);
+        log("delete_line", p.lineId, "", "");
+        return json({ ok: true });
+      }
+
       default:
         return json({ error: "Unknown action: " + body.action });
     }
@@ -354,6 +513,56 @@ function doPost(e) {
 }
 
 // ---------- small utilities ----------
+
+// "041220576180" and "0041220576180" (UPC-A vs EAN-13) are the
+// same product; so is a code whose leading zeros Sheets ate.
+function barcodeKey(code) {
+  const s = String(code || "").trim().toUpperCase();
+  return /^\d+$/.test(s) ? s.replace(/^0+/, "") : s;
+}
+
+function splitCodes(cell) {
+  return String(cell == null ? "" : cell).split(/[\s,]+/).filter(String);
+}
+
+/**
+ * How often each item gets added/restocked, from the most recent
+ * ChangeLog rows. Drives the quick-add chips. { itemId: count }
+ */
+function usageCounts(inventory) {
+  const sh = sheet("ChangeLog");
+  const last = sh.getLastRow();
+  const counts = {};
+  if (last < 2) return counts;
+  const n = Math.min(2000, last - 1);
+  const rows = sh.getRange(last - n + 1, 1, n, 5).getValues();
+  const byName = {};
+  (inventory || []).forEach(function (it) { byName[String(it.itemName).toLowerCase()] = it.itemId; });
+  const bump = function (id, by) { if (id) counts[id] = (counts[id] || 0) + by; };
+
+  rows.forEach(function (r) {
+    const action = String(r[1]), target = String(r[2]), oldV = String(r[3]), newV = String(r[4]);
+    switch (action) {
+      case "quick_add":
+      case "restock":
+      case "add_item":
+      case "link_barcode":
+        bump(target, 1); break;
+      case "quick_add_undo":
+        bump(target, -1); break;
+      case "add_line":
+        bump(/^ITM-/.test(oldV) ? oldV : byName[newV.replace(/ x[\d.]+$/, "").toLowerCase()], 1); break;
+      case "update_item": {
+        const before = Number((oldV.match(/qty=([\d.]+)/) || [])[1]);
+        const after = Number((newV.match(/"quantity":([\d.]+)/) || [])[1]);
+        if (!isNaN(before) && !isNaN(after) && after > before) bump(target, 1);
+        break;
+      }
+    }
+  });
+  Object.keys(counts).forEach(function (k) { if (counts[k] <= 0) delete counts[k]; });
+  return counts;
+}
 
 function todayStr() {
   return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
