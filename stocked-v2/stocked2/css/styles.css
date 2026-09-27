@@ -909,6 +909,32 @@ main { max-width: 980px; margin: 0 auto; padding: 18px; }
   min-height: 200px;
 }
 .scan-stage.compact { max-height: 130px; min-height: 0; }
+.scan-video {
+  display: block;
+  width: 100%;
+  height: min(52vh, 360px);
+  object-fit: cover;
+  background: #111;
+}
+.scan-frame {
+  position: absolute;
+  left: 7%; right: 7%; top: 30%; bottom: 30%;
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.28);
+  outline: 3px solid rgba(255,255,255,0.9);
+  outline-offset: -3px;
+  pointer-events: none;
+  transition: outline-color 0.2s;
+}
+.scan-frame::after {
+  content: "";
+  position: absolute; left: 6%; right: 6%; top: 50%;
+  height: 2px;
+  background: rgba(240,144,125,0.85);
+}
+.scan-frame.hit { outline-color: #8FD09F; animation: scanHit 0.45s ease-out; }
+@keyframes scanHit { from { box-shadow: 0 0 0 9999px rgba(47,93,63,0.45); } to { box-shadow: 0 0 0 9999px rgba(0,0,0,0.28); } }
+.scan-stage.compact .scan-frame { display: none; }
 .scan-reader { width: 100%; }
 .scan-reader video { width: 100% !important; display: block; }
 .scan-reader img[alt="Info icon"], .scan-reader #qr-shaded-region + div { display: none; }

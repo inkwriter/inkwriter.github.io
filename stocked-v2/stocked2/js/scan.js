@@ -12,31 +12,18 @@
 
 "use strict";
 
-const SCAN_LIB_URL = "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js";
-
 const scan = {
   mode: "restock",   // "restock" (+1 to pantry) | "list" (put on shopping list)
-  reader: null,
+  stream: null,
+  track: null,
+  detector: null,
+  running: false,
+  timer: null,
   busy: false,
   lastCode: "",
   lastSeen: 0,
   tally: [],         // [{ itemId, name, count, detail }]
 };
-
-let scanLibPromise = null;
-function loadScanLib() {
-  if (window.Html5Qrcode) return Promise.resolve();
-  if (!scanLibPromise) {
-    scanLibPromise = new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = SCAN_LIB_URL;
-      s.onload = resolve;
-      s.onerror = () => { scanLibPromise = null; reject(new Error("Couldn't load the scanner library")); };
-      document.head.appendChild(s);
-    });
-  }
-  return scanLibPromise;
-}
 
 /* ---------- the scanner sheet ---------- */
 
@@ -52,7 +39,8 @@ function openScanner(mode = "restock") {
       <button class="seg-btn" data-mode="list" role="radio">Add to list</button>
     </div>
     <div class="scan-stage">
-      <div id="scanReader" class="scan-reader"></div>
+      <video id="scanVideo" class="scan-video" playsinline muted autoplay></video>
+      <div class="scan-frame" aria-hidden="true"></div>
       <div class="scan-overlay-msg" id="scanCamMsg">Starting camera…</div>
     </div>
     <p class="scan-tip">Hold the phone <strong>6–10 inches</strong> back — the barcode doesn't need to fill the box. Blurry up close? Back up, or use Zoom.</p>
@@ -99,11 +87,21 @@ function setScanStatus(html, tone = "") {
   el.innerHTML = html;
 }
 
-// Phones can't focus closer than ~4–8 in. (iPhone Pro main cameras are
-// the worst), so we ask for a high-resolution stream: a barcode held
-// further back still has enough pixels to read. We also turn on
-// continuous autofocus and offer zoom / torch / lens switching when
-// the phone's browser supports them.
+/* ---------- camera + decoder ----------
+   We run the camera ourselves and decode frames with the browser's
+   built-in BarcodeDetector when it has one (Android Chrome), or with
+   ZXing-C++ compiled to WebAssembly when it doesn't (iPhone Safari).
+   ZXing-C++ reads curved, dim, slightly soft 1-D barcodes far more
+   reliably than the pure-JavaScript decoder we used before.
+
+   Phones can't focus closer than ~4–8 in. (iPhone Pro main cameras are
+   the worst), so we ask for a 1080p stream: a barcode held further back
+   still has enough pixels. On iPhones with several back lenses we prefer
+   the combined "Dual Wide"/"Triple" camera, which switches to the macro
+   lens up close like the built-in Camera app does. */
+
+const DETECTOR_URL = "https://cdn.jsdelivr.net/npm/barcode-detector@3.2.2/dist/iife/ponyfill.js";
+const WANT_FORMATS = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"];
 const CAM_PREF_KEY = "stocked.scanCamera";
 
 function savedCameraId() {
@@ -113,135 +111,224 @@ function saveCameraId(id) {
   try { id ? localStorage.setItem(CAM_PREF_KEY, id) : localStorage.removeItem(CAM_PREF_KEY); } catch (e) {}
 }
 
+let detectorLibPromise = null;
+function loadDetectorLib() {
+  if (window.BarcodeDetectionAPI) return Promise.resolve();
+  if (!detectorLibPromise) {
+    detectorLibPromise = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = DETECTOR_URL;
+      s.onload = resolve;
+      s.onerror = () => { detectorLibPromise = null; reject(new Error("Couldn't load the barcode reader")); };
+      document.head.appendChild(s);
+    });
+  }
+  return detectorLibPromise;
+}
+
+async function getDetector() {
+  if (scan.detector) return scan.detector;
+  if ("BarcodeDetector" in window) {
+    try {
+      const supported = await window.BarcodeDetector.getSupportedFormats();
+      const formats = WANT_FORMATS.filter((f) => supported.includes(f));
+      if (formats.length) return (scan.detector = new window.BarcodeDetector({ formats }));
+    } catch (e) { /* fall through to the WebAssembly reader */ }
+  }
+  await loadDetectorLib();
+  const det = new window.BarcodeDetectionAPI.BarcodeDetector({ formats: WANT_FORMATS });
+  // warm up: loads the WebAssembly now instead of on the first frame
+  try { await det.detect(new ImageData(8, 8)); } catch (e) {}
+  return (scan.detector = det);
+}
+
+async function openStream(deviceId) {
+  const video = {
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
+    ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: "environment" } }),
+  };
+  return navigator.mediaDevices.getUserMedia({ video, audio: false });
+}
+
+async function backCameras() {
+  try {
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "videoinput");
+    const back = devs.filter((d) => !/front|user|facetime/i.test(d.label));
+    return back.length ? back : devs;
+  } catch (e) { return []; }
+}
+
+/** iPhone Pro/most iPhones: the virtual multi-lens camera focuses up close. */
+function preferredLens(cams) {
+  return cams.find((c) => /triple camera/i.test(c.label))
+    || cams.find((c) => /dual wide camera/i.test(c.label))
+    || cams.find((c) => /dual camera/i.test(c.label))
+    || null;
+}
+
 async function startCamera(deviceId = savedCameraId()) {
   const msg = $("#scanCamMsg");
+  const videoEl = $("#scanVideo");
+  if (!videoEl) return;
   if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
     msg.textContent = "Camera needs the https:// site. Type the number below instead.";
     return;
   }
   msg.textContent = "Starting camera…";
   msg.hidden = false;
+  stopStream();
+
   try {
-    await loadScanLib();
-    if (!$("#scanReader")) return; // sheet closed while loading
-    const F = window.Html5QrcodeSupportedFormats;
-    if (!scan.reader) {
-      scan.reader = new window.Html5Qrcode("scanReader", {
-        verbose: false,
-        formatsToSupport: [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128],
-        experimentalFeatures: { useBarCodeDetectorIfSupported: true },
-      });
-    }
-    const videoConstraints = {
-      width: { ideal: 1920 },
-      height: { ideal: 1080 },
-      ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: "environment" }),
-    };
-    const config = {
-      fps: 15,
-      videoConstraints,
-      qrbox: (w, h) => ({ width: Math.floor(w * 0.9), height: Math.floor(Math.min(h * 0.6, w * 0.45)) }),
-    };
+    const detectorReady = getDetector();
+    let stream;
     try {
-      const cam = deviceId ? { deviceId: { exact: deviceId } } : { facingMode: "environment" };
-      await scan.reader.start(cam, config, (text) => handleCode(text), () => {});
+      stream = await openStream(deviceId);
     } catch (err) {
-      // a saved lens may be gone (new phone, other browser) — fall back once
-      if (!deviceId) throw err;
-      saveCameraId("");
-      return startCamera("");
+      if (!deviceId || /notallowed|permission|denied/i.test(String(err?.name || err))) throw err;
+      saveCameraId(""); // saved lens is gone (new phone / other browser)
+      deviceId = "";
+      stream = await openStream("");
     }
-    msg.hidden = true;
+    if (!$("#scanVideo")) { stream.getTracks().forEach((t) => t.stop()); return; } // sheet closed
+
+    // First run on a multi-lens iPhone: hop to the auto-switching camera.
+    if (!deviceId) {
+      const pick = preferredLens(await backCameras());
+      const current = stream.getVideoTracks()[0]?.getSettings?.().deviceId;
+      if (pick && pick.deviceId !== current) {
+        try {
+          const better = await openStream(pick.deviceId);
+          stream.getTracks().forEach((t) => t.stop());
+          stream = better;
+          saveCameraId(pick.deviceId);
+        } catch (e) { /* keep the stream we have */ }
+      }
+    }
+
+    scan.stream = stream;
+    scan.track = stream.getVideoTracks()[0];
+    videoEl.srcObject = stream;
+    await videoEl.play().catch(() => {});
     await tuneCamera();
-    await drawCameraControls();
+
+    msg.textContent = "Loading barcode reader…";
+    await detectorReady;
+    if (scan.stream !== stream) return;
+    msg.hidden = true;
+    scan.running = true;
+    detectLoop();
+    drawCameraControls();
   } catch (err) {
-    const denied = /permission|denied|notallowed/i.test(String(err?.name || err));
+    const denied = /notallowed|permission|denied/i.test(String(err?.name || err));
     msg.textContent = denied
-      ? "Camera permission was blocked. Allow it in your browser settings, or type the number below."
-      : "Couldn't start the camera. You can type the number below.";
+      ? "Camera permission was blocked. Allow it for this site in your browser settings, or type the number below."
+      : /reader/i.test(String(err?.message))
+        ? "Couldn't load the barcode reader (offline?). You can type the number below."
+        : "Couldn't start the camera. You can type the number below.";
     msg.hidden = false;
-    scan.reader = null;
+    stopStream();
   }
 }
 
-/** Continuous autofocus where the browser allows it (mostly Android Chrome). */
-async function tuneCamera() {
-  const caps = safeCaps();
-  const adv = {};
-  if (caps.focusMode?.includes?.("continuous")) adv.focusMode = "continuous";
-  if (caps.exposureMode?.includes?.("continuous")) adv.exposureMode = "continuous";
-  if (Object.keys(adv).length) {
-    await applyCam({ advanced: [adv] });
+/** Decode a frame roughly 8×/second while the sheet is open. */
+async function detectLoop() {
+  if (!scan.running) return;
+  const v = $("#scanVideo");
+  if (v && !scan.busy && v.readyState >= 2 && v.videoWidth) {
+    try {
+      const found = await scan.detector.detect(v);
+      const hit = found.find((b) => b.rawValue);
+      if (hit && scan.running) {
+        flashHit();
+        handleCode(hit.rawValue);
+      }
+    } catch (e) { /* a bad frame — keep going */ }
   }
+  scan.timer = setTimeout(detectLoop, 120);
+}
+
+function flashHit() {
+  const f = $(".scan-frame");
+  if (!f) return;
+  f.classList.remove("hit");
+  void f.offsetWidth;
+  f.classList.add("hit");
+}
+
+function stopStream() {
+  scan.running = false;
+  clearTimeout(scan.timer);
+  if (scan.stream) scan.stream.getTracks().forEach((t) => t.stop());
+  scan.stream = null;
+  scan.track = null;
+  const v = $("#scanVideo");
+  if (v) v.srcObject = null;
+}
+
+async function stopScanner() { stopStream(); }
+
+// Decoding pauses while you name a new barcode; the picture stays live.
+function pauseCamera() {}
+function resumeCamera() {}
+
+function trackCaps() {
+  try { return scan.track?.getCapabilities?.() || {}; } catch (e) { return {}; }
 }
 
 async function applyCam(constraints) {
-  try { await scan.reader?.applyVideoConstraints(constraints); } catch (e) { /* not supported here */ }
+  try { await scan.track?.applyConstraints(constraints); } catch (e) { /* not supported here */ }
 }
 
-function safeCaps() {
-  try { return scan.reader?.getRunningTrackCapabilities?.() || {}; } catch (e) { return {}; }
+/** Continuous autofocus/exposure where the browser allows it (mostly Android). */
+async function tuneCamera() {
+  const caps = trackCaps();
+  const adv = {};
+  if (caps.focusMode?.includes?.("continuous")) adv.focusMode = "continuous";
+  if (caps.exposureMode?.includes?.("continuous")) adv.exposureMode = "continuous";
+  if (Object.keys(adv).length) await applyCam({ advanced: [adv] });
 }
 
-/** Zoom slider, flashlight and "switch lens" — each only if this phone supports it. */
+/** Zoom slider, flashlight and lens picker — each only if this phone supports it. */
 async function drawCameraControls() {
   const box = $("#scanControls");
   if (!box) return;
-  const caps = safeCaps();
+  const caps = trackCaps();
   const parts = [];
 
   if (caps.zoom && caps.zoom.max > caps.zoom.min) {
-    const start = Math.min(caps.zoom.max, Math.max(caps.zoom.min, 1.5));
+    const cur = scan.track.getSettings?.().zoom || caps.zoom.min;
     parts.push(`<label class="scan-zoom">Zoom
-      <input type="range" id="scanZoom" min="${caps.zoom.min}" max="${Math.min(caps.zoom.max, 5)}" step="${caps.zoom.step || 0.1}" value="${start}">
+      <input type="range" id="scanZoom" min="${caps.zoom.min}" max="${Math.min(caps.zoom.max, 5)}" step="${caps.zoom.step || 0.1}" value="${cur}">
     </label>`);
-    await applyCam({ advanced: [{ zoom: start }] });
   }
   if (caps.torch) parts.push(`<button type="button" class="btn btn-ghost btn-sm" id="scanTorch" aria-pressed="false">Flashlight</button>`);
 
-  let backCams = [];
-  try {
-    const cams = await window.Html5Qrcode.getCameras();
-    backCams = cams.filter((c) => !/front|user|facetime/i.test(c.label));
-    if (backCams.length < 2) backCams = cams.length > 1 ? cams : [];
-  } catch (e) {}
-  if (backCams.length > 1) {
-    const current = scan.reader.getRunningTrackSettings?.().deviceId || savedCameraId();
+  const cams = await backCameras();
+  if (cams.length > 1) {
+    const current = scan.track?.getSettings?.().deviceId || savedCameraId();
     parts.push(`<label class="scan-lens">Lens
       <select class="input input-sm" id="scanLens">
-        ${backCams.map((c, i) => `<option value="${esc(c.id)}" ${c.id === current ? "selected" : ""}>${esc(c.label || `Camera ${i + 1}`)}</option>`).join("")}
+        ${cams.map((c, i) => `<option value="${esc(c.deviceId)}" ${c.deviceId === current ? "selected" : ""}>${esc(c.label || `Camera ${i + 1}`)}</option>`).join("")}
       </select></label>`);
   }
 
+  if (!$("#scanControls")) return;
   box.innerHTML = parts.join("");
   box.hidden = !parts.length;
 
-  $("#scanZoom")?.addEventListener("input", (e) => {
-    applyCam({ advanced: [{ zoom: Number(e.target.value) }] });
-  });
+  $("#scanZoom")?.addEventListener("input", (e) => applyCam({ advanced: [{ zoom: Number(e.target.value) }] }));
   $("#scanTorch")?.addEventListener("click", (e) => {
     const on = e.currentTarget.getAttribute("aria-pressed") !== "true";
     e.currentTarget.setAttribute("aria-pressed", String(on));
     e.currentTarget.classList.toggle("active", on);
     applyCam({ advanced: [{ torch: on }] });
   });
-  $("#scanLens")?.addEventListener("change", async (e) => {
-    const id = e.target.value;
-    saveCameraId(id);
-    try { if (scan.reader?.isScanning) await scan.reader.stop(); } catch (err) {}
-    startCamera(id);
+  $("#scanLens")?.addEventListener("change", (e) => {
+    saveCameraId(e.target.value);
+    startCamera(e.target.value);
   });
 }
-
-async function stopScanner() {
-  const r = scan.reader;
-  scan.reader = null;
-  if (!r) return;
-  try { if (r.isScanning) await r.stop(); r.clear(); } catch (e) { /* already stopped */ }
-}
-
-function pauseCamera() { try { scan.reader?.pause(true); } catch (e) {} }
-function resumeCamera() { try { scan.reader?.resume(); } catch (e) {} }
 
 /* ---------- handling a code ---------- */
 
