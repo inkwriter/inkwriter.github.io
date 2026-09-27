@@ -630,6 +630,19 @@ main { max-width: 980px; margin: 0 auto; padding: 18px; }
   color: inherit;
 }
 .receipt-line:hover .rl-name { color: var(--jar); }
+.receipt-row { display: flex; align-items: start; gap: 4px; }
+.receipt-row .receipt-line { flex: 1; min-width: 0; }
+.rl-del {
+  flex: 0 0 auto;
+  border: none; background: none;
+  color: #aaa;
+  font-size: 1.1rem; line-height: 1;
+  width: 32px; height: 30px;
+  margin-top: 1px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.rl-del:hover, .rl-del:focus-visible { color: var(--canning); background: var(--canning-tint); }
 
 .rl-check {
   width: 15px; height: 15px;
@@ -670,7 +683,7 @@ main { max-width: 980px; margin: 0 auto; padding: 18px; }
   line-height: 1.7;
 }
 
-.list-footer { display: flex; justify-content: center; margin-top: 16px; }
+.list-footer { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 
 /* ---------- Modal ---------- */
 

@@ -290,6 +290,11 @@ function demoMutate(action, p) {
       d.shoppingList = d.shoppingList.filter((l) => l.lineId !== p.lineId);
       return { ok: true };
     }
+    case "deleteLines": {
+      const ids = new Set(p.lineIds || []);
+      d.shoppingList = d.shoppingList.filter((l) => !ids.has(l.lineId));
+      return { ok: true };
+    }
     default:
       return { error: `Unknown action: ${action}` };
   }
@@ -797,22 +802,83 @@ function renderShopping() {
   receipt.querySelectorAll(".receipt-line").forEach((el) =>
     el.addEventListener("click", () => onLineTap(el.dataset.lineId))
   );
+  receipt.querySelectorAll(".rl-del").forEach((el) =>
+    el.addEventListener("click", () => removeLines([el.dataset.del]))
+  );
 
-  $("#listFooter").hidden = !(done || lines.some((l) => l.status === "skipped"));
+  $("#listFooter").hidden = false;
+  $("#btnClearPurchased").hidden = !(done || lines.some((l) => l.status === "skipped"));
 }
 
 function receiptLineHTML(l) {
   const cls = l.status === "purchased" ? "purchased" : l.status === "skipped" ? "skipped" : "";
   const check = l.status === "purchased" ? "✓" : l.status === "skipped" ? "✕" : "";
-  return `<button class="receipt-line ${cls}" data-line-id="${l.lineId}">
-    <span class="rl-check">${check}</span>
-    <span>
-      <span class="rl-name">${esc(l.itemName)}</span>
-      ${l.whatFor ? `<span class="rl-for">for: ${esc(l.whatFor)}</span>` : ""}
-      ${l.notes ? `<span class="rl-note">${esc(l.notes)}</span>` : ""}
-    </span>
-    <span class="rl-qty">${esc(l.quantityToBuy)} ${esc(l.unit)}</span>
-  </button>`;
+  return `<div class="receipt-row ${cls}">
+    <button class="receipt-line ${cls}" data-line-id="${esc(l.lineId)}">
+      <span class="rl-check">${check}</span>
+      <span>
+        <span class="rl-name">${esc(l.itemName)}</span>
+        ${l.whatFor ? `<span class="rl-for">for: ${esc(l.whatFor)}</span>` : ""}
+        ${l.notes ? `<span class="rl-note">${esc(l.notes)}</span>` : ""}
+      </span>
+      <span class="rl-qty">${esc(fmtQty(l.quantityToBuy))} ${esc(l.unit)}</span>
+    </button>
+    <button class="rl-del" data-del="${esc(l.lineId)}" aria-label="Remove ${esc(l.itemName)} from the list" title="Remove">×</button>
+  </div>`;
+}
+
+/** Take lines off the list (optimistic), with Undo that puts them back. */
+async function removeLines(lineIds, label) {
+  const ids = new Set(lineIds);
+  const removed = state.data.shoppingList.filter((l) => ids.has(l.lineId));
+  if (!removed.length) return;
+  state.data.shoppingList = state.data.shoppingList.filter((l) => !ids.has(l.lineId));
+  render();
+  try {
+    await apiPost("deleteLines", { lineIds: [...ids] });
+  } catch (e) {
+    toast(`Couldn't remove: ${e.message}`);
+    await reload();
+    return;
+  }
+  toast(label || (removed.length === 1 ? `Removed ${removed[0].itemName}.` : `Removed ${removed.length} items.`), {
+    label: "Undo",
+    onClick: async () => {
+      const lines = removed.map(({ lineId, dateAdded, ...rest }) => rest);
+      try {
+        await apiPost("addLines", { lines });
+        await reload();
+        toast(`Put back ${removed.length === 1 ? removed[0].itemName : removed.length + " items"}.`);
+      } catch (e) { toast(`Undo failed: ${e.message}`); }
+    },
+  });
+}
+
+function openClearListModal() {
+  const needed = state.data.shoppingList.filter((l) => l.status === "needed");
+  const all = state.data.shoppingList;
+  // group by where they came from, so a mistaken batch can go in one tap
+  const groups = {};
+  needed.forEach((l) => { const k = l.whatFor || "Other"; (groups[k] = groups[k] || []).push(l); });
+  const keys = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length);
+  openModal("Remove from the list", `
+    <p class="view-hint">Added the wrong things? Remove one batch, or start the list over. You can undo right after.</p>
+    ${keys.length > 1 ? keys.map((k, i) => `<div class="cmp-row"><span><strong>${esc(k)}</strong> <span class="cmp-detail">· ${groups[k].length} item${groups[k].length === 1 ? "" : "s"}</span></span>
+      <button class="btn btn-ghost btn-sm" data-group="${i}">Remove</button></div>`).join("") : ""}
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="clrCancel">Cancel</button>
+      <button class="btn btn-danger" id="clrAll">Clear whole list (${all.length})</button>
+    </div>`);
+  $("#clrCancel").addEventListener("click", closeModal);
+  $$("[data-group]").forEach((b) => b.addEventListener("click", () => {
+    const k = keys[Number(b.dataset.group)];
+    closeModal();
+    removeLines(groups[k].map((l) => l.lineId), `Removed ${groups[k].length} item${groups[k].length === 1 ? "" : "s"} for “${k}”.`);
+  }));
+  $("#clrAll").addEventListener("click", () => {
+    closeModal();
+    removeLines(all.map((l) => l.lineId), `Cleared ${all.length} items.`);
+  });
 }
 
 /* ------------------------------------------------------------
@@ -1475,12 +1541,14 @@ function openPantryCheck(recipeIds, includeOptional, ctx) {
       sourceType: ctx === "mealplan" ? "meal_plan" : "recipe",
       notes: a.unlinked ? "Not tracked — verify" : a.unitMismatch ? "Units differ — verify" : (a.haveQty ? `Have ${fmtQty(a.haveQty)} of ${fmtQty(a.totalNeeded)} needed` : a.converted ? `Recipes need ${a.askedLabel}` : ""),
     }));
-    if (lines.length) await apiPost("addLines", { lines });
+    const res = lines.length ? await apiPost("addLines", { lines }) : {};
     if (ctx === "recipes") state.selectedRecipes.clear();
     closeModal();
     await reload();
     switchView("shopping");
-    toast(`${lines.length} ${ctx === "mealplan" ? "meal-plan " : ""}item${lines.length === 1 ? "" : "s"} added to the list.`);
+    const added = res.lineIds || [];
+    toast(`${lines.length} ${ctx === "mealplan" ? "meal-plan " : ""}item${lines.length === 1 ? "" : "s"} added to the list.`,
+      added.length ? { label: "Undo", onClick: () => removeLines(added, `Took those ${added.length} items back off.`) } : null);
   });
 }
 
@@ -1805,6 +1873,7 @@ async function init() {
   $("#btnScanInv").addEventListener("click", () => openScanner("restock"));
   $("#btnScanList").addEventListener("click", () => openScanner("list"));
   $("#btnCheckStaples").addEventListener("click", addLowStockToList);
+  $("#btnClearList").addEventListener("click", openClearListModal);
   $("#btnClearPurchased").addEventListener("click", async () => {
     await apiPost("clearDone", {});
     await reload();

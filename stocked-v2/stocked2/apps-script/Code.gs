@@ -525,6 +525,23 @@ function doPost(e) {
         return json({ ok: true });
       }
 
+      // Remove several list lines at once (undo a build, clear the list).
+      case "deleteLines": {
+        const want = {};
+        (p.lineIds || []).forEach(function (id) { want[String(id)] = true; });
+        const sh = sheet("ShoppingList");
+        const last = sh.getLastRow();
+        let n = 0;
+        if (last >= 2) {
+          const ids = sh.getRange(2, 1, last - 1, 1).getValues();
+          for (let i = ids.length - 1; i >= 0; i--) {
+            if (want[String(ids[i][0])]) { sh.deleteRow(i + 2); n++; }
+          }
+        }
+        log("delete_lines", "ShoppingList", "", n + " lines");
+        return json({ ok: true, deleted: n });
+      }
+
       case "deleteLine": {
         const row = findRow("ShoppingList", 1, p.lineId);
         if (row > 0) sheet("ShoppingList").deleteRow(row);
