@@ -55,6 +55,8 @@ function openScanner(mode = "restock") {
       <div id="scanReader" class="scan-reader"></div>
       <div class="scan-overlay-msg" id="scanCamMsg">Starting camera…</div>
     </div>
+    <p class="scan-tip">Hold the phone <strong>6–10 inches</strong> back — the barcode doesn't need to fill the box. Blurry up close? Back up, or use Zoom.</p>
+    <div class="scan-controls" id="scanControls" hidden></div>
     <div class="scan-status" id="scanStatus" aria-live="polite"></div>
     <div id="scanUnknown"></div>
     <form class="scan-manual" id="scanManualForm">
@@ -97,31 +99,61 @@ function setScanStatus(html, tone = "") {
   el.innerHTML = html;
 }
 
-async function startCamera() {
+// Phones can't focus closer than ~4–8 in. (iPhone Pro main cameras are
+// the worst), so we ask for a high-resolution stream: a barcode held
+// further back still has enough pixels to read. We also turn on
+// continuous autofocus and offer zoom / torch / lens switching when
+// the phone's browser supports them.
+const CAM_PREF_KEY = "stocked.scanCamera";
+
+function savedCameraId() {
+  try { return localStorage.getItem(CAM_PREF_KEY) || ""; } catch (e) { return ""; }
+}
+function saveCameraId(id) {
+  try { id ? localStorage.setItem(CAM_PREF_KEY, id) : localStorage.removeItem(CAM_PREF_KEY); } catch (e) {}
+}
+
+async function startCamera(deviceId = savedCameraId()) {
   const msg = $("#scanCamMsg");
   if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
     msg.textContent = "Camera needs the https:// site. Type the number below instead.";
     return;
   }
+  msg.textContent = "Starting camera…";
+  msg.hidden = false;
   try {
     await loadScanLib();
     if (!$("#scanReader")) return; // sheet closed while loading
     const F = window.Html5QrcodeSupportedFormats;
-    scan.reader = new window.Html5Qrcode("scanReader", {
-      verbose: false,
-      formatsToSupport: [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128],
-      experimentalFeatures: { useBarCodeDetectorIfSupported: true },
-    });
-    await scan.reader.start(
-      { facingMode: "environment" },
-      {
-        fps: 12,
-        qrbox: (w, h) => ({ width: Math.floor(Math.min(w * 0.88, 340)), height: Math.floor(Math.min(h * 0.5, 150)) }),
-      },
-      (text) => handleCode(text),
-      () => {}
-    );
+    if (!scan.reader) {
+      scan.reader = new window.Html5Qrcode("scanReader", {
+        verbose: false,
+        formatsToSupport: [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128],
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+      });
+    }
+    const videoConstraints = {
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
+      ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: "environment" }),
+    };
+    const config = {
+      fps: 15,
+      videoConstraints,
+      qrbox: (w, h) => ({ width: Math.floor(w * 0.9), height: Math.floor(Math.min(h * 0.6, w * 0.45)) }),
+    };
+    try {
+      const cam = deviceId ? { deviceId: { exact: deviceId } } : { facingMode: "environment" };
+      await scan.reader.start(cam, config, (text) => handleCode(text), () => {});
+    } catch (err) {
+      // a saved lens may be gone (new phone, other browser) — fall back once
+      if (!deviceId) throw err;
+      saveCameraId("");
+      return startCamera("");
+    }
     msg.hidden = true;
+    await tuneCamera();
+    await drawCameraControls();
   } catch (err) {
     const denied = /permission|denied|notallowed/i.test(String(err?.name || err));
     msg.textContent = denied
@@ -130,6 +162,75 @@ async function startCamera() {
     msg.hidden = false;
     scan.reader = null;
   }
+}
+
+/** Continuous autofocus where the browser allows it (mostly Android Chrome). */
+async function tuneCamera() {
+  const caps = safeCaps();
+  const adv = {};
+  if (caps.focusMode?.includes?.("continuous")) adv.focusMode = "continuous";
+  if (caps.exposureMode?.includes?.("continuous")) adv.exposureMode = "continuous";
+  if (Object.keys(adv).length) {
+    await applyCam({ advanced: [adv] });
+  }
+}
+
+async function applyCam(constraints) {
+  try { await scan.reader?.applyVideoConstraints(constraints); } catch (e) { /* not supported here */ }
+}
+
+function safeCaps() {
+  try { return scan.reader?.getRunningTrackCapabilities?.() || {}; } catch (e) { return {}; }
+}
+
+/** Zoom slider, flashlight and "switch lens" — each only if this phone supports it. */
+async function drawCameraControls() {
+  const box = $("#scanControls");
+  if (!box) return;
+  const caps = safeCaps();
+  const parts = [];
+
+  if (caps.zoom && caps.zoom.max > caps.zoom.min) {
+    const start = Math.min(caps.zoom.max, Math.max(caps.zoom.min, 1.5));
+    parts.push(`<label class="scan-zoom">Zoom
+      <input type="range" id="scanZoom" min="${caps.zoom.min}" max="${Math.min(caps.zoom.max, 5)}" step="${caps.zoom.step || 0.1}" value="${start}">
+    </label>`);
+    await applyCam({ advanced: [{ zoom: start }] });
+  }
+  if (caps.torch) parts.push(`<button type="button" class="btn btn-ghost btn-sm" id="scanTorch" aria-pressed="false">Flashlight</button>`);
+
+  let backCams = [];
+  try {
+    const cams = await window.Html5Qrcode.getCameras();
+    backCams = cams.filter((c) => !/front|user|facetime/i.test(c.label));
+    if (backCams.length < 2) backCams = cams.length > 1 ? cams : [];
+  } catch (e) {}
+  if (backCams.length > 1) {
+    const current = scan.reader.getRunningTrackSettings?.().deviceId || savedCameraId();
+    parts.push(`<label class="scan-lens">Lens
+      <select class="input input-sm" id="scanLens">
+        ${backCams.map((c, i) => `<option value="${esc(c.id)}" ${c.id === current ? "selected" : ""}>${esc(c.label || `Camera ${i + 1}`)}</option>`).join("")}
+      </select></label>`);
+  }
+
+  box.innerHTML = parts.join("");
+  box.hidden = !parts.length;
+
+  $("#scanZoom")?.addEventListener("input", (e) => {
+    applyCam({ advanced: [{ zoom: Number(e.target.value) }] });
+  });
+  $("#scanTorch")?.addEventListener("click", (e) => {
+    const on = e.currentTarget.getAttribute("aria-pressed") !== "true";
+    e.currentTarget.setAttribute("aria-pressed", String(on));
+    e.currentTarget.classList.toggle("active", on);
+    applyCam({ advanced: [{ torch: on }] });
+  });
+  $("#scanLens")?.addEventListener("change", async (e) => {
+    const id = e.target.value;
+    saveCameraId(id);
+    try { if (scan.reader?.isScanning) await scan.reader.stop(); } catch (err) {}
+    startCamera(id);
+  });
 }
 
 async function stopScanner() {
