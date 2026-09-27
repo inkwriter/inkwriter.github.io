@@ -361,7 +361,7 @@ async function applyKnown(item) {
   if (scan.mode === "restock") {
     const res = await quickAdjust(item.itemId, 1, { silent: true });
     if (!res) return;
-    pushTally(item, `now ${res.quantity} ${item.unit}`);
+    pushTally(item, `now ${fmtQty(res.quantity)} ${item.unit}`, res.before);
     setScanStatus(`<strong>${esc(item.itemName)}</strong> +1`, "ok");
   } else {
     const added = await addItemToList(item, { silent: true });
@@ -370,13 +370,19 @@ async function applyKnown(item) {
   }
 }
 
-function pushTally(item, detail) {
+function pushTally(item, detail, prevQty = null) {
   const top = scan.tally[0];
   if (top && top.itemId === item.itemId && top.mode === scan.mode) {
     top.count += scan.mode === "restock" ? 1 : 0;
     top.detail = detail;
   } else {
-    scan.tally.unshift({ itemId: item.itemId, name: item.itemName, count: 1, detail, mode: scan.mode });
+    scan.tally.unshift({
+      itemId: item.itemId, name: item.itemName, count: 1, detail, mode: scan.mode,
+      // perishables get a one-tap use-by row (doesn't stop scanning)
+      askUseBy: scan.mode === "restock" && isPerishable(item),
+      prevQty: prevQty ?? Math.max(0, Number(item.quantity || 0) - 1),
+      useBy: "",
+    });
   }
   drawTally();
 }
@@ -393,7 +399,19 @@ function drawTally() {
         <button class="btn btn-ghost btn-sm" data-t="${i}" data-d="-1" aria-label="One less ${esc(t.name)}">−1</button>
         <button class="btn btn-ghost btn-sm" data-t="${i}" data-d="1" aria-label="One more ${esc(t.name)}">+1</button>
       </span>` : ""}
+      ${t.askUseBy && !t.useBy && itemById(t.itemId) ? `<div class="tally-useby" data-u="${i}"><span class="tally-useby-label">Use by?</span>${useByPickerHTML(itemById(t.itemId))}</div>` : ""}
     </div>`).join("");
+  el.querySelectorAll(".tally-useby").forEach((box) => {
+    const t = scan.tally[Number(box.dataset.u)];
+    bindUseByPicker(box, async (date) => {
+      const it = itemById(t.itemId);
+      const kept = await saveUseBy(it, date, t.prevQty);
+      if (!kept) return;
+      t.useBy = kept;
+      t.detail = `${t.detail.replace(/ · use by.*$/, "")} · use by ${shortDate(kept)}`;
+      drawTally();
+    });
+  });
   el.querySelectorAll("[data-t]").forEach((b) => b.addEventListener("click", async () => {
     const t = scan.tally[Number(b.dataset.t)];
     const d = Number(b.dataset.d);
@@ -401,7 +419,7 @@ function drawTally() {
     if (!res) return;
     t.count = Math.max(0, t.count + d);
     const it = itemById(t.itemId);
-    t.detail = `now ${res.quantity} ${it?.unit || ""}`;
+    t.detail = `now ${fmtQty(res.quantity)} ${it?.unit || ""}${t.useBy ? ` · use by ${shortDate(t.useBy)}` : ""}`;
     if (t.count === 0) scan.tally.splice(Number(b.dataset.t), 1);
     drawTally();
   }));
@@ -484,7 +502,7 @@ function showUnknownForm(code, info) {
         if (qty && res.quantity != null) picked.quantity = res.quantity;
         else if (qty) picked.quantity = Number(picked.quantity || 0) + qty;
         if (scan.mode === "list") await addItemToList(picked, { silent: true });
-        pushTally(picked, scan.mode === "restock" ? `barcode saved · now ${picked.quantity} ${picked.unit}` : "barcode saved · on the list");
+        pushTally(picked, scan.mode === "restock" ? `barcode saved · now ${fmtQty(picked.quantity)} ${picked.unit}` : "barcode saved · on the list", Math.max(0, Number(picked.quantity || 0) - 1));
       } else {
         const name = $("#suName").value.trim();
         if (!name) { toast("Give it a name first."); btn.disabled = false; return; }
@@ -510,7 +528,7 @@ function showUnknownForm(code, info) {
         state.data.usage = state.data.usage || {};
         state.data.usage[item.itemId] = (state.data.usage[item.itemId] || 0) + 1;
         if (scan.mode === "list") await addItemToList(item, { silent: true });
-        pushTally(item, scan.mode === "restock" ? "new item · 1 " + item.unit : "new item · on the list");
+        pushTally(item, scan.mode === "restock" ? "new item · 1 " + item.unit : "new item · on the list", 0);
       }
       finishUnknown();
     } catch (err) {

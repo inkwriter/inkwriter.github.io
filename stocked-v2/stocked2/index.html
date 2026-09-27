@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=3.2">
+  <link rel="stylesheet" href="css/styles.css?v=4">
 </head>
 <body>
 
@@ -84,7 +84,10 @@
     <section class="view" id="view-recipes" aria-labelledby="rcp-heading">
       <div class="view-head">
         <h2 id="rcp-heading">Recipe box</h2>
-        <button class="btn btn-primary" id="btnAddRecipe">+ Add recipe</button>
+        <div class="view-head-actions">
+          <button class="btn btn-ghost" id="btnImportRecipes">Import</button>
+          <button class="btn btn-primary" id="btnAddRecipe">+ Add recipe</button>
+        </div>
       </div>
 
       <p class="view-hint">Select recipes, then build a shopping list. Stocked checks the pantry first and only lists what's missing. Ingredients match your items by exact name or by a name you've linked once.</p>
@@ -112,17 +115,23 @@
         </div>
       </div>
 
-      <p class="view-hint">Pick one dinner recipe for each day. Stocked will check your inventory and add only the missing ingredients to the shopping list.</p>
+      <p class="view-hint">Plan breakfast, lunch and dinner. Stocked checks your inventory and adds only the missing ingredients to the shopping list. Leftovers and eating-out nights need nothing.</p>
 
       <div class="meal-plan-toolbar">
-        <div class="form-field">
-          <label>Week starts</label>
-          <input type="date" id="mealWeekStart" class="input">
+        <div class="week-nav">
+          <button class="btn btn-ghost btn-sm" id="btnPrevWeek" aria-label="Previous week">‹</button>
+          <div class="form-field">
+            <label for="mealWeekStart">Week of</label>
+            <input type="date" id="mealWeekStart" class="input">
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btnNextWeek" aria-label="Next week">›</button>
         </div>
+        <button class="btn btn-ghost btn-sm" id="btnCopyWeek">Copy last week</button>
         <label class="toggle">
           <input type="checkbox" id="mealIncludeOptional">
           <span>Include optional ingredients</span>
         </label>
+        <span class="meal-meta"><span id="mealCount"></span> <span class="meal-dirty" id="mealDirty" hidden>· unsaved changes</span></span>
       </div>
 
       <div class="meal-plan-grid" id="mealPlanGrid"></div>
@@ -173,8 +182,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="js/config.js"></script>
-  <script src="js/match.js?v=3.2"></script>
-  <script src="js/scan.js?v=3.2"></script>
-  <script src="js/app.js?v=3.2"></script>
+  <script src="js/units.js?v=4"></script>
+  <script src="js/match.js?v=4"></script>
+  <script src="js/scan.js?v=4"></script>
+  <script src="js/recipe-import.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>

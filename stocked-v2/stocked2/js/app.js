@@ -23,7 +23,9 @@ const DEMO = {
     { itemId: "ITM-0009", itemName: "AA batteries", category: "Household", location: "Garage", quantity: 6, unit: "count", minQuantity: 4, expirationDate: "", storeSection: "Household", staple: true, defaultLocation: "Garage", notes: "", lastUpdated: "2026-03-30", status: "active" },
     { itemId: "ITM-0010", itemName: "Pasta, fettuccine", category: "Dry Goods", location: "Pantry", quantity: 2, unit: "box", minQuantity: "", expirationDate: "", storeSection: "Dry Goods", staple: false, defaultLocation: "Pantry", notes: "", lastUpdated: "2026-05-20", status: "active", barcodes: "076808280081" },
     { itemId: "ITM-0011", itemName: "Ground beef", category: "Meat", location: "Freezer", quantity: 1, unit: "lb", minQuantity: "", expirationDate: "", storeSection: "Meat", staple: false, defaultLocation: "Freezer", notes: "", lastUpdated: "2026-06-10", status: "active", barcodes: "" },
-    { itemId: "ITM-0012", itemName: "Milk", category: "Dairy", location: "Fridge", quantity: 1, unit: "gal", minQuantity: 1, expirationDate: "", storeSection: "Dairy", staple: true, defaultLocation: "Fridge", notes: "", lastUpdated: "2026-06-10", status: "active", barcodes: "" },
+    { itemId: "ITM-0012", itemName: "Milk", category: "Dairy", location: "Fridge", quantity: 1, unit: "gal", minQuantity: 1, expirationDate: "", storeSection: "Dairy", staple: true, defaultLocation: "Fridge", notes: "", lastUpdated: "2026-06-10", status: "active", barcodes: "", shelfLifeDays: 10 },
+    { itemId: "ITM-0014", itemName: "Flour", category: "Dry Goods", location: "Pantry", quantity: 2, unit: "lb", minQuantity: "", expirationDate: "", storeSection: "Dry Goods", staple: true, defaultLocation: "Pantry", notes: "", lastUpdated: "2026-06-10", status: "active", barcodes: "", conversions: "1 lb = 3.6 cup" },
+    { itemId: "ITM-0015", itemName: "Butter", category: "Dairy", location: "Fridge", quantity: 2, unit: "stick", minQuantity: "", expirationDate: "", storeSection: "Dairy", staple: false, defaultLocation: "Fridge", notes: "", lastUpdated: "2026-06-10", status: "active", barcodes: "", shelfLifeDays: 30 },
     { itemId: "ITM-0013", itemName: "Eggs", category: "Dairy", location: "Fridge", quantity: 12, unit: "count", minQuantity: 6, expirationDate: "", storeSection: "Dairy", staple: true, defaultLocation: "Fridge", notes: "", lastUpdated: "2026-06-10", status: "active", barcodes: "" },
   ],
   locations: [
@@ -50,6 +52,7 @@ const DEMO = {
   recipes: [
     { recipeId: "RCP-0001", recipeName: "Tacos", description: "Weeknight ground beef tacos", servings: 4, mealType: "dinner", tags: "quick, kid-friendly", instructions: "Brown beef with seasoning; warm tortillas; assemble.", notes: "", timesCooked: 12, status: "active" },
     { recipeId: "RCP-0002", recipeName: "Chili", description: "Slow cooker chili", servings: 6, mealType: "dinner", tags: "crockpot, freezes-well", instructions: "Saute onions, brown beef, dump everything in the crock pot on low 6 hrs.", notes: "Double it for the freezer", timesCooked: 5, status: "active" },
+    { recipeId: "RCP-0004", recipeName: "Pancakes", description: "Saturday pancakes", servings: 4, mealType: "breakfast", tags: "weekend", instructions: "Whisk dry, whisk wet, combine, griddle.", notes: "", timesCooked: 6, status: "active" },
     { recipeId: "RCP-0003", recipeName: "Chicken Alfredo", description: "Creamy pasta night", servings: 4, mealType: "dinner", tags: "comfort", instructions: "Boil pasta; pan-sear chicken; make cream sauce; combine.", notes: "", timesCooked: 3, status: "active" },
   ],
   recipeIngredients: [
@@ -64,6 +67,10 @@ const DEMO = {
     { recipeId: "RCP-0003", ingredientName: "Chicken breast", linkedItemId: "ITM-0002", quantity: 2, unit: "lb", optional: false, substitutionNotes: "Thighs OK", storeSection: "" },
     { recipeId: "RCP-0003", ingredientName: "Heavy cream", linkedItemId: "ITM-0003", quantity: 1, unit: "pint", optional: false, substitutionNotes: "Half-and-half in a pinch", storeSection: "" },
     { recipeId: "RCP-0003", ingredientName: "Fettuccine", linkedItemId: "ITM-0010", quantity: 1, unit: "box", optional: false, substitutionNotes: "", storeSection: "" },
+    { recipeId: "RCP-0004", ingredientName: "Flour", linkedItemId: "", quantity: 1.5, unit: "cup", optional: false, substitutionNotes: "", storeSection: "" },
+    { recipeId: "RCP-0004", ingredientName: "Milk", linkedItemId: "", quantity: 1.25, unit: "cup", optional: false, substitutionNotes: "", storeSection: "" },
+    { recipeId: "RCP-0004", ingredientName: "Eggs", linkedItemId: "", quantity: 1, unit: "count", optional: false, substitutionNotes: "", storeSection: "" },
+    { recipeId: "RCP-0004", ingredientName: "Butter", linkedItemId: "", quantity: 3, unit: "tbsp", optional: false, substitutionNotes: "", storeSection: "" },
     { recipeId: "RCP-0003", ingredientName: "Parmesan", linkedItemId: "", quantity: 1, unit: "wedge", optional: true, substitutionNotes: "", storeSection: "Dairy" },
   ],
   shoppingList: [],
@@ -74,7 +81,7 @@ const DEMO = {
   ],
   aliases: [],
   usage: { "ITM-0012": 9, "ITM-0013": 8, "ITM-0004": 5, "ITM-0011": 4, "ITM-0001": 4, "ITM-0010": 2 },
-  settings: { expiring_soon_days: "5", store_sections: "Produce,Meat,Dairy,Frozen,Canned,Dry Goods,Spices,Paper Goods,Toiletries,Cleaning,Household,Pharmacy,Other", api_token: "change-me", next_item_id: "14", next_line_id: "1" },
+  settings: { expiring_soon_days: "5", store_sections: "Produce,Meat,Dairy,Frozen,Canned,Dry Goods,Spices,Paper Goods,Toiletries,Cleaning,Household,Pharmacy,Other", api_token: "change-me", next_item_id: "16", next_line_id: "1" },
 };
 
 /* ------------------------------------------------------------
@@ -84,6 +91,7 @@ const DEMO = {
 const state = {
   data: null,                 // { inventory, locations, categories, recipes, recipeIngredients, shoppingList, mealPlan, settings }
   mealWeekStart: "",
+  mealDrafts: {},
   view: "inventory",
   locationFilter: "all",
   search: "",
@@ -219,7 +227,7 @@ function demoMutate(action, p) {
       p.deductions.forEach((ded) => {
         const it = d.inventory.find((i) => i.itemId === ded.itemId);
         if (it) {
-          it.quantity = Math.max(0, Number(it.quantity || 0) - Number(ded.qty || 0));
+          it.quantity = Math.max(0, Math.round((Number(it.quantity || 0) - Number(ded.qty || 0)) * 1000) / 1000);
           it.lastUpdated = todayISO();
         }
       });
@@ -228,9 +236,19 @@ function demoMutate(action, p) {
       return { ok: true };
     }
     case "saveMealPlan": {
-      d.mealPlan = d.mealPlan.filter((m) => !(m.weekOf === p.weekOf && m.mealSlot === "Dinner"));
-      (p.entries || []).forEach((entry) => d.mealPlan.push({ ...entry, weekOf: p.weekOf, mealSlot: "Dinner", status: "active" }));
+      d.mealPlan = d.mealPlan.filter((m) => m.weekOf !== p.weekOf);
+      (p.entries || []).forEach((entry) => d.mealPlan.push({ ...entry, weekOf: p.weekOf, mealSlot: entry.mealSlot || "Dinner", status: "active" }));
       return { ok: true };
+    }
+    case "addRecipes": {
+      const ids = [];
+      (p.recipes || []).forEach((r) => {
+        const id = `RCP-${String(d.recipes.length + 1).padStart(4, "0")}`;
+        d.recipes.push({ ...r.recipe, recipeId: id, timesCooked: 0, status: "active" });
+        (r.ingredients || []).forEach((ing) => d.recipeIngredients.push({ ...ing, recipeId: id }));
+        ids.push(id);
+      });
+      return { ok: true, recipeIds: ids };
     }
     case "clearDone": {
       d.shoppingList = d.shoppingList.filter((l) => l.status === "needed");
@@ -239,7 +257,7 @@ function demoMutate(action, p) {
     case "quickAdd": {
       const it = d.inventory.find((i) => i.itemId === p.itemId);
       if (!it) return { error: "Item not found" };
-      it.quantity = Math.max(0, Number(it.quantity || 0) + Number(p.qty || 0));
+      it.quantity = Math.max(0, Math.round((Number(it.quantity || 0) + Number(p.qty || 0)) * 1000) / 1000);
       it.lastUpdated = todayISO();
       d.usage[p.itemId] = Math.max(0, (d.usage[p.itemId] || 0) + (p.undo ? -1 : 1));
       return { ok: true, quantity: it.quantity };
@@ -281,16 +299,15 @@ function demoMutate(action, p) {
    4. CORE LOGIC — the comparison engine
    ------------------------------------------------------------ */
 
-/** Matching key: linked item ID wins; otherwise normalized name + unit. */
-function ingredientKey(ing) {
-  return ing.linkedItemId ? `id:${ing.linkedItemId}` : `nm:${norm(ing.ingredientName)}|${norm(ing.unit)}`;
-}
-
 /**
  * Compare selected recipes against inventory.
  * Returns { need, partial, have, optional } arrays of aggregate objects:
  * { name, unit, totalNeeded, haveQty, buyQty, recipes[], linkedItemId,
- *   storeSection, category, unlinked, unitMismatch, subNotes }
+ *   storeSection, category, unlinked, unitMismatch, subNotes, asked }
+ *
+ * Amounts for a tracked item are converted into the item's own unit
+ * (2 tbsp cumin → 0.13 jar once you've said 1 jar = 16 tbsp). If a
+ * conversion isn't known, that ingredient is flagged, never guessed.
  */
 function compareRecipesToInventory(recipeIds, includeOptional) {
   const d = state.data;
@@ -306,36 +323,47 @@ function compareRecipesToInventory(recipeIds, includeOptional) {
     // Unlinked rows still count as linked when the name matches an item
     // exactly or matches an alias you confirmed. Nothing fuzzier.
     const link = effectiveLink(rawIng);
-    const ing = { ...rawIng, linkedItemId: link ? link.item.itemId : "" };
+    const linked = link ? link.item : null;
+    const ing = { ...rawIng, linkedItemId: linked ? linked.itemId : "" };
     const isOptional = ing.optional === true || ing.optional === "TRUE";
-    if (isOptional && !includeOptional) {
-      // still surface optional ingredients informationally
+    const rawQty = Number(ing.quantity || 0) * multiplier;
+
+    let key, inItemUnits = null;
+    if (linked) {
+      inItemUnits = convertQty(rawQty, ing.unit, linked.unit, linked);
+      key = inItemUnits === null ? `id:${linked.itemId}|u:${unitKey(ing.unit)}` : `id:${linked.itemId}`;
+    } else {
+      key = `nm:${normKey(ing.ingredientName)}|${unitKey(ing.unit)}`;
     }
-    const key = ingredientKey(ing) + (isOptional ? "|opt" : "");
+    key += isOptional ? "|opt" : "";
+
     const recipe = d.recipes.find((r) => r.recipeId === ing.recipeId);
     const baseRecipeName = recipe ? recipe.recipeName : ing.recipeId;
     const recipeName = multiplier > 1 ? `${baseRecipeName} x${multiplier}` : baseRecipeName;
 
     if (!agg.has(key)) {
-      const linked = ing.linkedItemId ? d.inventory.find((i) => i.itemId === ing.linkedItemId) : null;
+      const mismatch = linked ? inItemUnits === null : false;
       agg.set(key, {
         name: linked ? linked.itemName : ing.ingredientName,
-        unit: ing.unit,
+        unit: linked && !mismatch ? linked.unit : ing.unit,
         totalNeeded: 0,
+        asked: {},          // what the recipes said, by unit: { tbsp: 2 }
         recipes: [],
-        linkedItemId: ing.linkedItemId || "",
+        linkedItemId: linked ? linked.itemId : "",
         linked,
         isOptional,
-        unlinked: !ing.linkedItemId,
+        unlinked: !linked,
         ingredientName: ing.ingredientName,
-        unitMismatch: linked ? norm(linked.unit) !== norm(ing.unit) : false,
+        unitMismatch: mismatch,
         storeSection: linked ? linked.storeSection : (ing.storeSection || "Other"),
         category: linked ? linked.category : "",
         subNotes: ing.substitutionNotes || "",
       });
     }
     const a = agg.get(key);
-    a.totalNeeded += Number(ing.quantity || 0) * multiplier;
+    a.totalNeeded += inItemUnits !== null ? inItemUnits : rawQty;
+    const u = String(ing.unit || "count");
+    a.asked[u] = (a.asked[u] || 0) + rawQty;
     if (!a.recipes.includes(recipeName)) a.recipes.push(recipeName);
     if (ing.substitutionNotes && !a.subNotes.includes(ing.substitutionNotes)) {
       a.subNotes = a.subNotes ? `${a.subNotes}; ${ing.substitutionNotes}` : ing.substitutionNotes;
@@ -345,11 +373,13 @@ function compareRecipesToInventory(recipeIds, includeOptional) {
   const need = [], partial = [], have = [], optional = [];
 
   for (const a of agg.values()) {
+    a.askedLabel = Object.entries(a.asked).map(([u, q]) => `${fmtQty(q)} ${u}`).join(" + ");
+    a.converted = !!(a.linked && !a.unitMismatch && Object.keys(a.asked).some((u) => unitKey(u) !== unitKey(a.unit)));
     if (a.isOptional) {
       a.haveQty = a.linked && !a.unitMismatch ? Number(a.linked.quantity || 0) : null;
-      a.buyQty = a.totalNeeded;
+      a.buyQty = roundBuy(a.totalNeeded, a.unit);
       if (includeOptional) {
-        if (a.haveQty !== null && a.haveQty >= a.totalNeeded) have.push(a);
+        if (a.haveQty !== null && a.haveQty >= a.totalNeeded - 1e-9) have.push(a);
         else optional.push(a);
       } else {
         optional.push(a);
@@ -359,13 +389,14 @@ function compareRecipesToInventory(recipeIds, includeOptional) {
     if (!a.linked || a.unitMismatch) {
       // can't compare — always buy the full amount, flag for a human check
       a.haveQty = null;
-      a.buyQty = a.totalNeeded;
+      a.buyQty = roundBuy(a.totalNeeded, a.unit);
       need.push(a);
       continue;
     }
     const haveQty = Number(a.linked.quantity || 0);
     a.haveQty = haveQty;
-    a.buyQty = Math.max(0, a.totalNeeded - haveQty);
+    const short = a.totalNeeded - haveQty;
+    a.buyQty = short > 1e-9 ? roundBuy(short, a.unit) : 0;
     if (a.buyQty === 0) have.push(a);
     else if (haveQty > 0) partial.push(a);
     else need.push(a);
@@ -382,13 +413,24 @@ function lowStockSuggestions() {
   );
   return d.inventory.filter((it) => {
     if (it.status !== "active") return false;
-    const min = Number(it.minQuantity);
-    if (!min || isNaN(min)) return false;
-    return Number(it.quantity || 0) < min && !onList.has(it.itemId);
+    return isLow(it) && !onList.has(it.itemId);
   }).map((it) => ({
     item: it,
-    buyQty: Number(it.minQuantity) - Number(it.quantity || 0),
+    buyQty: lowBuyQty(it),
   }));
+}
+
+/** An opened package still counts as one: 0.9 of a gallon isn't "low"
+ *  just because recipes took a cup out of it. */
+function stockCount(it) {
+  return Math.ceil(Number(it.quantity || 0) - 1e-9);
+}
+function isLow(it) {
+  const min = Number(it.minQuantity);
+  return !!min && !isNaN(min) && stockCount(it) < min;
+}
+function lowBuyQty(it) {
+  return Math.max(1, Math.ceil(Number(it.minQuantity) - stockCount(it)));
 }
 
 function expiringSoon() {
@@ -463,7 +505,7 @@ function renderInventory() {
   let items = active;
   if (state.locationFilter !== "all") items = items.filter((i) => i.location === state.locationFilter);
   if (state.search) items = items.filter((i) => norm(i.itemName).includes(norm(state.search)) || norm(i.category).includes(norm(state.search)));
-  if (state.lowOnly) items = items.filter((i) => Number(i.minQuantity) && Number(i.quantity || 0) < Number(i.minQuantity));
+  if (state.lowOnly) items = items.filter(isLow);
 
   const groups = $("#inventoryGroups");
   if (!items.length) {
@@ -503,7 +545,7 @@ function itemRowHTML(it) {
   const min = Number(it.minQuantity);
   const pills = [];
   if (qty === 0) pills.push(`<span class="pill pill-out">Out</span>`);
-  else if (min && qty < min) pills.push(`<span class="pill pill-low">Low</span>`);
+  else if (isLow(it)) pills.push(`<span class="pill pill-low">Low</span>`);
   if (it.staple === true || it.staple === "TRUE") pills.push(`<span class="pill pill-staple">Staple</span>`);
   if (it.expirationDate && expiringSoon().some((e) => e.itemId === it.itemId)) pills.push(`<span class="pill pill-expiring">Use first</span>`);
 
@@ -519,7 +561,7 @@ function itemRowHTML(it) {
     </div>
     <div class="qty-stepper">
       <button data-step="-1" data-item-id="${it.itemId}" aria-label="Decrease ${esc(it.itemName)}">&minus;</button>
-      <span class="qty-val">${qty}<small>${esc(it.unit)}</small></span>
+      <span class="qty-val">${fmtQty(qty)}<small>${esc(it.unit)}</small></span>
       <button data-step="1" data-item-id="${it.itemId}" aria-label="Increase ${esc(it.itemName)}">+</button>
     </div>
     <button class="item-edit" data-item-id="${it.itemId}">Edit</button>
@@ -544,7 +586,7 @@ function renderRecipes() {
         <div class="recipe-card-top">
           <div>
             <h4 class="recipe-name">${esc(r.recipeName)}</h4>
-            <p class="recipe-desc">${esc(r.description || "")} · ${esc(r.servings)} servings · ${ings.length} ingredients</p>
+            <p class="recipe-desc">${r.description ? esc(r.description) + " · " : ""}${esc(r.mealType || "dinner")} · ${esc(fmtQty(r.servings))} servings · ${ings.length} ingredients</p>
           </div>
           <input type="checkbox" class="recipe-check" ${sel ? "checked" : ""} aria-label="Select ${esc(r.recipeName)}">
         </div>
@@ -577,76 +619,137 @@ function renderRecipes() {
 /* ---------- Meal plan ---------- */
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const SLOTS = ["Breakfast", "Lunch", "Dinner"];
+// not a recipe, but worth writing down (and nothing to buy)
+const SPECIAL_MEALS = { __leftovers: "Leftovers", __out: "Eating out", __fend: "Fend for yourself" };
 
 function getMealWeekStart() {
   return state.mealWeekStart || startOfWeekISO();
 }
 
-function getMealPlanEntries() {
-  const weekOf = getMealWeekStart();
-  return DAYS.map((day) => {
-    const selected = state.data.mealPlan.find((m) =>
-      m.status !== "archived" && m.weekOf === weekOf && m.day === day && m.mealSlot === "Dinner"
-    );
-    return {
-      weekOf,
-      day,
-      mealSlot: "Dinner",
-      recipeId: selected ? selected.recipeId : "",
-      notes: selected ? (selected.notes || "") : "",
-      status: "active",
-    };
+/** Saved plan for a week as { "Monday|Dinner": "RCP-0001" | "__leftovers" | "" } */
+function savedWeek(weekOf) {
+  const out = {};
+  state.data.mealPlan.forEach((m) => {
+    if (m.status === "archived" || m.weekOf !== weekOf) return;
+    const special = Object.keys(SPECIAL_MEALS).find((k) => SPECIAL_MEALS[k] === m.notes);
+    out[`${m.day}|${m.mealSlot || "Dinner"}`] = m.recipeId || special || "";
   });
+  return out;
 }
 
-function recipeOptions(selectedId) {
+/** Unsaved picks survive tab switches and week hopping until you save. */
+function weekPicks(weekOf) {
+  state.mealDrafts = state.mealDrafts || {};
+  return state.mealDrafts[weekOf] || savedWeek(weekOf);
+}
+
+function isDraftDirty(weekOf) {
+  const draft = state.mealDrafts?.[weekOf];
+  if (!draft) return false;
+  const saved = savedWeek(weekOf);
+  const keys = new Set([...Object.keys(draft), ...Object.keys(saved)]);
+  return [...keys].some((k) => (draft[k] || "") !== (saved[k] || ""));
+}
+
+function recipeOptions(selectedId, slot) {
+  const want = slot.toLowerCase();
   const recipes = state.data.recipes.filter((r) => r.status === "active").sort((a, b) => a.recipeName.localeCompare(b.recipeName));
-  return `<option value="">No planned dinner</option>` + recipes.map((r) =>
-    `<option value="${esc(r.recipeId)}" ${r.recipeId === selectedId ? "selected" : ""}>${esc(r.recipeName)}</option>`
-  ).join("");
+  const fits = recipes.filter((r) => { const t = norm(r.mealType); return t === want || t === "any" || (!t && want === "dinner"); });
+  const other = recipes.filter((r) => !fits.includes(r));
+  const opt = (r) => `<option value="${esc(r.recipeId)}" ${r.recipeId === selectedId ? "selected" : ""}>${esc(r.recipeName)}</option>`;
+  return `<option value="">—</option>`
+    + (fits.length ? `<optgroup label="${esc(slot)} recipes">${fits.map(opt).join("")}</optgroup>` : "")
+    + (other.length ? `<optgroup label="${fits.length ? "Other recipes" : "Recipes"}">${other.map(opt).join("")}</optgroup>` : "")
+    + `<optgroup label="No cooking">${Object.entries(SPECIAL_MEALS).map(([k, v]) => `<option value="${k}" ${k === selectedId ? "selected" : ""}>${esc(v)}</option>`).join("")}</optgroup>`;
 }
 
 function renderMealPlan() {
   if (!state.mealWeekStart) state.mealWeekStart = startOfWeekISO();
+  const weekOf = state.mealWeekStart;
   const weekInput = $("#mealWeekStart");
-  if (weekInput && weekInput.value !== state.mealWeekStart) weekInput.value = state.mealWeekStart;
+  if (weekInput && weekInput.value !== weekOf) weekInput.value = weekOf;
 
-  const entries = getMealPlanEntries();
-  const grid = $("#mealPlanGrid");
-  grid.innerHTML = entries.map((entry, idx) => `
-    <div class="meal-plan-row">
-      <div class="meal-day">${esc(entry.day)}<small>${esc(addDaysISO(entry.weekOf, idx))}</small></div>
-      <select class="input meal-recipe" data-day="${esc(entry.day)}" aria-label="Dinner recipe for ${esc(entry.day)}">
-        ${recipeOptions(entry.recipeId)}
-      </select>
-    </div>`).join("");
+  const picks = weekPicks(weekOf);
+  const today = localISO(new Date());
+  $("#mealPlanGrid").innerHTML = `
+    <div class="meal-head" aria-hidden="true"><span></span>${SLOTS.map((s) => `<span>${s}</span>`).join("")}</div>` +
+    DAYS.map((day, idx) => {
+      const date = addDaysISO(weekOf, idx);
+      return `<div class="meal-plan-row ${date === today ? "today" : ""}">
+        <div class="meal-day">${esc(day)}<small>${esc(date)}</small></div>
+        ${SLOTS.map((slot) => {
+          const v = picks[`${day}|${slot}`] || "";
+          return `<label class="meal-slot"><span class="meal-slot-label">${slot}</span>
+            <select class="input meal-recipe ${v ? "picked" : ""}" data-day="${esc(day)}" data-slot="${slot}" aria-label="${slot} on ${esc(day)}">
+              ${recipeOptions(v, slot)}
+            </select></label>`;
+        }).join("")}
+      </div>`;
+    }).join("");
+
+  $$(".meal-recipe").forEach((sel) => sel.addEventListener("change", () => {
+    const draft = { ...weekPicks(weekOf) };
+    draft[`${sel.dataset.day}|${sel.dataset.slot}`] = sel.value;
+    state.mealDrafts[weekOf] = draft;
+    sel.classList.toggle("picked", !!sel.value);
+    drawMealDirty();
+  }));
+  drawMealDirty();
+}
+
+function drawMealDirty() {
+  const weekOf = getMealWeekStart();
+  const dirty = isDraftDirty(weekOf);
+  const el = $("#mealDirty");
+  if (el) el.hidden = !dirty;
+  const n = Object.values(weekPicks(weekOf)).filter(Boolean).length;
+  const c = $("#mealCount");
+  if (c) c.textContent = `${n} of 21 meals planned`;
 }
 
 function currentMealPlanFromUI() {
-  const weekOf = $("#mealWeekStart").value || getMealWeekStart();
-  return $$(".meal-recipe").map((sel) => ({
-    weekOf,
-    day: sel.dataset.day,
-    mealSlot: "Dinner",
-    recipeId: sel.value,
-    notes: "",
-    status: "active",
-  })).filter((entry) => entry.recipeId);
+  const weekOf = getMealWeekStart();
+  const picks = weekPicks(weekOf);
+  const entries = [];
+  for (const day of DAYS) for (const slot of SLOTS) {
+    const v = picks[`${day}|${slot}`];
+    if (!v) continue;
+    entries.push(SPECIAL_MEALS[v]
+      ? { weekOf, day, mealSlot: slot, recipeId: "", notes: SPECIAL_MEALS[v], status: "active" }
+      : { weekOf, day, mealSlot: slot, recipeId: v, notes: "", status: "active" });
+  }
+  return entries;
 }
 
 async function saveMealPlan() {
-  const weekOf = $("#mealWeekStart").value || getMealWeekStart();
-  state.mealWeekStart = weekOf;
+  const weekOf = getMealWeekStart();
   const entries = currentMealPlanFromUI();
-  await apiPost("saveMealPlan", { weekOf, entries });
-  await reload();
-  toast(`Saved ${entries.length} dinner${entries.length === 1 ? "" : "s"} for the week.`);
+  const btn = $("#btnSaveMealPlan");
+  btn.disabled = true;
+  try {
+    await apiPost("saveMealPlan", { weekOf, entries });
+    state.data.mealPlan = state.data.mealPlan.filter((m) => m.weekOf !== weekOf).concat(entries);
+    delete state.mealDrafts[weekOf];
+    renderMealPlan();
+    toast(`Saved ${entries.length} meal${entries.length === 1 ? "" : "s"} for the week.`);
+  } catch (e) {
+    toast(`Save failed: ${e.message}`);
+  } finally { btn.disabled = false; }
+}
+
+function copyLastWeek() {
+  const weekOf = getMealWeekStart();
+  const prev = weekPicks(addDaysISO(weekOf, -7));
+  if (!Object.values(prev).some(Boolean)) { toast("Nothing planned the week before."); return; }
+  state.mealDrafts[weekOf] = { ...prev };
+  renderMealPlan();
+  toast("Copied last week — tap Save week to keep it.");
 }
 
 function openBuildMealPlanListModal() {
-  const entries = currentMealPlanFromUI();
-  const recipeIds = entries.map((e) => e.recipeId);
-  if (!recipeIds.length) { toast("Pick at least one dinner first."); return; }
+  const recipeIds = currentMealPlanFromUI().map((e) => e.recipeId).filter(Boolean);
+  if (!recipeIds.length) { toast("Pick at least one recipe first."); return; }
   openPantryCheck(recipeIds, $("#mealIncludeOptional").checked, "mealplan");
 }
 
@@ -737,7 +840,7 @@ async function quickAdjust(itemId, delta, { silent = false, undo = false } = {})
   const it = itemById(itemId);
   if (!it) return null;
   const before = Number(it.quantity || 0);
-  it.quantity = Math.max(0, before + delta);
+  it.quantity = Math.max(0, Math.round((before + delta) * 1000) / 1000);
   state.data.usage = state.data.usage || {};
   state.data.usage[itemId] = Math.max(0, (state.data.usage[itemId] || 0) + (undo ? -1 : 1));
   if (state.view === "inventory") renderInventory();
@@ -752,12 +855,15 @@ async function quickAdjust(itemId, delta, { silent = false, undo = false } = {})
   }
   if (state.view === "inventory") renderInventory();
   if (!silent) {
-    toast(`${it.itemName} +${delta} → ${it.quantity} ${it.unit}`, {
+    const actions = [];
+    if (delta > 0 && isPerishable(it)) actions.push({ label: "Use-by", onClick: () => openUseByModal(it, before) });
+    actions.push({
       label: "Undo",
-      onClick: () => quickAdjust(itemId, -delta, { silent: true, undo: true }).then((r) => r && toast(`Undone — ${it.itemName} back to ${r.quantity}.`)),
+      onClick: () => quickAdjust(itemId, -delta, { silent: true, undo: true }).then((r) => r && toast(`Undone — ${it.itemName} back to ${fmtQty(r.quantity)}.`)),
     });
+    toast(`${it.itemName} +${delta} → ${fmtQty(it.quantity)} ${it.unit}`, actions);
   }
-  return { quantity: it.quantity };
+  return { quantity: it.quantity, before };
 }
 
 /** Put an inventory item on the shopping list. Returns false if it's already there. */
@@ -767,9 +873,7 @@ async function addItemToList(item, { silent = false } = {}) {
     if (!silent) toast(`${item.itemName} is already on the list.`);
     return false;
   }
-  const min = Number(item.minQuantity);
-  const have = Number(item.quantity || 0);
-  const qty = min && have < min ? min - have : 1;
+  const qty = isLow(item) ? lowBuyQty(item) : 1;
   const line = {
     itemName: item.itemName,
     linkedItemId: item.itemId,
@@ -831,6 +935,88 @@ function renderQuickChips(view) {
   }));
 }
 
+/* ---------- Use-by dates on restock ---------- */
+
+/** Worth asking for a date? Items with a "keeps for" setting, a date already,
+ *  or in a fresh-food category. */
+function isPerishable(item) {
+  return Number(item.shelfLifeDays) > 0 || !!item.expirationDate || ["Produce", "Meat", "Dairy"].includes(item.category);
+}
+
+function shortDate(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function daysFromToday(iso) {
+  const a = new Date(localISO(new Date()) + "T00:00:00"), b = new Date(iso + "T00:00:00");
+  return Math.round((b - a) / 86400000);
+}
+
+function useByChoices(item) {
+  const today = localISO(new Date());
+  const usual = Number(item.shelfLifeDays);
+  const out = [];
+  if (usual > 0) out.push({ label: "Usual", date: addDaysISO(today, usual), usual: true });
+  for (const [n, label] of [[3, "3 days"], [7, "1 week"], [14, "2 weeks"], [30, "1 month"]]) {
+    if (n !== usual) out.push({ label, date: addDaysISO(today, n) });
+  }
+  return out;
+}
+
+function useByPickerHTML(item) {
+  return `<div class="useby">
+    ${useByChoices(item).map((c) => `<button type="button" class="chip chip-date ${c.usual ? "strong" : ""}" data-date="${c.date}">${esc(c.label)}<span class="chip-count">${esc(shortDate(c.date))}</span></button>`).join("")}
+    <input type="date" class="input input-sm useby-date" aria-label="Pick a use-by date">
+  </div>`;
+}
+
+/** Wires a picker; onPick(isoDate) fires once per choice. */
+function bindUseByPicker(root, onPick) {
+  root.querySelectorAll(".chip-date").forEach((b) => b.addEventListener("click", () => {
+    root.querySelectorAll(".chip-date").forEach((x) => x.classList.toggle("active", x === b));
+    onPick(b.dataset.date);
+  }));
+  root.querySelector(".useby-date")?.addEventListener("change", (e) => {
+    root.querySelectorAll(".chip-date").forEach((x) => x.classList.remove("active"));
+    if (e.target.value) onPick(e.target.value);
+  });
+}
+
+/**
+ * Save a use-by date after restocking. The item keeps the EARLIER date
+ * (older stock gets used first) unless the old stock was gone or
+ * already past its date. Also learns "keeps for N days".
+ */
+async function saveUseBy(item, date, prevQty) {
+  const today = localISO(new Date());
+  const old = item.expirationDate;
+  const keepOld = old && Number(prevQty) > 0 && old >= today && old < date;
+  const fields = { expirationDate: keepOld ? old : date };
+  const days = daysFromToday(date);
+  if (days > 0) fields.shelfLifeDays = days;
+  try {
+    await apiPost("updateItem", { itemId: item.itemId, fields });
+    Object.assign(item, fields);
+    if (state.view === "inventory") renderInventory();
+    return fields.expirationDate;
+  } catch (e) { toast(`Save failed: ${e.message}`); return null; }
+}
+
+function openUseByModal(item, prevQty) {
+  openModal(`Use by — ${item.itemName}`, `
+    <p class="view-hint">When should the new ${esc(item.itemName)} be used by? Stocked shows it in “Use first” a few days ahead.</p>
+    ${useByPickerHTML(item)}
+    <div class="form-actions"><button class="btn btn-ghost" id="ubSkip">Skip</button></div>`);
+  $("#ubSkip").addEventListener("click", closeModal);
+  bindUseByPicker($(".modal .useby"), async (date) => {
+    const kept = await saveUseBy(item, date, prevQty);
+    if (!kept) return;
+    closeModal();
+    toast(kept === date ? `${item.itemName}: use by ${shortDate(date)}.` : `Saved. The older ${item.itemName} still goes first (${shortDate(kept)}).`);
+  });
+}
+
 async function addLowStockToList() {
   const sugg = lowStockSuggestions();
   if (!sugg.length) { toast("All staples are stocked."); return; }
@@ -841,7 +1027,7 @@ async function addLowStockToList() {
     unit: item.unit,
     category: item.category,
     storeSection: item.storeSection || "Other",
-    whatFor: `Low stock (${item.quantity}/${item.minQuantity})`,
+    whatFor: `Low stock (${fmtQty(item.quantity)}/${item.minQuantity})`,
     sourceType: "low_stock",
     notes: "",
   }));
@@ -882,6 +1068,8 @@ function openItemModal(itemId, prefill = {}) {
       <div class="form-field"><label>Store section</label><select class="input" id="fSec">${secOpts}</select></div>
       <div class="form-field"><label>Staple?</label><label class="toggle" style="margin-top:8px"><input type="checkbox" id="fStaple" ${it && (it.staple === true || it.staple === "TRUE") ? "checked" : ""}><span>Recurring staple</span></label></div>
       <div class="form-field full"><label>Notes</label><input class="input" id="fNotes" value="${esc(it?.notes || "")}"></div>
+      <div class="form-field"><label>Keeps for (days) <span class="label-hint">— asks for a use-by date on restock</span></label><input class="input" id="fShelf" type="number" min="0" step="1" value="${esc(it?.shelfLifeDays ?? "")}" placeholder="e.g. 7"></div>
+      <div class="form-field"><label>Unit conversions <span class="label-hint">— for recipes</span></label><input class="input" id="fConv" value="${esc(it?.conversions || "")}" placeholder="e.g. 1 jar = 16 tbsp"></div>
       ${it ? `
       <div class="form-field full">
         <label>Also called <span class="label-hint">— recipe names that mean this item</span></label>
@@ -930,8 +1118,13 @@ function openItemModal(itemId, prefill = {}) {
       staple: $("#fStaple").checked,
       defaultLocation: $("#fLoc").value,
       notes: $("#fNotes").value.trim(),
+      shelfLifeDays: $("#fShelf").value === "" ? "" : Math.max(0, Math.round(Number($("#fShelf").value))),
+      conversions: $("#fConv").value.trim(),
     };
     if (!fields.itemName) { toast("Item needs a name."); return; }
+    if (fields.conversions && parseConversions(fields.conversions).length !== fields.conversions.split(";").filter((x) => x.trim()).length) {
+      toast("Conversions look like: 1 jar = 16 tbsp; 1 stick = 8 tbsp"); return;
+    }
     if (it) await apiPost("updateItem", { itemId: it.itemId, fields });
     else await apiPost("addItem", fields);
     closeModal();
@@ -1055,8 +1248,8 @@ function drawIngStatus(row) {
   if (link) {
     const via = link.via === "alias" ? ` <span class="ing-via">· you said “${esc(normKey(name))}” means this</span>`
       : link.via === "picked" ? ` <span class="ing-via">· picked just now</span>` : "";
-    const unitWarn = unit && norm(unit) !== norm(link.item.unit)
-      ? ` <span class="ing-warn">· units differ (${esc(link.item.unit)}) — will be flagged</span>` : "";
+    const unitWarn = unit && convertQty(1, unit, link.item.unit, link.item) === null
+      ? ` <span class="ing-warn">· you track it in ${esc(link.item.unit)} — Stocked will ask how many ${esc(unit)} that is</span>` : "";
     el.className = "ing-status linked";
     el.innerHTML = `<span>✓ ${esc(link.item.itemName)}${via}${unitWarn}</span>
       <button type="button" class="linkish" data-act="change">change</button>`;
@@ -1133,6 +1326,9 @@ function openRecipeModal(recipeId) {
       <div class="form-field full"><label>Recipe name</label><input class="input" id="rName" value="${esc(r?.recipeName || "")}"></div>
       <div class="form-field full"><label>Description</label><input class="input" id="rDesc" value="${esc(r?.description || "")}"></div>
       <div class="form-field"><label>Servings</label><input class="input" id="rServ" type="number" min="1" value="${esc(r?.servings || 4)}"></div>
+      <div class="form-field"><label>Meal</label><select class="input" id="rMeal">
+        ${["breakfast", "lunch", "dinner", "side", "snack", "any"].map((m) => `<option value="${m}" ${norm(r?.mealType || "dinner") === m ? "selected" : ""}>${m[0].toUpperCase() + m.slice(1)}</option>`).join("")}
+      </select></div>
       <div class="form-field"><label>Tags (comma separated)</label><input class="input" id="rTags" value="${esc(r?.tags || "")}"></div>
       <div class="form-field full"><label>Ingredients</label><div id="ingRows">${ings.map(ingRowHTML).join("")}</div>
         <button type="button" class="btn btn-ghost btn-sm" id="rAddIng">+ Ingredient</button>
@@ -1190,7 +1386,7 @@ function openRecipeModal(recipeId) {
       recipeName: name,
       description: $("#rDesc").value.trim(),
       servings: Number($("#rServ").value || 4),
-      mealType: r?.mealType || "dinner",
+      mealType: $("#rMeal").value,
       tags: $("#rTags").value.trim(),
       instructions: $("#rInstr").value,
       notes: r?.notes || "",
@@ -1235,14 +1431,16 @@ function openPantryCheck(recipeIds, includeOptional, ctx) {
   const groupHTML = (key, title, rows) =>
     rows.length ? `<div class="cmp-group ${key}"><h4>${title} (${rows.length})</h4>${rows.join("")}</div>` : "";
 
+  // "needs 2 tbsp (0.13 jar)" when a conversion was used
+  const needs = (a) => a.converted ? `needs ${esc(a.askedLabel)} (${fmtQty(a.totalNeeded)} ${esc(a.unit)}) · ` : "";
   const needRows = cmp.need.map((a) => row(a, a.unlinked
-    ? `buy ${a.totalNeeded} ${esc(a.unit)} · not tracked`
+    ? `buy ${fmtQty(a.buyQty)} ${esc(a.unit)} · not tracked`
     : a.unitMismatch
-      ? `buy ${a.totalNeeded} ${esc(a.unit)} · units differ — check shelf`
-      : `buy ${a.buyQty} ${esc(a.unit)}`));
-  const partialRows = cmp.partial.map((a) => row(a, `have ${a.haveQty}, buy ${a.buyQty} ${esc(a.unit)}`));
-  const haveRows = cmp.have.map((a) => row(a, `have ${a.haveQty ?? "✓"} — skip`));
-  const optRows = cmp.optional.map((a) => row(a, `optional · ${a.totalNeeded} ${esc(a.unit)}`));
+      ? `needs ${esc(a.askedLabel)} · you track ${esc(a.linked.unit)} <button type="button" class="btn btn-ghost btn-sm cmp-conv" data-item-id="${esc(a.linkedItemId)}" data-unit="${esc(Object.keys(a.asked)[0])}">Set conversion</button>`
+      : `${needs(a)}buy ${fmtQty(a.buyQty)} ${esc(a.unit)}`));
+  const partialRows = cmp.partial.map((a) => row(a, `${needs(a)}have ${fmtQty(a.haveQty)}, buy ${fmtQty(a.buyQty)} ${esc(a.unit)}`));
+  const haveRows = cmp.have.map((a) => row(a, `${needs(a)}have ${a.haveQty == null ? "✓" : fmtQty(a.haveQty) + " " + esc(a.unit)} — skip`));
+  const optRows = cmp.optional.map((a) => row(a, `optional · ${esc(a.askedLabel)}`));
 
   const toAdd = [...cmp.need, ...cmp.partial, ...(includeOptional ? cmp.optional : [])].filter((a) => a.buyQty > 0);
   const untracked = cmp.need.filter((a) => a.unlinked).length;
@@ -1261,6 +1459,9 @@ function openPantryCheck(recipeIds, includeOptional, ctx) {
   $$(".cmp-link").forEach((b) => b.addEventListener("click", () =>
     openLinkIngredientModal(b.dataset.name, () => openPantryCheck(recipeIds, includeOptional, ctx))
   ));
+  $$(".cmp-conv").forEach((b) => b.addEventListener("click", () =>
+    openConversionModal(itemById(b.dataset.itemId), b.dataset.unit, () => openPantryCheck(recipeIds, includeOptional, ctx))
+  ));
   $("#cmpCancel").addEventListener("click", closeModal);
   $("#cmpConfirm").addEventListener("click", async () => {
     const lines = toAdd.map((a) => ({
@@ -1272,7 +1473,7 @@ function openPantryCheck(recipeIds, includeOptional, ctx) {
       storeSection: a.storeSection || "Other",
       whatFor: ctx === "mealplan" ? `Meal plan: ${a.recipes.join(", ")}` : a.recipes.join(", "),
       sourceType: ctx === "mealplan" ? "meal_plan" : "recipe",
-      notes: a.unlinked ? "Not tracked — verify" : a.unitMismatch ? "Units differ — verify" : (a.haveQty ? `Have ${a.haveQty} of ${a.totalNeeded} needed` : ""),
+      notes: a.unlinked ? "Not tracked — verify" : a.unitMismatch ? "Units differ — verify" : (a.haveQty ? `Have ${fmtQty(a.haveQty)} of ${fmtQty(a.totalNeeded)} needed` : a.converted ? `Recipes need ${a.askedLabel}` : ""),
     }));
     if (lines.length) await apiPost("addLines", { lines });
     if (ctx === "recipes") state.selectedRecipes.clear();
@@ -1322,6 +1523,39 @@ function openLinkIngredientModal(ingName, back) {
   });
 }
 
+/** "How many tbsp in 1 jar of Cumin?" — asked once, saved on the item. */
+function openConversionModal(item, recipeUnit, back) {
+  if (!item) return back();
+  openModal(`Units for ${item.itemName}`, `
+    <p class="view-hint">Recipes measure this in <strong>${esc(recipeUnit)}</strong>, but you count it in
+      <strong>${esc(item.unit)}</strong>. Tell Stocked once and it'll do the math from now on.</p>
+    <div class="conv-row">
+      <span>1 ${esc(item.unit)} of ${esc(item.itemName)} =</span>
+      <input class="input" id="convQty" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 16">
+      <span>${esc(recipeUnit)}</span>
+    </div>
+    <p class="view-hint conv-hint">Look at the package: a spice jar is usually about 12–16 tbsp, a stick of butter is 8 tbsp,
+      a head of garlic about 10 cloves. A rough number is fine.</p>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="convBack">Back</button>
+      <button class="btn btn-primary" id="convSave">Save</button>
+    </div>`);
+  $("#convQty").focus();
+  $("#convBack").addEventListener("click", back);
+  $("#convSave").addEventListener("click", async () => {
+    const n = Number($("#convQty").value);
+    if (!(n > 0)) { toast("Enter how many."); return; }
+    const entry = formatConversion(1, unitKey(item.unit), n, unitKey(recipeUnit));
+    const next = [String(item.conversions || "").trim(), entry].filter(Boolean).join("; ");
+    try {
+      await apiPost("updateItem", { itemId: item.itemId, fields: { conversions: next } });
+      item.conversions = next;
+      toast(`Saved: ${entry}.`);
+      back();
+    } catch (e) { toast(`Save failed: ${e.message}`); }
+  });
+}
+
 /* ---------- Mark purchased ---------- */
 
 function openPurchaseModal(line) {
@@ -1332,15 +1566,21 @@ function openPurchaseModal(line) {
     openModal(`Got it: ${line.itemName}`, `
       <p>Mark <strong>${esc(line.quantityToBuy)} ${esc(line.unit)}</strong> purchased and add it back to
       <strong>${esc(linked.defaultLocation || linked.location)}</strong>?</p>
-      <p class="view-hint">${esc(linked.itemName)}: ${esc(linked.quantity)} → ${Number(linked.quantity || 0) + Number(line.quantityToBuy || 0)} ${esc(linked.unit)}</p>
+      <p class="view-hint">${esc(linked.itemName)}: ${esc(fmtQty(linked.quantity))} → ${fmtQty(Number(linked.quantity || 0) + Number(line.quantityToBuy || 0))} ${esc(linked.unit)}</p>
+      ${isPerishable(linked) ? `<div class="form-field"><label>Use by <span class="label-hint">— optional</span></label>${useByPickerHTML(linked)}</div>` : ""}
       <div class="form-actions">
         <button class="btn btn-ghost" id="pSkip">Skip item</button>
         <button class="btn btn-ghost" id="pOnly">Purchased only</button>
         <button class="btn btn-primary" id="pBoth">Purchased + restock</button>
       </div>`);
+    let useBy = "";
+    const picker = $(".modal .useby");
+    if (picker) bindUseByPicker(picker, (date) => { useBy = date; });
     $("#pBoth").addEventListener("click", async () => {
+      const prevQty = Number(linked.quantity || 0);
       await apiPost("markPurchased", { lineId: line.lineId, inventoryDelta: { itemId: linked.itemId, qty: Number(line.quantityToBuy || 0) } });
-      closeModal(); await reload(); toast(`${line.itemName} restocked.`);
+      if (useBy) await saveUseBy(linked, useBy, prevQty);
+      closeModal(); await reload(); toast(`${line.itemName} restocked${useBy ? ` · use by ${shortDate(useBy)}` : ""}.`);
     });
     $("#pOnly").addEventListener("click", async () => {
       await apiPost("markPurchased", { lineId: line.lineId });
@@ -1385,24 +1625,43 @@ function openCookModal(recipeId) {
   const r = d.recipes.find((x) => x.recipeId === recipeId);
   const ings = d.recipeIngredients.filter((ri) => ri.recipeId === recipeId);
 
-  const deductions = [];
-  const rows = ings.map((ing) => {
+  // total per item, in the item's own unit
+  const perItem = new Map();
+  const rows = [];
+  for (const ing of ings) {
     const linked = effectiveLink(ing)?.item || null;
-    if (!linked) return `<div class="cmp-row"><span>${esc(ing.ingredientName)}</span><span class="cmp-detail">not tracked — no change</span></div>`;
-    if (norm(linked.unit) !== norm(ing.unit)) return `<div class="cmp-row"><span>${esc(ing.ingredientName)}</span><span class="cmp-detail">units differ — adjust by hand</span></div>`;
-    const newQty = Math.max(0, Number(linked.quantity || 0) - Number(ing.quantity || 0));
-    deductions.push({ itemId: linked.itemId, qty: Number(ing.quantity || 0) });
-    return `<div class="cmp-row"><span>${esc(linked.itemName)}</span><span class="cmp-detail">${esc(linked.quantity)} → ${newQty} ${esc(linked.unit)}</span></div>`;
-  }).join("");
+    if (!linked) { rows.push(`<div class="cmp-row"><span>${esc(ing.ingredientName)}</span><span class="cmp-detail">not tracked — no change</span></div>`); continue; }
+    const amt = convertQty(Number(ing.quantity || 0), ing.unit, linked.unit, linked);
+    if (amt === null) {
+      rows.push(`<div class="cmp-row"><span>${esc(ing.ingredientName)}</span><span class="cmp-detail cmp-right">${esc(fmtQty(ing.quantity))} ${esc(ing.unit)} vs ${esc(linked.unit)} — no change
+        <button type="button" class="btn btn-ghost btn-sm cmp-conv" data-item-id="${esc(linked.itemId)}" data-unit="${esc(ing.unit)}">Set conversion</button></span></div>`);
+      continue;
+    }
+    const cur = perItem.get(linked.itemId) || { item: linked, qty: 0, asked: [] };
+    cur.qty += amt;
+    cur.asked.push(`${fmtQty(ing.quantity)} ${ing.unit}`);
+    perItem.set(linked.itemId, cur);
+  }
+  const deductions = [];
+  for (const { item, qty, asked } of perItem.values()) {
+    const q = Math.round(qty * 1000) / 1000;
+    const newQty = Math.max(0, Number(item.quantity || 0) - q);
+    deductions.push({ itemId: item.itemId, qty: q });
+    const note = asked.some((x) => unitKey(x.split(" ").slice(1).join(" ")) !== unitKey(item.unit)) ? ` <span class="cmp-detail">(${esc(asked.join(" + "))})</span>` : "";
+    rows.unshift(`<div class="cmp-row"><span>${esc(item.itemName)}${note}</span><span class="cmp-detail">${esc(fmtQty(item.quantity))} → ${fmtQty(newQty)} ${esc(item.unit)}</span></div>`);
+  }
 
   openModal(`Cooked: ${r.recipeName}`, `
     <p class="view-hint">Confirm and these amounts come out of inventory.</p>
-    ${rows}
+    ${rows.join("")}
     <div class="form-actions">
       <button class="btn btn-ghost" id="ckCancel">Cancel</button>
       <button class="btn btn-primary" id="ckConfirm">Confirm — deduct from inventory</button>
     </div>`);
 
+  $$(".cmp-conv").forEach((b) => b.addEventListener("click", () =>
+    openConversionModal(itemById(b.dataset.itemId), b.dataset.unit, () => openCookModal(recipeId))
+  ));
   $("#ckCancel").addEventListener("click", closeModal);
   $("#ckConfirm").addEventListener("click", async () => {
     await apiPost("cookRecipe", { recipeId, deductions });
@@ -1475,17 +1734,16 @@ let toastTimer;
 /** toast("Saved") or toast("Milk +1", { label: "Undo", onClick }) */
 function toast(msg, action = null) {
   const t = $("#toast");
-  t.innerHTML = `<span>${esc(msg)}</span>${action ? `<button class="toast-btn" type="button">${esc(action.label)}</button>` : ""}`;
-  if (action) {
-    t.querySelector(".toast-btn").addEventListener("click", () => {
-      t.hidden = true;
-      clearTimeout(toastTimer);
-      action.onClick();
-    }, { once: true });
-  }
+  const actions = !action ? [] : Array.isArray(action) ? action : [action];
+  t.innerHTML = `<span>${esc(msg)}</span>${actions.map((a, i) => `<button class="toast-btn" type="button" data-i="${i}">${esc(a.label)}</button>`).join("")}`;
+  t.querySelectorAll(".toast-btn").forEach((b) => b.addEventListener("click", () => {
+    t.hidden = true;
+    clearTimeout(toastTimer);
+    actions[Number(b.dataset.i)].onClick();
+  }, { once: true }));
   t.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.hidden = true; }, action ? 5000 : 2600);
+  toastTimer = setTimeout(() => { t.hidden = true; }, actions.length ? 6000 : 2600);
 }
 
 function switchView(view) {
@@ -1520,9 +1778,13 @@ async function init() {
 
   $("#btnAddItem").addEventListener("click", () => openItemModal(null));
   $("#btnAddRecipe").addEventListener("click", () => openRecipeModal(null));
+  $("#btnImportRecipes").addEventListener("click", () => openImportModal());
   $("#btnBuildList").addEventListener("click", openBuildListModal);
   $("#btnClearSel").addEventListener("click", () => { state.selectedRecipes.clear(); renderRecipes(); });
-  $("#mealWeekStart").addEventListener("change", (e) => { state.mealWeekStart = e.target.value; renderMealPlan(); });
+  $("#mealWeekStart").addEventListener("change", (e) => { state.mealWeekStart = e.target.value ? startOfWeekISO(e.target.value + "T00:00:00") : ""; renderMealPlan(); });
+  $("#btnPrevWeek").addEventListener("click", () => { state.mealWeekStart = addDaysISO(getMealWeekStart(), -7); renderMealPlan(); });
+  $("#btnNextWeek").addEventListener("click", () => { state.mealWeekStart = addDaysISO(getMealWeekStart(), 7); renderMealPlan(); });
+  $("#btnCopyWeek").addEventListener("click", copyLastWeek);
   $("#btnSaveMealPlan").addEventListener("click", saveMealPlan);
   $("#btnBuildMealPlanList").addEventListener("click", openBuildMealPlanListModal);
   $("#btnAddManual").addEventListener("click", () => openManualModal());

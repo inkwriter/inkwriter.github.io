@@ -483,7 +483,11 @@ main { max-width: 980px; margin: 0 auto; padding: 18px; }
   margin-bottom: 14px;
 }
 
-.meal-plan-toolbar .form-field { min-width: 180px; }
+.meal-plan-toolbar .form-field { min-width: 150px; }
+.week-nav { display: flex; align-items: end; gap: 6px; }
+.week-nav .btn { font-size: 1.1rem; line-height: 1; padding: 8px 12px; }
+.meal-meta { font-size: 0.82rem; color: var(--ink-soft); margin-left: auto; }
+.meal-dirty { color: #8A6614; font-weight: 600; }
 
 .meal-plan-grid {
   background: #fff;
@@ -493,15 +497,27 @@ main { max-width: 980px; margin: 0 auto; padding: 18px; }
   overflow: hidden;
 }
 
-.meal-plan-row {
+.meal-head, .meal-plan-row {
   display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 12px;
+  grid-template-columns: 100px repeat(3, minmax(0, 1fr));
+  gap: 10px;
   align-items: center;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--paper-deep);
+  padding: 10px 14px;
 }
+.meal-head {
+  background: var(--paper-deep);
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  padding-top: 8px; padding-bottom: 8px;
+}
+.meal-plan-row { border-bottom: 1px solid var(--paper-deep); }
 .meal-plan-row:last-child { border-bottom: none; }
+.meal-plan-row.today { background: var(--jar-tint); }
+.meal-slot { display: block; min-width: 0; }
+.meal-slot-label { display: none; }
+.meal-recipe { font-size: 0.85rem; padding: 7px 8px; color: var(--ink-soft); }
+.meal-recipe.picked { color: var(--ink); font-weight: 600; border-color: var(--jar); }
 
 .meal-day {
   font-family: var(--font-display);
@@ -524,10 +540,14 @@ main { max-width: 980px; margin: 0 auto; padding: 18px; }
 }
 
 @media (max-width: 720px) {
+  .meal-head { display: none; }
   .meal-plan-row {
     grid-template-columns: 1fr;
     gap: 6px;
   }
+  .meal-slot { display: grid; grid-template-columns: 76px 1fr; align-items: center; gap: 8px; }
+  .meal-slot-label { display: block; font-size: 0.74rem; font-weight: 600; color: var(--ink-soft); }
+  .meal-meta { margin-left: 0; width: 100%; }
 }
 
 /* ---------- The Receipt (signature element) ---------- */
@@ -946,6 +966,34 @@ main { max-width: 980px; margin: 0 auto; padding: 18px; }
   font-size: 0.86rem;
   padding: 20px;
 }
+/* use-by picker */
+.useby { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip-date { color: var(--ink); padding: 5px 11px; }
+.chip-date.strong { border-color: var(--jar); }
+.chip-date.active { background: var(--jar); border-color: var(--jar); color: #fff; }
+.chip-date.active .chip-count { color: #fff; }
+.useby-date { width: 150px; }
+.scan-tally-row { flex-wrap: wrap; }
+.tally-useby { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+.tally-useby-label { font-size: 0.76rem; font-weight: 700; color: #8A6614; }
+.tally-useby .chip-date { padding: 3px 9px; font-size: 0.76rem; }
+
+/* recipe import */
+.import-text { font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.45; }
+.imp-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 10px; }
+.imp-card.dup { border-style: dashed; opacity: 0.85; }
+.imp-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; cursor: pointer; }
+.imp-title input { accent-color: var(--jar); width: 16px; height: 16px; }
+.imp-dup { font-size: 0.78rem; color: #8A6614; margin: 6px 0 0; }
+.imp-ings { margin-top: 8px; display: flex; flex-direction: column; gap: 3px; }
+.imp-ing { display: flex; justify-content: space-between; gap: 10px; font-size: 0.8rem; border-top: 1px solid var(--paper-deep); padding-top: 3px; }
+.imp-ing em { font-style: normal; font-size: 0.68rem; color: var(--ink-soft); text-transform: uppercase; }
+.imp-ok { color: var(--jar); white-space: nowrap; }
+.imp-new { color: var(--ink-soft); white-space: nowrap; }
+
+.conv-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 600; }
+.conv-row .input { width: 90px; }
+.conv-hint { margin-top: 8px; font-size: 0.8rem; }
 .scan-tip { font-size: 0.78rem; color: var(--ink-soft); margin: 8px 0 0; }
 .scan-controls {
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;

@@ -10,19 +10,20 @@
  *   GET  ?action=getAll&token=...   → all tabs as JSON
  *   POST { token, action, payload } → one mutation, logged
  *
- * v3 (quick add + barcodes + aliases): the first request after
- * you deploy this version upgrades the Sheet by itself — adds a
- * "Barcodes" column to Inventory and a new "Aliases" tab. Your
- * existing rows are not touched.
+ * Upgrades run by themselves on the first request after you deploy:
+ *   v3 — "Barcodes" column on Inventory + new "Aliases" tab
+ *   v4 — "Shelf Life Days" and "Conversions" columns on Inventory,
+ *        three-slot meal plan, bulk recipe import
+ * Existing rows are never touched.
  * ============================================================
  */
 
-const SCHEMA_VERSION = "3";
+const SCHEMA_VERSION = "4";
 
 // ---------- Tab definitions (single source of truth) ----------
 
 const TABS = {
-  Inventory: ["Item ID","Item Name","Category","Location","Quantity","Unit","Min Quantity","Expiration Date","Store Section","Staple","Default Location","Notes","Last Updated","Status","Barcodes"],
+  Inventory: ["Item ID","Item Name","Category","Location","Quantity","Unit","Min Quantity","Expiration Date","Store Section","Staple","Default Location","Notes","Last Updated","Status","Barcodes","Shelf Life Days","Conversions"],
   Locations: ["Location ID","Location Name","Zone","Sort Order","Status"],
   Categories: ["Category ID","Category Name","Type","Default Store Section","Status"],
   Recipes: ["Recipe ID","Recipe Name","Description","Servings","Meal Type","Tags","Instructions","Notes","Times Cooked","Status"],
@@ -36,7 +37,7 @@ const TABS = {
 
 // camelCase keys used in JSON, mapped per tab in header order
 const KEYS = {
-  Inventory: ["itemId","itemName","category","location","quantity","unit","minQuantity","expirationDate","storeSection","staple","defaultLocation","notes","lastUpdated","status","barcodes"],
+  Inventory: ["itemId","itemName","category","location","quantity","unit","minQuantity","expirationDate","storeSection","staple","defaultLocation","notes","lastUpdated","status","barcodes","shelfLifeDays","conversions"],
   Locations: ["locationId","locationName","zone","sortOrder","status"],
   Categories: ["categoryId","categoryName","type","defaultStoreSection","status"],
   Recipes: ["recipeId","recipeName","description","servings","mealType","tags","instructions","notes","timesCooked","status"],
@@ -138,6 +139,8 @@ function ensureSchema() {
   const inv = ss.getSheetByName("Inventory");
   const bcCol = TABS.Inventory.indexOf("Barcodes") + 1;
   inv.getRange(1, bcCol, inv.getMaxRows(), 1).setNumberFormat("@");
+  const cvCol = TABS.Inventory.indexOf("Conversions") + 1;
+  inv.getRange(1, cvCol, inv.getMaxRows(), 1).setNumberFormat("@");
   const al = ss.getSheetByName("Aliases");
   al.getRange(1, 1, al.getMaxRows(), 1).setNumberFormat("@");
 
@@ -372,7 +375,7 @@ function doPost(e) {
           const iRow = findRow("Inventory", 1, ded.itemId);
           if (iRow > 0) {
             const cur = Number(sheet("Inventory").getRange(iRow, 5).getValue() || 0);
-            const next = Math.max(0, cur - Number(ded.qty || 0));
+            const next = Math.max(0, Math.round((cur - Number(ded.qty || 0)) * 1000) / 1000);
             updateFields("Inventory", iRow, { quantity: next, lastUpdated: todayStr() });
             log("deduct", ded.itemId, "qty=" + cur, "qty=" + next);
           }
@@ -388,14 +391,41 @@ function doPost(e) {
 
       case "saveMealPlan": {
         if (!p.weekOf) return json({ error: "Missing weekOf" });
-        deleteMealPlanRows(p.weekOf, "Dinner");
+        const SLOTS = ["Breakfast", "Lunch", "Dinner"];
+        deleteMealPlanRows(p.weekOf); // the whole week, every slot
+        let n = 0;
         (p.entries || []).forEach(function (entry) {
-          if (!entry.recipeId) return;
-          const full = Object.assign({}, entry, { weekOf: p.weekOf, mealSlot: "Dinner", status: "active" });
+          if (!entry.recipeId && !entry.notes) return;
+          const slot = SLOTS.indexOf(entry.mealSlot) >= 0 ? entry.mealSlot : "Dinner";
+          const full = Object.assign({}, entry, { weekOf: p.weekOf, mealSlot: slot, status: "active" });
           sheet("MealPlan").appendRow(objToRow("MealPlan", full));
+          n++;
         });
-        log("save_meal_plan", p.weekOf, "", (p.entries || []).length + " dinners");
+        log("save_meal_plan", p.weekOf, "", n + " meals");
         return json({ ok: true });
+      }
+
+      // Many recipes in one request (the Import box).
+      case "addRecipes": {
+        const ids = [];
+        (p.recipes || []).forEach(function (r) {
+          const recipeId = nextRecipeId();
+          const recipe = Object.assign({}, r.recipe, { recipeId: recipeId, timesCooked: 0, status: "active" });
+          sheet("Recipes").appendRow(objToRow("Recipes", recipe));
+          const rows = (r.ingredients || []).map(function (ing) {
+            return objToRow("RecipeIngredients", Object.assign({}, ing, { recipeId: recipeId }));
+          });
+          if (rows.length) {
+            const sh = sheet("RecipeIngredients");
+            const start = sh.getLastRow() + 1;
+            const spare = sh.getMaxRows() - start + 1;
+            if (spare < rows.length) sh.insertRowsAfter(sh.getMaxRows(), rows.length - spare);
+            sh.getRange(start, 1, rows.length, rows[0].length).setValues(rows);
+          }
+          log("add_recipe", recipeId, "import", recipe.recipeName);
+          ids.push(recipeId);
+        });
+        return json({ ok: true, recipeIds: ids });
       }
 
       case "clearDone": {
@@ -421,7 +451,7 @@ function doPost(e) {
         const row = findRow("Inventory", 1, p.itemId);
         if (row < 0) return json({ error: "Item not found: " + p.itemId });
         const cur = Number(sheet("Inventory").getRange(row, 5).getValue() || 0);
-        const next = Math.max(0, cur + Number(p.qty || 0));
+        const next = Math.max(0, Math.round((cur + Number(p.qty || 0)) * 1000) / 1000);
         updateFields("Inventory", row, { quantity: next, lastUpdated: todayStr() });
         log(p.undo ? "quick_add_undo" : "quick_add", p.itemId, "qty=" + cur, "qty=" + next);
         return json({ ok: true, quantity: next });
@@ -603,7 +633,7 @@ function deleteMealPlanRows(weekOf, mealSlot) {
       ? Utilities.formatDate(values[i][0], Session.getScriptTimeZone(), "yyyy-MM-dd")
       : String(values[i][0]);
     const rowSlot = String(values[i][2]);
-    if (rowWeek === String(weekOf) && rowSlot === String(mealSlot)) sh.deleteRow(i + 2);
+    if (rowWeek === String(weekOf) && (!mealSlot || rowSlot === String(mealSlot))) sh.deleteRow(i + 2);
   }
 }
 
@@ -623,13 +653,15 @@ function lowStockDaily() {
   inv.forEach(function (it) {
     const min = Number(it.minQuantity);
     if (it.status !== "active" || !min || isNaN(min)) return;
-    if (Number(it.quantity || 0) >= min || onList[it.itemId]) return;
+    // an opened package still counts as one (0.9 gal of milk isn't "low")
+    const have = Math.ceil(Number(it.quantity || 0) - 1e-9);
+    if (have >= min || onList[it.itemId]) return;
     const lineId = nextId("next_line_id", "SL", 4);
     sheet("ShoppingList").appendRow(objToRow("ShoppingList", {
       lineId: lineId,
       itemName: it.itemName,
       linkedItemId: it.itemId,
-      quantityToBuy: min - Number(it.quantity || 0),
+      quantityToBuy: Math.max(1, Math.ceil(min - have)),
       unit: it.unit,
       category: it.category,
       storeSection: it.storeSection || "Other",
