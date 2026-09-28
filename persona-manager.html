@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Persona Manager</title>
+<style>
+  :root{--bg:#12141a;--card:#1c1f27;--line:#2c3038;--txt:#e6e8ec;--dim:#8b909c;--acc:#5b9dff;--warn:#ff6b6b}
+  *{box-sizing:border-box;font-family:system-ui,sans-serif}
+  body{margin:0;background:var(--bg);color:var(--txt);padding:16px;max-width:820px;margin:auto}
+  h1{font-size:18px;margin:0 0 2px}
+  .sub{color:var(--dim);font-size:12px;margin-bottom:14px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  button{background:var(--acc);color:#fff;border:0;padding:8px 12px;border-radius:7px;font-size:13px;cursor:pointer}
+  button.ghost{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+  button.del{background:transparent;color:var(--warn);padding:4px 8px}
+  input,textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    border-radius:7px;padding:8px;font-size:13px;margin-top:6px}
+  textarea{min-height:52px;resize:vertical}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:160px}
+  label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.4px}
+  .p-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .p-name{font-weight:600;font-size:15px}
+  .p-plat{font-size:12px;color:var(--acc)}
+  .kv{font-size:13px;margin-top:6px;white-space:pre-wrap}
+  .kv b{color:var(--dim);font-weight:500}
+  .empty{color:var(--dim);text-align:center;padding:30px 0;font-size:13px}
+  .tag{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:20px;
+    padding:2px 9px;font-size:11px;margin:2px 4px 0 0}
+</style>
+
+<h1>Persona Manager</h1>
+<div class="sub">Track research personas + cover details so accounts never cross-contaminate. Session-only — export to save.</div>
+
+<div class="bar">
+  <button onclick="showForm()">+ New Persona</button>
+  <button class="ghost" onclick="doExport()">Export JSON</button>
+  <button class="ghost" onclick="imp.click()">Import JSON</button>
+  <input id="imp" type="file" accept=".json" style="display:none" onchange="doImport(event)">
+</div>
+
+<div id="form" style="display:none" class="card">
+  <div class="row">
+    <div><label>Persona name</label><input id="f_name" placeholder="Alex Rivera"></div>
+    <div><label>Platforms (comma-sep)</label><input id="f_plat" placeholder="Reddit, X, Discord"></div>
+  </div>
+  <div class="row">
+    <div><label>Email / handle</label><input id="f_email" placeholder="a.rivera@…"></div>
+    <div><label>Location cover</label><input id="f_loc" placeholder="Austin, TX"></div>
+  </div>
+  <label>Cover / backstory</label>
+  <textarea id="f_cover" placeholder="Age, job, interests, tone, avatar source…"></textarea>
+  <label>Op-sec notes</label>
+  <textarea id="f_notes" placeholder="VPN exit, browser profile, last login, do-nots…"></textarea>
+  <div class="bar" style="margin:12px 0 0">
+    <button onclick="save()">Save</button>
+    <button class="ghost" onclick="hideForm()">Cancel</button>
+  </div>
+</div>
+
+<div id="list"></div>
+
+<script>
+let data=[], editId=null;
+const $=id=>document.getElementById(id);
+
+function showForm(p){
+  editId = p?p.id:null;
+  $('f_name').value=p?p.name:''; $('f_plat').value=p?p.plat:'';
+  $('f_email').value=p?p.email:''; $('f_loc').value=p?p.loc:'';
+  $('f_cover').value=p?p.cover:''; $('f_notes').value=p?p.notes:'';
+  $('form').style.display='block'; $('f_name').focus();
+}
+function hideForm(){$('form').style.display='none';editId=null}
+function save(){
+  const n=$('f_name').value.trim(); if(!n)return $('f_name').focus();
+  const o={id:editId||Date.now(),name:n,plat:$('f_plat').value.trim(),
+    email:$('f_email').value.trim(),loc:$('f_loc').value.trim(),
+    cover:$('f_cover').value.trim(),notes:$('f_notes').value.trim()};
+  if(editId){data=data.map(p=>p.id===editId?o:p)} else {data.push(o)}
+  hideForm(); render();
+}
+function del(id){if(confirm('Delete this persona?')){data=data.filter(p=>p.id!==id);render()}}
+function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+
+function render(){
+  const L=$('list');
+  if(!data.length){L.innerHTML='<div class="empty">No personas yet. Add one to start tracking.</div>';return}
+  L.innerHTML=data.map(p=>{
+    const tags=(p.plat||'').split(',').map(t=>t.trim()).filter(Boolean)
+      .map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+    const line=(lbl,v)=>v?`<div class="kv"><b>${lbl}:</b> ${esc(v)}</div>`:'';
+    return `<div class="card">
+      <div class="p-head">
+        <div><div class="p-name">${esc(p.name)}</div><div>${tags}</div></div>
+        <div style="white-space:nowrap">
+          <button class="ghost" onclick='showForm(${JSON.stringify(p)})'>Edit</button>
+          <button class="del" onclick="del(${p.id})">Delete</button>
+        </div>
+      </div>
+      ${line('Email/handle',p.email)}
+      ${line('Location',p.loc)}
+      ${line('Cover',p.cover)}
+      ${line('Op-sec',p.notes)}
+    </div>`;
+  }).join('');
+}
+
+function doExport(){
+  const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b); a.download='personas.json'; a.click();
+}
+function doImport(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);
+    if(Array.isArray(d)){data=d;render()}else alert('Bad file')}catch{alert('Bad file')}};
+  r.readAsText(f); e.target.value='';
+}
+render();
+</script>
