@@ -15,7 +15,7 @@ const checklistData = {
     { id: "sfc", label: "SFC" },
     { id: "updates", label: "Updates" },
     { id: "battery", label: "Check Battery Back Up" },
-    { id: "usbEthernet", label: "Check USB/Ethernet x:\\\\10.5.48.2\\xmlgateway" },
+    { id: "usbEthernet", label: "Check USB/Ethernet xmlgateway" },
     { id: "unauthorized", label: "Check for unauthorized devices" },
     { id: "deadCables", label: "Check for Dead Cables" },
     { id: "printerPower", label: "Check for printer to be plugged into wall"},
