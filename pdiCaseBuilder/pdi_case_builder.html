@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDI Case Builder</title>
+<style>
+:root{--bg:#f5f7fb;--panel:#ffffff;--text:#18212f;--muted:#677489;--border:#dce3ec;--accent:#3157d5;--accent2:#e9efff;--good:#1f7a4c;--warn:#9b6a00;--bad:#a23333;--shadow:0 10px 26px rgba(28,42,66,.08)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}.shell{max-width:1180px;margin:0 auto;padding:24px}.topbar{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:22px}.brand h1{font-size:28px;margin:0}.brand p{margin:6px 0 0;color:var(--muted)}.actions{display:flex;flex-wrap:wrap;gap:10px}.btn{border:1px solid var(--border);background:#fff;color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}.btn:hover{border-color:#b7c3d5}.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.ghost{background:transparent}.btn.danger{color:var(--bad)}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}.panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow)}.panel .hd{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px}.panel .hd h2,.panel .hd h3{margin:0;font-size:18px}.panel .bd{padding:20px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.stat{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px}.stat b{display:block;font-size:22px;margin-top:4px}.stat span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}.field label{font-size:13px;font-weight:800}.field small{color:var(--muted)}input,select,textarea{width:100%;border:1px solid var(--border);border-radius:10px;background:#fff;padding:11px 12px;color:var(--text)}textarea{min-height:92px;resize:vertical}.module{border:1px solid var(--border);border-radius:14px;margin-bottom:14px;overflow:hidden;background:#fff}.module-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;background:#fbfcfe}.module-head .left{display:flex;gap:10px;align-items:center}.num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--accent2);color:var(--accent);font-weight:900}.module-title{font-weight:900}.module-sub{font-size:12px;color:var(--muted);margin-top:2px}.module-body{padding:16px;border-top:1px solid var(--border)}.module-body.hidden{display:none}.status-pill{font-size:12px;border-radius:999px;padding:5px 9px;background:#eef2f7;color:var(--muted);font-weight:800}.status-pill.done{background:#e7f5ed;color:var(--good)}.inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.choice-row{display:flex;gap:8px;flex-wrap:wrap}.choice{border:1px solid var(--border);padding:9px 11px;border-radius:10px;cursor:pointer;background:#fff}.choice.active{border-color:var(--accent);background:var(--accent2);color:var(--accent);font-weight:800}.guide{border:1px solid #cfd9f5;background:#f5f8ff;border-radius:12px;padding:14px;margin-top:14px}.guide strong{display:block;margin-bottom:6px}.guide p{margin:0;color:#42516a}.timeline{display:flex;flex-direction:column;gap:10px}.titem{padding-left:16px;border-left:3px solid #d8dfeb}.titem b{font-size:13px}.titem p{margin:3px 0 0;color:var(--muted);font-size:13px}.screens{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}.shot{border:1px solid var(--border);border-radius:10px;padding:8px;background:#fafbfd}.shot img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:7px;display:block}.shot input{margin-top:7px;padding:8px;font-size:12px}.shot button{margin-top:7px;width:100%}.hint{font-size:12px;color:var(--muted)}.sep{height:1px;background:var(--border);margin:16px 0}.report{display:none}.report.show{display:block}.report h2{margin-top:0}.report section{margin:0 0 20px}.report h3{font-size:16px;margin:0 0 8px}.report ul{margin:6px 0 0;padding-left:20px}.report .rshot{margin:10px 0}.report .rshot img{max-width:100%;max-height:460px;border:1px solid var(--border);border-radius:8px}.case-list{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto}.case-card{border:1px solid var(--border);border-radius:12px;padding:12px}.case-card b{display:block}.case-card span{font-size:12px;color:var(--muted)}.case-card .inline{margin-top:8px}.empty{color:var(--muted);font-size:13px}.toolbar-note{font-size:12px;color:var(--muted)}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.shell{padding:14px}.topbar{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.summary{grid-template-columns:1fr 1fr}}
+@media print{body{background:#fff}.topbar,.summary,.grid>.panel:first-child,.sidepanel{display:none!important}.grid{display:block}.panel{box-shadow:none;border:0}.report{display:block!important}.shell{max-width:none;padding:0}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand"><h1>PDI Case Builder</h1><p>Guided troubleshooting, evidence capture, and clean case reporting.</p></div>
+    <div class="actions">
+      <button class="btn" id="newCase">New Case</button>
+      <button class="btn" id="saveCase">Save Case</button>
+      <button class="btn" id="exportJson">Export JSON</button>
+      <button class="btn" id="exportPdfTop">Export PDF</button>
+      <button class="btn primary" id="buildReport">Generate Report</button>
+    </div>
+  </div>
+
+  <div class="summary">
+    <div class="stat"><span>Completed modules</span><b id="statModules">0</b></div>
+    <div class="stat"><span>Timeline entries</span><b id="statTimeline">0</b></div>
+    <div class="stat"><span>Screenshots</span><b id="statShots">0</b></div>
+    <div class="stat"><span>Current direction</span><b id="statDirection" style="font-size:16px">Gathering evidence</b></div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="panel">
+        <div class="hd"><h2>Case Workspace</h2><span class="toolbar-note">Only entered information appears in the final report.</span></div>
+        <div class="bd">
+          <div class="form-grid" id="overview">
+            <div class="field"><label>Store / Location</label><input id="store" placeholder="e.g., Hazard 2 #1050"></div>
+            <div class="field"><label>Ticket #</label><input id="ticket" placeholder="Optional"></div>
+            <div class="field"><label>Date</label><input id="date" type="date"></div>
+            <div class="field"><label>Category</label><select id="category"><option value="">Choose if useful</option><option>Polling</option><option>Paperwork</option><option>Passport / Store Close</option><option>Connectivity</option><option>Printer</option><option>Locks / Data</option><option>Enterprise / PDI</option><option>Other</option></select></div>
+            <div class="field full"><label>Reported issue</label><textarea id="reported" placeholder="What did the store/user report?"></textarea></div>
+          </div>
+
+          <div class="sep"></div>
+          <div id="modules"></div>
+          <button class="btn" id="addUnexpected">+ Add unexpected finding</button>
+        </div>
+      </div>
+
+      <div class="panel report" id="reportPanel" style="margin-top:20px">
+        <div class="hd"><h2>Generated Case Report</h2><div class="actions"><button class="btn" id="copyReport">Copy Text</button><button class="btn" id="printReport">Export PDF</button></div></div>
+        <div class="bd" id="reportBody"></div>
+      </div>
+    </div>
+
+    <div class="sidepanel">
+      <div class="panel">
+        <div class="hd"><h3>Guidance</h3></div>
+        <div class="bd"><div id="guidance" class="guide"><strong>Start with evidence.</strong><p>Use Rick's order: paperwork → Enterprise Uploads → poll attempt → connection as needed → XMLGateway/POSOutbox only when the evidence points there.</p></div></div>
+      </div>
+
+      <div class="panel" style="margin-top:20px">
+        <div class="hd"><h3>Case Timeline</h3></div>
+        <div class="bd"><div id="timeline" class="timeline"><div class="empty">No troubleshooting actions recorded yet.</div></div></div>
+      </div>
+
+      <div class="panel" style="margin-top:20px">
+        <div class="hd"><h3>Saved Cases</h3><button class="btn" id="refreshCases">Refresh</button></div>
+        <div class="bd"><input id="caseSearch" placeholder="Search saved cases"><div id="caseList" class="case-list" style="margin-top:12px"><div class="empty">No saved cases yet.</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const state={id:uid(),timeline:[],screens:{},unexpected:[]};
+const baseModules=[
+ {id:'paperwork',n:1,title:'Shared Paperwork Folder',sub:'First look: is expected paperwork present for the business day?',question:'What is in the shared paperwork folder?',choices:['Paperwork present','Nothing for expected day','Some paperwork / incomplete','Wrong date / unusual files','Not checked'],fields:[['paperworkNotes','Notes / what you observed']]},
+ {id:'uploads',n:2,title:'Enterprise Data → Uploads',sub:'See what actually reached Enterprise before assuming the cause.',question:'What do you see in Enterprise Data → Uploads?',choices:['Normal poll files present','Network batch only','Nothing present','Files present but timestamps look wrong','Wrong business date','Other'],fields:[['uploadNotes','File names, timestamps, or other notes']]},
+ {id:'poll',n:3,title:'Attempt a Poll',sub:'Try the poll and capture exactly what happens.',question:'What happened when you attempted the poll?',choices:['Poll successful','Poll failed','No files available','Timeout','Connection error','Lock / data error','Poll completed but data is wrong','Other'],fields:[['pollMessage','Exact message / error text'],['pollNotes','Additional notes']]},
+ {id:'connection',n:4,title:'PDI Connection Check',sub:'Use when needed; the desktop client often reveals disconnection.',question:'What does the PDI desktop client show?',choices:['Host is connected','Disconnected','Connecting','Unknown / not checked'],fields:[['connectionNotes','Connection notes']]},
+ {id:'gateway',n:5,title:'XMLGateway / POSOutbox',sub:'Deeper store-side check after the earlier evidence has been reviewed.',question:'What did you find in XMLGateway / POSOutbox?',choices:['Mapped successfully; close is present','Mapped successfully; close is missing','Could not reach XMLGateway IP','POSOutbox unavailable','Wrong / unclear business date','Not checked'],fields:[['gatewayNotes','Files, timestamps, close details, or notes']]},
+ {id:'resolution',n:6,title:'Resolution & Verification',sub:'Capture the actual cause, fix, and proof that the issue is resolved.',question:'Finish the case with only what you know.',choices:[],fields:[['rootCause','Root cause'],['resolution','Resolution / fix'],['verification','How you verified it'],['lesson','What should be checked first next time?']]}
+];
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function modHtml(m){
+ const choices=m.choices.map(c=>`<button type="button" class="choice" data-choice="${esc(c)}">${esc(c)}</button>`).join('');
+ const fields=m.fields.map(([id,label])=>`<div class="field full"><label>${esc(label)}</label><textarea id="${id}" data-module="${m.id}" placeholder="Optional"></textarea></div>`).join('');
+ return `<div class="module" data-module="${m.id}"><div class="module-head"><div class="left"><div class="num">${m.n}</div><div><div class="module-title">${esc(m.title)}</div><div class="module-sub">${esc(m.sub)}</div></div></div><div class="inline"><span class="status-pill" id="pill-${m.id}">Optional</span><button type="button" class="btn toggle">Open</button></div></div><div class="module-body hidden"><div class="field full"><label>${esc(m.question)}</label>${choices?`<div class="choice-row" data-choice-group="${m.id}">${choices}</div>`:''}</div><div class="form-grid" style="margin-top:12px">${fields}</div><div class="sep"></div><div class="inline"><label class="btn" style="cursor:pointer">Add screenshot<input class="shotInput" data-shot-module="${m.id}" type="file" accept="image/*" multiple hidden></label><span class="hint">Screenshots stay attached to this case and appear only if added.</span></div><div class="screens" id="shots-${m.id}"></div></div></div>`
+}
+function renderModules(){ $('#modules').innerHTML=baseModules.map(modHtml).join(''); bindModuleEvents(); }
+function bindModuleEvents(){
+ $$('.module .toggle').forEach(b=>b.addEventListener('click',()=>{const body=b.closest('.module').querySelector('.module-body');body.classList.toggle('hidden');b.textContent=body.classList.contains('hidden')?'Open':'Close'}));
+ $$('.choice').forEach(b=>b.addEventListener('click',()=>{const g=b.closest('[data-choice-group]');g.querySelectorAll('.choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');const mod=g.dataset.choiceGroup; addTimeline(baseModules.find(x=>x.id===mod)?.title||mod,b.dataset.choice); updateAll();}));
+ $$('textarea[data-module]').forEach(t=>t.addEventListener('change',()=>{if(t.value.trim()) addTimeline(baseModules.find(x=>x.id===t.dataset.module)?.title||t.dataset.module,`${t.previousElementSibling?.textContent||'Note'}: ${t.value.trim()}`); updateAll();}));
+ $$('.shotInput').forEach(i=>i.addEventListener('change',handleShots));
+}
+function addTimeline(source,text){ if(!text)return; const last=state.timeline[state.timeline.length-1]; if(last&&last.source===source&&last.text===text)return; state.timeline.push({ts:new Date().toISOString(),source,text}); renderTimeline(); }
+function renderTimeline(){const t=$('#timeline'); if(!state.timeline.length){t.innerHTML='<div class="empty">No troubleshooting actions recorded yet.</div>';return;} t.innerHTML=state.timeline.map(x=>`<div class="titem"><b>${esc(x.source)}</b><p>${esc(x.text)}</p></div>`).join('');}
+function handleShots(e){const mod=e.target.dataset.shotModule; const files=Array.from(e.target.files||[]); if(!state.screens[mod])state.screens[mod]=[]; files.slice(0,8).forEach(f=>{if(!f.type.startsWith('image/'))return; const r=new FileReader(); r.onload=()=>{state.screens[mod].push({id:uid(),name:f.name,data:r.result,caption:''}); renderShots(mod); updateAll();}; r.readAsDataURL(f);}); e.target.value='';}
+function renderShots(mod){const box=$('#shots-'+mod); if(!box)return; box.innerHTML=(state.screens[mod]||[]).map(s=>`<div class="shot" data-shot-id="${s.id}"><img src="${s.data}" alt="Attached troubleshooting screenshot"><input class="caption" placeholder="Screenshot caption" value="${esc(s.caption)}"><button type="button" class="btn danger removeShot">Remove</button></div>`).join(''); box.querySelectorAll('.caption').forEach(inp=>inp.addEventListener('input',()=>{const id=inp.closest('.shot').dataset.shotId; const s=state.screens[mod].find(x=>x.id===id); if(s)s.caption=inp.value;})); box.querySelectorAll('.removeShot').forEach(btn=>btn.addEventListener('click',()=>{const id=btn.closest('.shot').dataset.shotId; state.screens[mod]=state.screens[mod].filter(x=>x.id!==id); renderShots(mod); updateAll();}));}
+function choice(mod){return document.querySelector(`[data-choice-group="${mod}"] .choice.active`)?.dataset.choice||''}
+function val(id){return ($('#'+id)?.value||'').trim()}
+function moduleHasData(m){return !!choice(m.id)||m.fields.some(([id])=>val(id))||((state.screens[m.id]||[]).length>0)}
+function updateAll(){baseModules.forEach(m=>{const has=moduleHasData(m),p=$('#pill-'+m.id);if(p){p.textContent=has?'Has data':'Optional';p.classList.toggle('done',has)}}); const done=baseModules.filter(moduleHasData).length; $('#statModules').textContent=done; $('#statTimeline').textContent=state.timeline.length; $('#statShots').textContent=Object.values(state.screens).reduce((a,b)=>a+b.length,0); updateGuidance();}
+function updateGuidance(){
+ const p=choice('paperwork'),u=choice('uploads'),po=choice('poll'),c=choice('connection'),g=choice('gateway'); let title='Gathering evidence',txt="Use Rick's order: paperwork → Enterprise Uploads → poll attempt → connection as needed → XMLGateway/POSOutbox only when the evidence points there.";
+ if(!p){title='Start with paperwork';txt='Check the shared paperwork folder for the expected business day. Do not jump straight to XMLGateway.'}
+ else if(!u){title='Next: Enterprise Uploads';txt='Now check Enterprise Data → Uploads to see what, if anything, was polled.'}
+ else if(!po){title='Next: attempt a poll';txt='Try the poll and capture the exact result or error. This gives you another piece of evidence before deeper checks.'}
+ else if(c==='Disconnected'||po==='Connection error'){title='Connectivity is a strong direction';txt='The current evidence supports checking the connection path before focusing on paperwork processing. Document what restores communication.'}
+ else if(p==='Nothing for expected day' && (u==='Nothing present'||u==='Network batch only') && po && !g){title='Consider XMLGateway / POSOutbox';txt='You have already checked paperwork, Enterprise Uploads, and the poll result. A deeper XMLGateway/POSOutbox check can now help determine whether the store actually closed and where the chain broke.'}
+ else if(g==='Mapped successfully; close is present'){title='Store close exists';txt='POSOutbox shows the close. Continue downstream: compare Enterprise Uploads and poll behavior to find where processing failed.'}
+ else if(g==='Mapped successfully; close is missing'){title='Store-side path needs attention';txt='The expected close is not present in POSOutbox. Investigate the store-side close/communication path, including the USB-to-Ethernet adapter when appropriate.'}
+ else if(val('rootCause')||val('resolution')){title='Ready to document';txt='Capture verification and the lesson learned, then generate the report. Blank sections will be omitted.'}
+ else {title='Follow the evidence';txt='You have enough initial data to keep troubleshooting. Use the deeper checks only when the earlier observations support them.'}
+ $('#guidance').innerHTML=`<strong>${esc(title)}</strong><p>${esc(txt)}</p>`; $('#statDirection').textContent=title;
+}
+function collect(){return {id:state.id,overview:{store:val('store'),ticket:val('ticket'),date:val('date'),category:val('category'),reported:val('reported')},modules:baseModules.map(m=>({id:m.id,title:m.title,choice:choice(m.id),fields:Object.fromEntries(m.fields.map(([id,label])=>[id,{label,value:val(id)}])),screens:state.screens[m.id]||[]})),unexpected:state.unexpected.slice(),timeline:state.timeline.slice(),savedAt:new Date().toISOString()}}
+function sectionIf(title,html){return html?`<section><h3>${esc(title)}</h3>${html}</section>`:''}
+function buildReportHtml(data){const o=data.overview; let out=`<h2>PDI Troubleshooting Case${o.store?` — ${esc(o.store)}`:''}</h2>`; const meta=[['Ticket',o.ticket],['Date',o.date],['Category',o.category]].filter(x=>x[1]); if(meta.length)out+=sectionIf('Case Summary','<ul>'+meta.map(([k,v])=>`<li><b>${esc(k)}:</b> ${esc(v)}</li>`).join('')+'</ul>'); if(o.reported)out+=sectionIf('Reported Issue',`<p>${esc(o.reported).replace(/\n/g,'<br>')}</p>`);
+ data.modules.forEach(m=>{const lines=[]; if(m.choice)lines.push(`<li><b>Finding:</b> ${esc(m.choice)}</li>`); Object.values(m.fields).forEach(f=>{if(f.value)lines.push(`<li><b>${esc(f.label)}:</b> ${esc(f.value).replace(/\n/g,'<br>')}</li>`)}); const shots=m.screens||[]; let html=lines.length?`<ul>${lines.join('')}</ul>`:''; if(shots.length)html+=shots.map(s=>`<div class="rshot"><img src="${s.data}" alt="Troubleshooting screenshot">${s.caption?`<p><b>Screenshot:</b> ${esc(s.caption)}</p>`:''}</div>`).join(''); if(html)out+=sectionIf(m.title,html);});
+ if(data.unexpected.length)out+=sectionIf('Unexpected Findings','<ul>'+data.unexpected.filter(x=>x.text).map(x=>`<li>${esc(x.text)}</li>`).join('')+'</ul>'); if(data.timeline.length)out+=sectionIf('Troubleshooting Timeline','<ol>'+data.timeline.map(x=>`<li><b>${esc(x.source)}:</b> ${esc(x.text)}</li>`).join('')+'</ol>'); return out; }
+function reportText(data){const lines=[];const o=data.overview;lines.push(`PDI Troubleshooting Case${o.store?' — '+o.store:''}`);[['Ticket',o.ticket],['Date',o.date],['Category',o.category]].forEach(([k,v])=>{if(v)lines.push(`${k}: ${v}`)}); if(o.reported)lines.push(`\nReported Issue\n${o.reported}`); data.modules.forEach(m=>{const parts=[];if(m.choice)parts.push(`Finding: ${m.choice}`);Object.values(m.fields).forEach(f=>{if(f.value)parts.push(`${f.label}: ${f.value}`)});if(parts.length){lines.push(`\n${m.title}`,...parts)}}); if(data.unexpected.some(x=>x.text)){lines.push('\nUnexpected Findings',...data.unexpected.filter(x=>x.text).map(x=>'- '+x.text));} if(data.timeline.length){lines.push('\nTroubleshooting Timeline',...data.timeline.map((x,i)=>`${i+1}. ${x.source}: ${x.text}`));} return lines.join('\n');}
+async function saveDB(data){return new Promise((resolve,reject)=>{const req=indexedDB.open('pdi_case_builder',1);req.onupgradeneeded=()=>req.result.createObjectStore('cases',{keyPath:'id'});req.onerror=()=>reject(req.error);req.onsuccess=()=>{const db=req.result,tx=db.transaction('cases','readwrite');tx.objectStore('cases').put(data);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error)}})}
+async function getCases(){return new Promise((resolve,reject)=>{const req=indexedDB.open('pdi_case_builder',1);req.onupgradeneeded=()=>req.result.createObjectStore('cases',{keyPath:'id'});req.onerror=()=>reject(req.error);req.onsuccess=()=>{const db=req.result,tx=db.transaction('cases','readonly'),r=tx.objectStore('cases').getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error)}})}
+async function loadCases(){const q=val('caseSearch').toLowerCase();let cases=await getCases();cases=cases.sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));if(q)cases=cases.filter(c=>JSON.stringify(c.overview).toLowerCase().includes(q)||JSON.stringify(c.modules).toLowerCase().includes(q));const box=$('#caseList');if(!cases.length){box.innerHTML='<div class="empty">No matching saved cases.</div>';return;}box.innerHTML=cases.map(c=>`<div class="case-card"><b>${esc(c.overview.store||'Untitled case')}</b><span>${esc(c.overview.date||'No date')} ${c.overview.ticket?'• '+esc(c.overview.ticket):''}</span><div class="inline"><button class="btn loadSaved" data-id="${c.id}">Load</button></div></div>`).join('');box.querySelectorAll('.loadSaved').forEach(b=>b.addEventListener('click',()=>loadSaved(cases.find(x=>x.id===b.dataset.id))));}
+function loadSaved(c){resetForm(false);state.id=c.id;state.timeline=c.timeline||[];state.screens={};(c.modules||[]).forEach(m=>state.screens[m.id]=m.screens||[]);state.unexpected=c.unexpected||[];Object.entries(c.overview||{}).forEach(([k,v])=>{const el=$('#'+k);if(el)el.value=v||''});(c.modules||[]).forEach(m=>{if(m.choice){const btn=document.querySelector(`[data-choice-group="${m.id}"] .choice[data-choice="${CSS.escape(m.choice)}"]`);if(btn)btn.classList.add('active')}Object.entries(m.fields||{}).forEach(([id,obj])=>{const el=$('#'+id);if(el)el.value=obj.value||''});renderShots(m.id)});renderUnexpected();renderTimeline();updateAll();}
+function resetForm(newId=true){$$('input:not([type=file]),textarea,select').forEach(el=>{if(el.id==='date')return;el.value=''});$('#date').value=new Date().toISOString().slice(0,10);$$('.choice.active').forEach(x=>x.classList.remove('active'));state.timeline=[];state.screens={};state.unexpected=[];if(newId)state.id=uid();renderTimeline();renderUnexpected();baseModules.forEach(m=>renderShots(m.id));$('#reportPanel').classList.remove('show');updateAll();}
+function renderUnexpected(){let host=$('#unexpectedHost');if(!host){host=document.createElement('div');host.id='unexpectedHost';host.style.marginTop='14px';$('#addUnexpected').insertAdjacentElement('beforebegin',host)}host.innerHTML=state.unexpected.map((u,i)=>`<div class="field full" style="margin-bottom:10px"><label>Unexpected finding ${i+1}</label><textarea data-unexpected="${u.id}" placeholder="What did you find that did not fit the normal flow?">${esc(u.text)}</textarea><button type="button" class="btn danger removeUnexpected" data-id="${u.id}" style="margin-top:6px">Remove</button></div>`).join('');host.querySelectorAll('textarea').forEach(t=>t.addEventListener('input',()=>{const x=state.unexpected.find(v=>v.id===t.dataset.unexpected);if(x)x.text=t.value}));host.querySelectorAll('.removeUnexpected').forEach(b=>b.addEventListener('click',()=>{state.unexpected=state.unexpected.filter(x=>x.id!==b.dataset.id);renderUnexpected();updateAll()}));}
+function download(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},300)}
+$('#addUnexpected').addEventListener('click',()=>{state.unexpected.push({id:uid(),text:''});renderUnexpected()});
+$('#newCase').addEventListener('click',()=>{if(confirm('Start a new case? Unsaved work will be cleared.'))resetForm(true)});
+$('#saveCase').addEventListener('click',async()=>{await saveDB(collect());await loadCases();alert('Case saved in this browser.');});
+$('#refreshCases').addEventListener('click',loadCases);$('#caseSearch').addEventListener('input',loadCases);
+$('#buildReport').addEventListener('click',()=>{const d=collect();$('#reportBody').innerHTML=buildReportHtml(d);$('#reportPanel').classList.add('show');$('#reportPanel').scrollIntoView({behavior:'smooth',block:'start'})});
+
+function pdfAscii(value){return String(value??'').replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/[\u2013\u2014]/g,'-').replace(/\u2192/g,'->').replace(/[^\x20-\x7E\n\r\t]/g,'?')}
+function pdfEscape(value){return pdfAscii(value).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)')}
+function wrapPdfText(text,maxChars){const out=[];String(text||'').split(/\r?\n/).forEach(par=>{if(!par.trim()){out.push('');return}const words=pdfAscii(par).split(/\s+/);let line='';words.forEach(word=>{if(word.length>maxChars){if(line){out.push(line);line=''};for(let i=0;i<word.length;i+=maxChars)out.push(word.slice(i,i+maxChars));return}const next=line?line+' '+word:word;if(next.length>maxChars){if(line)out.push(line);line=word}else line=next});if(line)out.push(line)});return out}
+async function imageToJpegInfo(dataUrl){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{try{const max=1400,scale=Math.min(1,max/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));const w=Math.max(1,Math.round((img.naturalWidth||img.width)*scale)),h=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);const jpg=canvas.toDataURL('image/jpeg',0.82);const raw=atob(jpg.split(',')[1]);const bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);resolve({bytes,width:w,height:h})}catch(e){reject(e)}};img.onerror=()=>reject(new Error('Could not read screenshot'));img.src=dataUrl})}
+function concatBytes(chunks){let len=0;chunks.forEach(c=>len+=c.length);const out=new Uint8Array(len);let off=0;chunks.forEach(c=>{out.set(c,off);off+=c.length});return out}
+function strBytes(s){return new TextEncoder().encode(s)}
+async function makeCasePdf(data){
+ const W=612,H=792,M=54,contentW=W-M*2,bottom=54;const pages=[];let page=null,y=0;const imagePool=[];
+ const newPage=()=>{page={cmd:[],images:[]};pages.push(page);y=H-M};
+ const ensure=h=>{if(!page)newPage();if(y-h<bottom)newPage()};
+ const textLine=(txt,size=10,bold=false,indent=0,gap=4)=>{ensure(size+gap);page.cmd.push(`BT /${bold?'F2':'F1'} ${size} Tf 1 0 0 1 ${M+indent} ${y-size} Tm (${pdfEscape(txt)}) Tj ET`);y-=size+gap};
+ const paragraph=(txt,size=10,bold=false,indent=0,after=8)=>{const max=Math.max(24,Math.floor((contentW-indent)/(size*0.54)));wrapPdfText(txt,max).forEach(line=>textLine(line,size,bold,indent,3));y-=after};
+ const heading=(txt,level=2)=>{const size=level===1?18:level===2?13:11;ensure(size+12);textLine(txt,size,true,0,5);y-=level===1?7:3};
+ const bullet=(label,value)=>{if(!value)return;const text=label?`${label}: ${value}`:String(value);const max=Math.max(24,Math.floor((contentW-14)/(10*0.54)));const lines=wrapPdfText(text,max);lines.forEach((line,i)=>textLine((i===0?'• ':'  ')+line,10,false,10,3));y-=2};
+ const addShot=async shot=>{if(!shot||!shot.data)return;let info;try{info=await imageToJpegInfo(shot.data)}catch{return}const maxW=contentW,maxH=330;const scale=Math.min(maxW/info.width,maxH/info.height,1);const dw=info.width*scale,dh=info.height*scale;ensure(dh+(shot.caption?34:16));const idx=imagePool.length;imagePool.push(info);page.images.push(idx);const name=`Im${idx+1}`;page.cmd.push(`q ${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${M.toFixed(2)} ${(y-dh).toFixed(2)} cm /${name} Do Q`);y-=dh+8;if(shot.caption)paragraph(`Screenshot: ${shot.caption}`,9,false,0,8)};
+ newPage();heading(`PDI Troubleshooting Case${data.overview.store?' - '+data.overview.store:''}`,1);
+ const o=data.overview;[['Ticket',o.ticket],['Date',o.date],['Category',o.category]].forEach(([k,v])=>{if(v)bullet(k,v)});if(o.reported){y-=4;heading('Reported Issue');paragraph(o.reported)}
+ for(const m of data.modules){const vals=[];if(m.choice)vals.push(['Finding',m.choice]);Object.values(m.fields||{}).forEach(f=>{if(f.value)vals.push([f.label,f.value])});const shots=m.screens||[];if(!vals.length&&!shots.length)continue;heading(m.title);vals.forEach(([k,v])=>bullet(k,v));for(const s of shots)await addShot(s);y-=4}
+ const unexpected=(data.unexpected||[]).filter(x=>x.text);if(unexpected.length){heading('Unexpected Findings');unexpected.forEach(x=>bullet('',x.text))}
+ if((data.timeline||[]).length){heading('Troubleshooting Timeline');data.timeline.forEach((x,i)=>bullet(`${i+1}. ${x.source}`,x.text))}
+ // PDF objects
+ const objs=[];const setObj=(n,bytes)=>{objs[n]=bytes};
+ setObj(1,strBytes('<< /Type /Catalog /Pages 2 0 R >>'));
+ setObj(3,strBytes('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'));
+ setObj(4,strBytes('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>'));
+ const imageObjIds=imagePool.map((_,i)=>5+i);imagePool.forEach((im,i)=>{const head=strBytes(`<< /Type /XObject /Subtype /Image /Width ${im.width} /Height ${im.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bytes.length} >>\nstream\n`);const tail=strBytes('\nendstream');setObj(imageObjIds[i],concatBytes([head,im.bytes,tail]))});
+ let next=5+imagePool.length;const pageIds=[];
+ pages.forEach(pg=>{const content=pg.cmd.join('\n')+'\n';const contentId=next++;setObj(contentId,strBytes(`<< /Length ${strBytes(content).length} >>\nstream\n${content}endstream`));const pageId=next++;pageIds.push(pageId);const xobjs=pg.images.length?'/XObject << '+pg.images.map(i=>`/Im${i+1} ${imageObjIds[i]} 0 R`).join(' ')+' >> ':'';setObj(pageId,strBytes(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> ${xobjs}>> /Contents ${contentId} 0 R >>`))});
+ setObj(2,strBytes(`<< /Type /Pages /Kids [${pageIds.map(id=>id+' 0 R').join(' ')}] /Count ${pageIds.length} >>`));
+ const maxObj=objs.length-1;const chunks=[strBytes('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n')],offsets=new Array(maxObj+1).fill(0);let total=chunks[0].length;
+ for(let i=1;i<=maxObj;i++){offsets[i]=total;const a=strBytes(`${i} 0 obj\n`),b=objs[i]||strBytes('<<>>'),c=strBytes('\nendobj\n');chunks.push(a,b,c);total+=a.length+b.length+c.length}
+ const xref=total;let xs=`xref\n0 ${maxObj+1}\n0000000000 65535 f \n`;for(let i=1;i<=maxObj;i++)xs+=String(offsets[i]).padStart(10,'0')+' 00000 n \n';xs+=`trailer\n<< /Size ${maxObj+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+ chunks.push(strBytes(xs));return new Blob([concatBytes(chunks)],{type:'application/pdf'});
+}
+async function exportPdf(){const d=collect();$('#reportBody').innerHTML=buildReportHtml(d);$('#reportPanel').classList.add('show');const buttons=[$('#printReport'),$('#exportPdfTop')].filter(Boolean);const labels=buttons.map(b=>b.textContent);buttons.forEach(b=>{b.disabled=true;b.textContent='Building PDF...'});try{const blob=await makeCasePdf(d);const safeStore=(d.overview.store||'Untitled').replace(/[^a-z0-9]+/gi,'_');download(`PDI_Case_${safeStore}_${d.overview.date||'undated'}.pdf`,blob)}catch(err){console.error(err);alert('The PDF could not be generated. Your case data is still intact.')}finally{buttons.forEach((b,i)=>{b.disabled=false;b.textContent=labels[i]})}}
+$('#printReport').addEventListener('click',exportPdf);
+$('#exportPdfTop').addEventListener('click',exportPdf);
+$('#copyReport').addEventListener('click',async()=>{const text=reportText(collect());try{await navigator.clipboard.writeText(text);alert('Report text copied.')}catch{prompt('Copy the report text:',text)}});
+$('#exportJson').addEventListener('click',()=>{const d=collect();const name=`PDI_Case_${(d.overview.store||'Untitled').replace(/[^a-z0-9]+/gi,'_')}_${d.overview.date||'undated'}.json`;download(name,new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));});
+['store','ticket','date','category','reported'].forEach(id=>$('#'+id).addEventListener('input',updateAll));
+renderModules();renderUnexpected();$('#date').value=new Date().toISOString().slice(0,10);updateAll();loadCases().catch(()=>{});
+})();
+</script>
+</body>
+</html>
