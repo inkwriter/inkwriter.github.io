@@ -1,0 +1,17 @@
+# Never commit private operational evidence
+private/
+PRIVATE_*
+screenshots/
+cases/
+exports/
+*.private.json
+*.private.csv
+PDI_Historical_Case_Library_*.json
+PDI_Historical_Case_Library_*.csv
+PDI_V3_PRIVATE_*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

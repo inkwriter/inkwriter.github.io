@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "privacy": "public_safe",
+  "cases": [
+    {
+      "id": "demo-double-close",
+      "name": "Double-close fingerprint",
+      "description": "Synthetic GT values that should surface a strong double-close pattern.",
+      "case": {
+        "isDemo": true,
+        "overview": {
+          "store": "Demo Store",
+          "site": "0001",
+          "ticket": "DEMO-001",
+          "businessDate": "2026-10-13",
+          "symptom": "Red Skipped Close",
+          "reportedIssue": "Red Skipped Close after closing. Need to determine whether the day was closed more than once."
+        },
+        "evidence": {
+          "close_count": "more_than_one",
+          "gt_previous_ending": "1250000.00",
+          "gt_current_beginning": "2500000.00",
+          "gt_current_ending": "2518750.45",
+          "skipped_close_amount": "1250000.00"
+        }
+      },
+      "expected_pattern": "double-close"
+    },
+    {
+      "id": "demo-missing-xml",
+      "name": "Store closed, XML missing",
+      "description": "Synthetic case where Store Close completed but expected poll XML is absent.",
+      "case": {
+        "isDemo": true,
+        "overview": {
+          "store": "Demo Store",
+          "site": "0002",
+          "ticket": "DEMO-002",
+          "businessDate": "2026-10-13",
+          "symptom": "Red Skipped Close",
+          "reportedIssue": "Store says Close completed, but the close batch reported a failure and no poll files are available."
+        },
+        "checks": {
+          "uploads": {
+            "result": "Nothing present",
+            "notes": "No expected poll XML in uploads."
+          },
+          "poll": {
+            "result": "Store Close batch failed",
+            "message": "Store Close batch failed",
+            "notes": ""
+          }
+        },
+        "evidence": {
+          "store_close_status": "batch_failed",
+          "poll_files_status": "missing",
+          "reports_status": "missing"
+        }
+      },
+      "expected_pattern": "xml-not-generated"
+    },
+    {
+      "id": "demo-vpn",
+      "name": "PDI Host disconnected",
+      "description": "Synthetic connectivity case after a power event.",
+      "case": {
+        "isDemo": true,
+        "overview": {
+          "store": "Demo Store",
+          "site": "0003",
+          "ticket": "DEMO-003",
+          "businessDate": "2026-10-13",
+          "symptom": "Can't Poll",
+          "reportedIssue": "Internet works, but PDI cannot poll after a brief power event."
+        },
+        "checks": {
+          "connection": {
+            "result": "Disconnected",
+            "notes": "PDI Host shows disconnected."
+          }
+        },
+        "evidence": {
+          "host_status": "disconnected",
+          "power_event": "yes"
+        }
+      },
+      "expected_pattern": "vpn-host-disconnected"
+    },
+    {
+      "id": "demo-lock",
+      "name": "Paperwork lock",
+      "description": "Synthetic case where Poll Day reports a real paperwork/process lock.",
+      "case": {
+        "isDemo": true,
+        "overview": {
+          "store": "Demo Store",
+          "site": "0004",
+          "ticket": "DEMO-004",
+          "businessDate": "2026-10-13",
+          "symptom": "Lock / Data Error",
+          "reportedIssue": "Poll Day says the paperwork is locked by another process."
+        },
+        "checks": {
+          "poll": {
+            "result": "Lock / data error",
+            "message": "Paperwork locked",
+            "notes": ""
+          }
+        },
+        "evidence": {
+          "paperwork_lock_status": "lock_reported"
+        }
+      },
+      "expected_pattern": "paperwork-lock"
+    }
+  ]
+}

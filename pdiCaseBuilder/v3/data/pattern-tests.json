@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "suite": "PDI v3 pattern engine regression tests",
+  "privacy": "public_safe",
+  "tests": [
+    {
+      "id": "T01",
+      "expected": "double-close",
+      "facts": {
+        "symptom": "Red Skipped Close",
+        "gt": {
+          "previous": 1000.0,
+          "beginning": 2000.0,
+          "ending": 2150.0,
+          "skipped": 1000.0
+        },
+        "text": ""
+      }
+    },
+    {
+      "id": "T02",
+      "expected": "store-not-closed",
+      "facts": {
+        "symptom": "Red Skipped Close",
+        "text": "Checked Store Close and the day was not closed."
+      }
+    },
+    {
+      "id": "T03",
+      "expected": "store-close-hung",
+      "facts": {
+        "symptom": "Can't Poll",
+        "text": "Store Close process was hung and the store cannot close day."
+      }
+    },
+    {
+      "id": "T04",
+      "expected": "xml-not-generated",
+      "facts": {
+        "symptom": "Red Skipped Close",
+        "choices": {
+          "poll": "Store Close batch failed",
+          "uploads": "Nothing present"
+        },
+        "text": "Store was closed but did not generate the poll files."
+      }
+    },
+    {
+      "id": "T05",
+      "expected": "malformed-xml",
+      "facts": {
+        "symptom": "Can't Poll",
+        "text": "Existing poll files are bad; end value appears before begin value."
+      }
+    },
+    {
+      "id": "T06",
+      "expected": "poll-too-early",
+      "facts": {
+        "symptom": "Can't Poll",
+        "choices": {
+          "uploads": "Network batch only"
+        },
+        "text": "Poll Day ran before the rest of the files were generated."
+      }
+    },
+    {
+      "id": "T07",
+      "expected": "partial-poll-submitted",
+      "facts": {
+        "symptom": "Red Skipped Close",
+        "choices": {
+          "poll": "Poll completed but data is wrong"
+        },
+        "text": "Day was polled with partial files and submitted."
+      }
+    },
+    {
+      "id": "T08",
+      "expected": "usb-xmlgateway-path",
+      "facts": {
+        "symptom": "Can't Poll",
+        "choices": {
+          "gateway": "USB Ethernet adapter missing"
+        },
+        "text": "Files are not transferring and XMLGateway cannot be reached."
+      }
+    },
+    {
+      "id": "T09",
+      "expected": "vpn-host-disconnected",
+      "facts": {
+        "symptom": "Can't Poll",
+        "choices": {
+          "connection": "Disconnected"
+        },
+        "text": "Host not connected after power outage."
+      }
+    },
+    {
+      "id": "T10",
+      "expected": "paperwork-lock",
+      "facts": {
+        "symptom": "Can't Poll",
+        "choices": {
+          "poll": "Lock / data error"
+        },
+        "text": "Paperwork locked by DRE; inspect in SILK."
+      }
+    },
+    {
+      "id": "T11",
+      "expected": "sco-transaction-close",
+      "facts": {
+        "symptom": "Red Skipped Close",
+        "text": "Day only closed one time; transaction on the self-checkout during close."
+      }
+    },
+    {
+      "id": "T12",
+      "expected": "missed-close-rollover",
+      "facts": {
+        "symptom": "Missing Sales",
+        "text": "Prior day was not closed and the next day's information is included on the prior paperwork."
+      }
+    }
+  ]
+}

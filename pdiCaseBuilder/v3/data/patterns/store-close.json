@@ -1,0 +1,234 @@
+{
+  "schema_version": "1.1",
+  "pack_id": "store-close",
+  "privacy": "public_safe",
+  "description": "Sanitized PDI troubleshooting patterns for store-close.",
+  "patterns": [
+    {
+      "id": "store-not-closed",
+      "name": "Store Close Was Not Completed",
+      "category": "Store Close",
+      "summary": "The store may report a polling problem even though the business day was never actually closed.",
+      "support_level": "strong",
+      "safety": "read_only",
+      "match_rules": [
+        {
+          "type": "text_any",
+          "values": [
+            "day was not closed",
+            "store was not closed",
+            "not closed",
+            "never closed"
+          ],
+          "weight": 6
+        },
+        {
+          "type": "symptom_any",
+          "values": [
+            "Red Skipped Close",
+            "Can't Poll"
+          ],
+          "weight": 1
+        },
+        {
+          "type": "choice_any",
+          "step": "gateway",
+          "values": [
+            "Mapped successfully; close is missing"
+          ],
+          "weight": 4
+        },
+        {
+          "type": "field_equals",
+          "field": "store_close_status",
+          "value": "not_completed",
+          "weight": 8,
+          "label": "Store Close is confirmed not completed"
+        }
+      ],
+      "strong_score": 6,
+      "possible_score": 4,
+      "next_safe_step": "Confirm whether Passport Store Close actually completed for the affected business date before treating the issue as networking or polling.",
+      "why": "Historical cases show that a red close or missing day can be caused by the store never completing Store Close.",
+      "recommended_evidence": [
+        "Store Close confirmation",
+        "Business date",
+        "Open/Close fields",
+        "Passport reports"
+      ],
+      "guardrails": [
+        "Do not repeat Store Close if the store already completed it and the problem is missing XML or a failed close batch."
+      ],
+      "recommended_fields": [
+        "store_close_status",
+        "reports_status",
+        "xmlgateway_status"
+      ]
+    },
+    {
+      "id": "store-close-hung",
+      "name": "Store Close Process Hung",
+      "category": "Store Close",
+      "summary": "The Store Close process can hang before completion, which is different from simply forgetting to close the day.",
+      "support_level": "moderate",
+      "safety": "changes_something",
+      "match_rules": [
+        {
+          "type": "text_any",
+          "values": [
+            "store close process was hung",
+            "store close hung",
+            "can't close day",
+            "cannot close day"
+          ],
+          "weight": 6
+        },
+        {
+          "type": "field_equals",
+          "field": "store_close_status",
+          "value": "process_hung",
+          "weight": 8,
+          "label": "Store Close process is confirmed hung"
+        }
+      ],
+      "strong_score": 6,
+      "possible_score": 4,
+      "next_safe_step": "Confirm the Store Close process is actually hung and determine whether the business day closed before attempting Poll Day.",
+      "why": "A hung close requires recovery of the store-side process and then verification of the close state.",
+      "recommended_evidence": [
+        "Store Close screen/status",
+        "Business date",
+        "Whether reports were produced",
+        "Whether the day shows closed after recovery"
+      ],
+      "guardrails": [
+        "A store/POS workstation or POS-server recovery is not the same as restarting a PDI production server.",
+        "Do not restart PDI production servers from this pattern."
+      ],
+      "recommended_fields": [
+        "store_close_status",
+        "reports_status"
+      ]
+    },
+    {
+      "id": "sco-transaction-close",
+      "name": "Transaction / Self-Checkout Activity During Close",
+      "category": "GT / Store Close",
+      "summary": "A transaction during closing can create a GT mismatch without a double close.",
+      "support_level": "strong",
+      "safety": "advanced",
+      "match_rules": [
+        {
+          "type": "text_any",
+          "values": [
+            "self check-out",
+            "self checkout",
+            "self-checkout",
+            "transaction during close",
+            "transaction on the self"
+          ],
+          "weight": 8
+        },
+        {
+          "type": "symptom_any",
+          "values": [
+            "Red Skipped Close"
+          ],
+          "weight": 1
+        },
+        {
+          "type": "field_equals",
+          "field": "sco_activity_during_close",
+          "value": "yes",
+          "weight": 9,
+          "label": "SCO/transaction activity during close is confirmed"
+        },
+        {
+          "type": "field_equals",
+          "field": "close_count",
+          "value": "one",
+          "weight": 3,
+          "label": "Only one close is confirmed"
+        }
+      ],
+      "strong_score": 8,
+      "possible_score": 4,
+      "next_safe_step": "Verify the close count/sequence and review transaction activity around closing before assuming the store double-closed.",
+      "why": "Historical cases repeatedly show SCO or other transaction activity during closing as an alternative cause of totalizer mismatch.",
+      "recommended_evidence": [
+        "Number of closes",
+        "Transaction timing",
+        "GT continuity",
+        "Skipped Close amount",
+        "SCO activity"
+      ],
+      "guardrails": [
+        "Totalizer correction is advanced work; a pattern match is not authorization to change values."
+      ],
+      "recommended_fields": [
+        "sco_activity_during_close",
+        "close_count",
+        "gt_previous_ending",
+        "gt_current_beginning",
+        "skipped_close_amount"
+      ]
+    },
+    {
+      "id": "missed-close-rollover",
+      "name": "Missed Close Rolled Data Into the Wrong Business Day",
+      "category": "Advanced Recovery",
+      "summary": "If a prior business day was not closed, later activity can be included in the wrong day's paperwork and contaminate the following day.",
+      "support_level": "moderate",
+      "safety": "advanced",
+      "match_rules": [
+        {
+          "type": "text_any",
+          "values": [
+            "information is included on",
+            "information included on friday",
+            "missed close",
+            "not closed on friday",
+            "rolled into"
+          ],
+          "weight": 8
+        },
+        {
+          "type": "symptom_any",
+          "values": [
+            "Missing Sales",
+            "Red Skipped Close"
+          ],
+          "weight": 1
+        },
+        {
+          "type": "field_equals",
+          "field": "store_close_status",
+          "value": "not_completed",
+          "weight": 3,
+          "label": "A missed Store Close is confirmed"
+        }
+      ],
+      "strong_score": 8,
+      "possible_score": 4,
+      "next_safe_step": "Confirm which business day was missed and identify which day's information contains the rolled activity before making any correction.",
+      "why": "Historical cases show a missed close can shift later activity into the prior paperwork, turning a simple close issue into an advanced reconciliation problem.",
+      "recommended_evidence": [
+        "Prior-day close status",
+        "Affected business dates",
+        "Paperwork contents",
+        "GT sequence",
+        "Store Close reports"
+      ],
+      "guardrails": [
+        "Do not perform downstream totalizer repair automatically.",
+        "Treat this as an escalation/reconciliation case."
+      ],
+      "recommended_fields": [
+        "store_close_status",
+        "incomplete_data_submitted",
+        "gt_previous_ending",
+        "gt_current_beginning"
+      ]
+    }
+  ]
+}

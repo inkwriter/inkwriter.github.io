@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.1",
+  "pack_id": "totalizers",
+  "privacy": "public_safe",
+  "description": "Sanitized PDI troubleshooting patterns for totalizers.",
+  "patterns": [
+    {
+      "id": "double-close",
+      "name": "Possible Double Close",
+      "category": "GT / Store Close",
+      "summary": "A duplicate close can create a Grand Totalizer discontinuity and a red Skipped Close value.",
+      "support_level": "strong",
+      "safety": "read_only",
+      "match_rules": [
+        {
+          "type": "text_any",
+          "values": [
+            "double close",
+            "closed twice",
+            "close twice"
+          ],
+          "weight": 5
+        },
+        {
+          "type": "symptom_any",
+          "values": [
+            "Red Skipped Close"
+          ],
+          "weight": 1
+        },
+        {
+          "type": "gt_rule",
+          "rule": "current_beginning_equals_twice_previous_ending",
+          "weight": 5
+        },
+        {
+          "type": "gt_rule",
+          "rule": "skipped_close_equals_previous_ending",
+          "weight": 4
+        },
+        {
+          "type": "field_equals",
+          "field": "close_count",
+          "value": "more_than_one",
+          "weight": 6,
+          "label": "More than one close is confirmed"
+        },
+        {
+          "type": "field_equals",
+          "field": "sco_activity_during_close",
+          "value": "yes",
+          "weight": -3,
+          "label": "SCO activity points to an alternate GT mismatch cause"
+        }
+      ],
+      "strong_score": 8,
+      "possible_score": 4,
+      "next_safe_step": "Compare the previous day GT Ending, affected day GT Beginning/Ending, and review the POS upload/DRPOS information before changing any values.",
+      "why": "Historical cases show that a double close can produce a distinctive GT relationship, but red Skipped Close by itself is not enough to diagnose it.",
+      "recommended_evidence": [
+        "Previous day GT Ending",
+        "Affected day GT Beginning",
+        "Affected day GT Ending",
+        "Skipped Close amount",
+        "POS upload/DRPOS evidence"
+      ],
+      "guardrails": [
+        "Do not edit totalizers based only on a pattern match.",
+        "Treat totalizer correction as advanced work requiring verification of surrounding business days."
+      ],
+      "recommended_fields": [
+        "close_count",
+        "gt_previous_ending",
+        "gt_current_beginning",
+        "skipped_close_amount",
+        "sco_activity_during_close"
+      ]
+    }
+  ]
+}

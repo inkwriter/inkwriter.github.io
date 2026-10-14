@@ -1,0 +1,163 @@
+{
+  "schema_version": "1.1",
+  "pack_id": "connectivity",
+  "privacy": "public_safe",
+  "description": "Sanitized PDI troubleshooting patterns for connectivity.",
+  "patterns": [
+    {
+      "id": "usb-xmlgateway-path",
+      "name": "USB Ethernet / XMLGateway Communication Path",
+      "category": "Connectivity",
+      "summary": "A store can have a local USB-to-Ethernet or XMLGateway path failure that prevents report transfer/polling.",
+      "support_level": "strong",
+      "safety": "read_only",
+      "match_rules": [
+        {
+          "type": "choice_any",
+          "step": "gateway",
+          "values": [
+            "Could not reach XMLGateway IP",
+            "USB Ethernet adapter missing",
+            "POSOutbox unavailable"
+          ],
+          "weight": 5
+        },
+        {
+          "type": "text_any",
+          "values": [
+            "usb to ethernet",
+            "usb-to-ethernet",
+            "files not transferring",
+            "could not reach xmlgateway",
+            "adapter missing",
+            "adapter unplugged"
+          ],
+          "weight": 6
+        },
+        {
+          "type": "field_equals",
+          "field": "usb_adapter_status",
+          "value": "missing_in_device_manager",
+          "weight": 8,
+          "label": "USB Ethernet adapter is missing in Device Manager"
+        },
+        {
+          "type": "field_equals",
+          "field": "usb_adapter_status",
+          "value": "physically_unplugged",
+          "weight": 9,
+          "label": "USB Ethernet adapter is physically unplugged"
+        },
+        {
+          "type": "field_equals",
+          "field": "xmlgateway_status",
+          "value": "unreachable",
+          "weight": 5,
+          "label": "XMLGateway is unreachable"
+        },
+        {
+          "type": "field_equals",
+          "field": "xmlgateway_status",
+          "value": "posoutbox_unavailable",
+          "weight": 4,
+          "label": "POSOutbox is unavailable"
+        }
+      ],
+      "strong_score": 6,
+      "possible_score": 4,
+      "next_safe_step": "Check the physical USB/Ethernet connection, adapter presence in Device Manager, and XMLGateway reachability before changing PDI data.",
+      "why": "Historical cases show simple unplugged adapters, Windows adapter enumeration failures, and recoverable local communication-path problems can all appear as polling failures.",
+      "recommended_evidence": [
+        "Adapter physically connected",
+        "Adapter visible in Device Manager",
+        "XMLGateway reachable",
+        "Reports retrievable",
+        "PDI Host status"
+      ],
+      "guardrails": [
+        "A store workstation restart may be appropriate after evidence supports a local adapter problem; do not restart PDI production servers."
+      ],
+      "recommended_fields": [
+        "usb_adapter_status",
+        "xmlgateway_status",
+        "host_status"
+      ]
+    },
+    {
+      "id": "vpn-host-disconnected",
+      "name": "PDI Host / VPN Tunnel Disconnected",
+      "category": "Connectivity",
+      "summary": "Internet can work while the dedicated PDI communication path is disconnected.",
+      "support_level": "strong",
+      "safety": "read_only",
+      "match_rules": [
+        {
+          "type": "choice_any",
+          "step": "connection",
+          "values": [
+            "Disconnected",
+            "Connecting"
+          ],
+          "weight": 6
+        },
+        {
+          "type": "choice_any",
+          "step": "poll",
+          "values": [
+            "Connection error",
+            "Timeout"
+          ],
+          "weight": 2
+        },
+        {
+          "type": "text_any",
+          "values": [
+            "host not connected",
+            "host disconnected",
+            "rebuild tunnels",
+            "vpn tunnel"
+          ],
+          "weight": 6
+        },
+        {
+          "type": "field_equals",
+          "field": "host_status",
+          "value": "disconnected",
+          "weight": 9,
+          "label": "PDI Host is disconnected"
+        },
+        {
+          "type": "field_equals",
+          "field": "host_status",
+          "value": "connecting",
+          "weight": 5,
+          "label": "PDI Host is still connecting"
+        },
+        {
+          "type": "field_equals",
+          "field": "power_event",
+          "value": "yes",
+          "weight": 1,
+          "label": "A recent power/network event is reported"
+        }
+      ],
+      "strong_score": 6,
+      "possible_score": 4,
+      "next_safe_step": "Verify PDI Host status and the VPN tunnel state before investigating store paperwork or editing data.",
+      "why": "Historical cases show working internet does not prove the PDI host/tunnel path is healthy.",
+      "recommended_evidence": [
+        "PDI Host status",
+        "Tunnel status",
+        "Recent power/network event",
+        "Poll error"
+      ],
+      "guardrails": [
+        "Rebuild tunnels only after confirming the PDI path is disconnected or unhealthy."
+      ],
+      "recommended_fields": [
+        "host_status",
+        "power_event"
+      ]
+    }
+  ]
+}

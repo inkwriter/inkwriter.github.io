@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>PDI Case Builder v3</title>
+  <meta name="description" content="Guided PDI troubleshooting, evidence capture, known-pattern recognition, and case reporting.">
+  <link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+  <noscript>
+    <div class="noscript">PDI Case Builder requires JavaScript.</div>
+  </noscript>
+
+  <header class="app-header">
+    <div class="brand-wrap">
+      <button class="brand" data-nav="home" aria-label="PDI Case Builder home">
+        <span class="brand-mark">PDI</span>
+        <span>
+          <strong>PDI Case Builder</strong>
+          <small>Guided troubleshooting & case intelligence</small>
+        </span>
+      </button>
+      <span class="version-badge" id="versionBadge">v3.0.0-dev</span>
+    </div>
+    <div class="header-actions">
+      <span class="privacy-chip" title="Case data and screenshots stay in this browser unless you export or copy them.">Local-first</span>
+      <button class="btn secondary" id="modeToggle" type="button">Guided Mode</button>
+      <button class="btn" id="saveCaseBtn" type="button">Save Case</button>
+      <button class="btn primary" id="newCaseBtn" type="button">New Case</button>
+    </div>
+  </header>
+
+  <nav class="top-nav" aria-label="Primary navigation">
+    <button class="nav-link active" data-nav="home">Home</button>
+    <button class="nav-link" data-nav="case">Case Workspace</button>
+    <button class="nav-link" data-nav="patterns">Known Patterns</button>
+    <button class="nav-link" data-nav="library">Case Library</button>
+  </nav>
+
+  <main class="app-shell">
+    <section class="view active" id="view-home" data-view="home">
+      <div class="hero panel">
+        <div class="hero-copy">
+          <span class="eyebrow">PDI SUPPORT • V3 PILOT</span>
+          <h1>Start with the evidence. Get one safe next step.</h1>
+          <p>The Case Builder combines guided troubleshooting, sanitized historical patterns, local screenshot capture, and a clean ChatGPT handoff without exposing private ticket history in the public site.</p>
+          <div class="hero-actions">
+            <button class="btn primary large" id="homeStartBtn">Start New Case</button>
+            <button class="btn secondary large" data-nav="patterns">Browse Known Patterns</button>
+          </div>
+        </div>
+        <div class="hero-status" aria-label="V3 capabilities">
+          <div class="metric-card"><b id="homePatternCount">—</b><span>Known patterns</span></div>
+          <div class="metric-card"><b>2</b><span>Working modes</span></div>
+          <div class="metric-card"><b>Local</b><span>Case storage</span></div>
+          <div class="metric-card"><b>Safe</b><span>Pattern guidance</span></div>
+        </div>
+      </div>
+
+      <div class="home-grid">
+        <div class="panel feature-panel">
+          <div class="section-heading">
+            <div><span class="eyebrow">HOW IT WORKS</span><h2>One case. One next step.</h2></div>
+          </div>
+          <div class="feature-list">
+            <div class="feature-row"><span class="feature-num">1</span><div><b>Capture the symptom</b><p>Store, business date, exact error, and any screenshots.</p></div></div>
+            <div class="feature-row"><span class="feature-num">2</span><div><b>Follow guided evidence checks</b><p>The interface only asks for information that can change the direction.</p></div></div>
+            <div class="feature-row"><span class="feature-num">3</span><div><b>Compare against known patterns</b><p>Pattern matches explain why they surfaced and never count as a diagnosis.</p></div></div>
+            <div class="feature-row"><span class="feature-num">4</span><div><b>Resolve, verify, and learn</b><p>Export a standardized case report and record whether the suggestion was accurate.</p></div></div>
+          </div>
+        </div>
+
+        <div class="panel demo-panel">
+          <div class="section-heading compact">
+            <div><span class="eyebrow">TEAM DEMO</span><h2>Try a synthetic case</h2></div>
+          </div>
+          <p class="muted">These cases contain no real store, ticket, employee, or screenshot data.</p>
+          <div id="demoCaseList" class="demo-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-case" data-view="case">
+      <div class="case-toolbar panel">
+        <div>
+          <span class="eyebrow" id="caseStatusEyebrow">ACTIVE CASE</span>
+          <h1 id="caseTitle">New PDI Case</h1>
+          <p id="caseSubtitle" class="muted">Gather the minimum evidence needed to choose the next safe check.</p>
+        </div>
+        <div class="case-toolbar-actions">
+          <button class="btn secondary" id="copyHandoffBtn">Copy for ChatGPT</button>
+          <button class="btn" id="exportCaseBtn">Export</button>
+        </div>
+      </div>
+
+      <div class="stepper" aria-label="Case workflow">
+        <button class="step-tab active" data-case-step="intake"><span>1</span><div><b>Intake</b><small>What happened?</small></div></button>
+        <button class="step-tab" data-case-step="troubleshoot"><span>2</span><div><b>Troubleshoot</b><small>Follow evidence</small></div></button>
+        <button class="step-tab" data-case-step="resolve"><span>3</span><div><b>Resolve</b><small>Document the fix</small></div></button>
+        <button class="step-tab" data-case-step="finalize"><span>4</span><div><b>Finalize</b><small>Verify & export</small></div></button>
+      </div>
+
+      <div class="case-layout">
+        <div class="case-main">
+          <section class="case-step active" id="case-step-intake" data-case-step-panel="intake"></section>
+          <section class="case-step" id="case-step-troubleshoot" data-case-step-panel="troubleshoot"></section>
+          <section class="case-step" id="case-step-resolve" data-case-step-panel="resolve"></section>
+          <section class="case-step" id="case-step-finalize" data-case-step-panel="finalize"></section>
+        </div>
+        <aside class="case-sidebar">
+          <div class="panel next-step-card" id="nextStepCard"></div>
+          <div class="panel pattern-card" id="patternMatchCard"></div>
+          <div class="panel progress-card" id="caseProgressCard"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="view" id="view-patterns" data-view="patterns">
+      <div class="page-heading">
+        <div><span class="eyebrow">SANITIZED KNOWLEDGE</span><h1>Known Patterns</h1><p>Generalized troubleshooting patterns only. No real stores, ticket numbers, employee names, screenshots, or private case text are included here.</p></div>
+        <div class="search-wrap"><input id="patternSearch" type="search" placeholder="Search patterns"></div>
+      </div>
+      <div id="patternGrid" class="pattern-grid"></div>
+    </section>
+
+    <section class="view" id="view-library" data-view="library">
+      <div class="page-heading">
+        <div><span class="eyebrow">LOCAL CASE LIBRARY</span><h1>Saved Cases</h1><p>Cases are stored in this browser. Export an archive before clearing browser data or moving to another computer.</p></div>
+        <div class="library-actions">
+          <button class="btn" id="exportArchiveBtn">Export Archive</button>
+          <label class="btn secondary file-btn">Import Archive<input id="importArchiveInput" type="file" accept="application/json" hidden></label>
+        </div>
+      </div>
+      <div class="panel library-panel">
+        <div class="library-filters">
+          <input id="caseSearchInput" type="search" placeholder="Search store, ticket, symptom, root cause…">
+          <select id="caseStatusFilter"><option value="">All cases</option><option value="open">Open</option><option value="resolved">Resolved</option></select>
+        </div>
+        <div id="caseList" class="case-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head"><h2 id="modalTitle">Export Case</h2><button class="icon-btn" id="modalCloseBtn" aria-label="Close">×</button></div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <div class="print-only" id="printReport"></div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

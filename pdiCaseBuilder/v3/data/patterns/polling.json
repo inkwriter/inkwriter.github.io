@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.1",
+  "pack_id": "polling",
+  "privacy": "public_safe",
+  "description": "Sanitized PDI troubleshooting patterns for polling.",
+  "patterns": [
+    {
+      "id": "poll-too-early",
+      "name": "Poll Day Ran Before All Files Were Generated",
+      "category": "Poll Timing",
+      "summary": "Poll Day can run before Passport has finished producing the complete set of files.",
+      "support_level": "strong",
+      "safety": "read_only",
+      "match_rules": [
+        {
+          "type": "choice_any",
+          "step": "uploads",
+          "values": [
+            "Network batch only",
+            "Files present but timestamps look wrong",
+            "Some paperwork / incomplete"
+          ],
+          "weight": 3
+        },
+        {
+          "type": "text_any",
+          "values": [
+            "before files were generated",
+            "polled too early",
+            "partial files",
+            "files generated after poll"
+          ],
+          "weight": 6
+        },
+        {
+          "type": "field_equals",
+          "field": "poll_files_status",
+          "value": "partial",
+          "weight": 4,
+          "label": "Only a partial file set is present"
+        },
+        {
+          "type": "field_equals",
+          "field": "poll_files_status",
+          "value": "network_batch_only",
+          "weight": 5,
+          "label": "Only the network batch is present"
+        },
+        {
+          "type": "timing_rule",
+          "rule": "poll_before_latest_file",
+          "weight": 7,
+          "label": "Poll Day occurred before the latest Passport file"
+        }
+      ],
+      "strong_score": 6,
+      "possible_score": 3,
+      "next_safe_step": "Compare Poll Day time with Passport file creation times and determine whether incomplete data has already been imported or submitted.",
+      "why": "Timing evidence separates a simple wait-and-repoll situation from an advanced recovery after incomplete data has already been accepted.",
+      "recommended_evidence": [
+        "Poll Day time",
+        "Passport file creation times",
+        "File count",
+        "Whether paperwork/import was submitted"
+      ],
+      "guardrails": [
+        "If incomplete data was already submitted, do not assume a second Poll Day will safely repair it.",
+        "Import deletion/clearing is advanced and must not be automated."
+      ],
+      "recommended_fields": [
+        "poll_files_status",
+        "poll_time",
+        "latest_file_time",
+        "incomplete_data_submitted"
+      ]
+    },
+    {
+      "id": "partial-poll-submitted",
+      "name": "Incomplete / Partial Poll Already Submitted",
+      "category": "Advanced Recovery",
+      "summary": "If partial data has already been submitted, a normal repoll may no longer be sufficient or safe.",
+      "support_level": "moderate",
+      "safety": "advanced",
+      "match_rules": [
+        {
+          "type": "text_any",
+          "values": [
+            "partial files and submitted",
+            "partial poll submitted",
+            "already submitted",
+            "submitted incomplete"
+          ],
+          "weight": 8
+        },
+        {
+          "type": "choice_any",
+          "step": "poll",
+          "values": [
+            "Poll completed but data is wrong"
+          ],
+          "weight": 3
+        },
+        {
+          "type": "field_equals",
+          "field": "incomplete_data_submitted",
+          "value": "yes",
+          "weight": 9,
+          "label": "Incomplete data was already submitted"
+        }
+      ],
+      "strong_score": 8,
+      "possible_score": 4,
+      "next_safe_step": "Stop routine repoll attempts and escalate for deliberate reconciliation of what was imported, submitted, and missing.",
+      "why": "Historical cases show that once incomplete data is submitted, recovery may require office reconciliation rather than another routine Poll Day.",
+      "recommended_evidence": [
+        "What files imported",
+        "Whether paperwork was submitted",
+        "Missing data",
+        "Store Close reports",
+        "Business date"
+      ],
+      "guardrails": [
+        "Do not delete imports, clear paperwork, or edit financial data without deliberate verification and authorization."
+      ],
+      "recommended_fields": [
+        "incomplete_data_submitted",
+        "poll_files_status",
+        "reports_status"
+      ]
+    }
+  ]
+}

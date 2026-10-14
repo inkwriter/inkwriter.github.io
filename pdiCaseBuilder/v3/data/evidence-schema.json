@@ -1,0 +1,200 @@
+{
+  "schema_version": "1.0",
+  "name": "PDI Case Builder v3 Evidence Schema",
+  "purpose": "Fields identified as high-value for distinguishing the known patterns while keeping Guided mode simple.",
+  "fields": [
+    {
+      "id": "store_close_status",
+      "label": "Store Close status",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "confirmed_completed",
+        "not_completed",
+        "process_hung",
+        "batch_failed"
+      ],
+      "priority": "high",
+      "guided": "conditional"
+    },
+    {
+      "id": "poll_files_status",
+      "label": "Passport poll XML status",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "present_normal",
+        "missing",
+        "partial",
+        "present_suspected_bad",
+        "network_batch_only"
+      ],
+      "priority": "high",
+      "guided": "conditional"
+    },
+    {
+      "id": "reports_status",
+      "label": "Store Close / Passport reports",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "present",
+        "missing"
+      ],
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "incomplete_data_submitted",
+      "label": "Was incomplete data already submitted?",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "no",
+        "yes"
+      ],
+      "priority": "high",
+      "guided": "conditional"
+    },
+    {
+      "id": "host_status",
+      "label": "PDI Host status",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "connected",
+        "disconnected",
+        "connecting"
+      ],
+      "priority": "high",
+      "guided": "conditional"
+    },
+    {
+      "id": "xmlgateway_status",
+      "label": "XMLGateway / POSOutbox status",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "reachable_close_present",
+        "reachable_close_missing",
+        "unreachable",
+        "posoutbox_unavailable"
+      ],
+      "priority": "high",
+      "guided": "conditional"
+    },
+    {
+      "id": "usb_adapter_status",
+      "label": "USB-to-Ethernet adapter status",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "present",
+        "missing_in_device_manager",
+        "physically_unplugged",
+        "reset_restored_path"
+      ],
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "paperwork_lock_status",
+      "label": "Paperwork lock",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "none",
+        "lock_reported",
+        "owner_identified"
+      ],
+      "priority": "high",
+      "guided": "conditional"
+    },
+    {
+      "id": "lock_owner",
+      "label": "Lock owner/process",
+      "type": "text",
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "power_event",
+      "label": "Recent power/network event",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "no",
+        "yes"
+      ],
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "sco_activity_during_close",
+      "label": "Transaction/SCO activity during close",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "no",
+        "yes"
+      ],
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "close_count",
+      "label": "Known number of closes for the business day",
+      "type": "enum",
+      "values": [
+        "unknown",
+        "one",
+        "more_than_one"
+      ],
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "poll_time",
+      "label": "Poll Day time",
+      "type": "datetime",
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "latest_file_time",
+      "label": "Latest Passport file time",
+      "type": "datetime",
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "gt_previous_ending",
+      "label": "Previous day GT Ending",
+      "type": "money",
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "gt_current_beginning",
+      "label": "Affected day GT Beginning",
+      "type": "money",
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "gt_current_ending",
+      "label": "Affected day GT Ending",
+      "type": "money",
+      "priority": "medium",
+      "guided": "conditional"
+    },
+    {
+      "id": "skipped_close_amount",
+      "label": "Skipped Close amount",
+      "type": "money",
+      "priority": "medium",
+      "guided": "conditional"
+    }
+  ],
+  "design_rule": "Guided mode should ask only the single highest-value unresolved field that can materially change the top pattern ranking. Technician mode may show the full evidence snapshot."
+}

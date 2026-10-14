@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "library_version": "1.0.0",
+  "engine_min_version": "1.0.0",
+  "privacy": "public_safe",
+  "packs": [
+    {
+      "id": "store-close",
+      "src": "./patterns/store-close.json"
+    },
+    {
+      "id": "polling",
+      "src": "./patterns/polling.json"
+    },
+    {
+      "id": "connectivity",
+      "src": "./patterns/connectivity.json"
+    },
+    {
+      "id": "locks",
+      "src": "./patterns/locks.json"
+    },
+    {
+      "id": "totalizers",
+      "src": "./patterns/totalizers.json"
+    },
+    {
+      "id": "xml",
+      "src": "./patterns/xml.json"
+    }
+  ]
+}

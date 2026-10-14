@@ -1,0 +1,161 @@
+{
+  "schema_version": "1.1",
+  "pack_id": "xml",
+  "privacy": "public_safe",
+  "description": "Sanitized PDI troubleshooting patterns for xml.",
+  "patterns": [
+    {
+      "id": "xml-not-generated",
+      "name": "Store Closed but Poll XML Was Not Generated",
+      "category": "Passport XML",
+      "summary": "Store Close can complete while the expected poll XML/reports fail to generate.",
+      "support_level": "strong",
+      "safety": "changes_something",
+      "match_rules": [
+        {
+          "type": "choice_any",
+          "step": "poll",
+          "values": [
+            "Store Close batch failed",
+            "No files available"
+          ],
+          "weight": 4
+        },
+        {
+          "type": "choice_any",
+          "step": "uploads",
+          "values": [
+            "Nothing present",
+            "Network batch only"
+          ],
+          "weight": 3
+        },
+        {
+          "type": "text_any",
+          "values": [
+            "did not generate the poll files",
+            "poll files were not created",
+            "poll files and reports were not created",
+            "store close batch failed"
+          ],
+          "weight": 6
+        },
+        {
+          "type": "field_equals",
+          "field": "store_close_status",
+          "value": "confirmed_completed",
+          "weight": 3,
+          "label": "Store Close is confirmed completed"
+        },
+        {
+          "type": "field_equals",
+          "field": "store_close_status",
+          "value": "batch_failed",
+          "weight": 6,
+          "label": "Store Close batch failure is reported"
+        },
+        {
+          "type": "field_equals",
+          "field": "poll_files_status",
+          "value": "missing",
+          "weight": 6,
+          "label": "Expected poll XML is missing"
+        },
+        {
+          "type": "field_equals",
+          "field": "reports_status",
+          "value": "missing",
+          "weight": 2,
+          "label": "Expected close reports are missing"
+        }
+      ],
+      "strong_score": 7,
+      "possible_score": 4,
+      "next_safe_step": "Confirm Store Close completed and that the expected poll XML is absent. If confirmed, use the approved Repoll XML Files recovery rather than repeating Store Close.",
+      "why": "Historical cases repeatedly distinguish a successful Store Close from a failure to generate usable poll XML afterward.",
+      "recommended_evidence": [
+        "Store Close confirmation",
+        "Poll file presence",
+        "Report presence",
+        "Exact Store Close batch message",
+        "Business date"
+      ],
+      "guardrails": [
+        "Do not tell the store to repeat Store Close merely because XML is missing.",
+        "Verify regenerated files before Poll Day."
+      ],
+      "recommended_fields": [
+        "store_close_status",
+        "poll_files_status",
+        "reports_status"
+      ]
+    },
+    {
+      "id": "malformed-xml",
+      "name": "Poll XML Present but Bad / Malformed",
+      "category": "Passport XML",
+      "summary": "Poll files may exist yet still be unusable because the generated XML is incomplete or malformed.",
+      "support_level": "moderate",
+      "safety": "changes_something",
+      "match_rules": [
+        {
+          "type": "text_any",
+          "values": [
+            "bad poll files",
+            "malformed xml",
+            "bad xml",
+            "ended before it began",
+            "end before begin",
+            "poll files are bad",
+            "end value appears before begin"
+          ],
+          "weight": 7
+        },
+        {
+          "type": "choice_any",
+          "step": "uploads",
+          "values": [
+            "Normal poll files present",
+            "Files present but timestamps look wrong"
+          ],
+          "weight": 1
+        },
+        {
+          "type": "choice_any",
+          "step": "poll",
+          "values": [
+            "Poll failed",
+            "No files available",
+            "Other"
+          ],
+          "weight": 1
+        },
+        {
+          "type": "field_equals",
+          "field": "poll_files_status",
+          "value": "present_suspected_bad",
+          "weight": 8,
+          "label": "Poll XML exists but is suspected bad"
+        }
+      ],
+      "strong_score": 7,
+      "possible_score": 4,
+      "next_safe_step": "Inspect the existing poll XML/timestamps for evidence that the files are invalid before regenerating them.",
+      "why": "Files being present does not prove they are valid; historical cases include generated poll files that could not be used until XML was regenerated.",
+      "recommended_evidence": [
+        "Poll XML files",
+        "Begin/end values or malformed data evidence",
+        "File timestamps",
+        "Exact poll result"
+      ],
+      "guardrails": [
+        "Do not delete or replace files based only on file count.",
+        "Regenerate XML only after confirming the existing files are unusable."
+      ],
+      "recommended_fields": [
+        "poll_files_status",
+        "latest_file_time"
+      ]
+    }
+  ]
+}
