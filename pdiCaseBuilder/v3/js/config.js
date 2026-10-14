@@ -1,4 +1,4 @@
-export const APP_VERSION = '3.0.0-dev';
+export const APP_VERSION = '3.0.1-dev';
 export const PATTERN_LIBRARY_VERSION = '1.0.0';
 export const EVIDENCE_SCHEMA_VERSION = '1.0';
 export const DB_NAME = 'pdi_case_builder_v3';

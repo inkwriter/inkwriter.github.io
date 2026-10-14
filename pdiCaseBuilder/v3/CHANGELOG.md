@@ -1,3 +1,9 @@
+# 3.0.1-dev
+- Fixed Guided Mode **Not sure** so it skips the current evidence question instead of immediately asking the same question again.
+- Added skipped-evidence tracking to the case record.
+- Added an inline favicon to avoid a harmless browser favicon 404 on GitHub Pages.
+- Added a regression test for skipped evidence.
+
 # Changelog
 
 ## 3.0.0-dev — Modular pilot

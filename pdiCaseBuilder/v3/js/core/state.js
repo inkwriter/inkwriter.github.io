@@ -24,7 +24,8 @@ export function createEmptyCase() {
     isDemo: false,
     workflow: {
       currentStep: 'intake',
-      mode: 'guided'
+      mode: 'guided',
+      skippedEvidence: []
     },
     overview: {
       store: '',
@@ -150,6 +151,7 @@ export function normalizeCase(raw) {
   merged.resolution ||= base.resolution;
   merged.timeline ||= [];
   merged.workflow ||= base.workflow;
+  if (!Array.isArray(merged.workflow.skippedEvidence)) merged.workflow.skippedEvidence = [];
   return merged;
 }
 

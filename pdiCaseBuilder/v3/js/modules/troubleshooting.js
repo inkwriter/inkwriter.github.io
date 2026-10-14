@@ -73,7 +73,7 @@ function evidenceQuestion(c,field) {
   const meta=EVIDENCE_LABELS[field.id];
   if (!meta) return `<div class="panel guided-card"><h2>${escapeHtml(field.label)}</h2><p class="muted">Switch to Technician Mode to capture this evidence field.</p></div>`;
   const [label,values]=meta;
-  return `<div class="panel guided-card"><span class="step-number">?</span><div class="card-kicker"><span class="safety-dot read_only"></span>Highest-value missing evidence</div><h2>${escapeHtml(label)}</h2><p class="muted">This answer can materially change which known pattern ranks highest.</p><div class="inline-choices">${values.filter(v=>v!=='unknown').map(v=>`<button type="button" class="pill-choice ${c.evidence[field.id]===v?'active':''}" data-evidence-choice="${field.id}" data-value="${v}">${escapeHtml(pretty(v))}</button>`).join('')}</div><button class="btn small" style="margin-top:10px" data-evidence-choice="${field.id}" data-value="unknown">Not sure</button></div>`;
+  return `<div class="panel guided-card"><span class="step-number">?</span><div class="card-kicker"><span class="safety-dot read_only"></span>Highest-value missing evidence</div><h2>${escapeHtml(label)}</h2><p class="muted">This answer can materially change which known pattern ranks highest.</p><div class="inline-choices">${values.filter(v=>v!=='unknown').map(v=>`<button type="button" class="pill-choice ${c.evidence[field.id]===v?'active':''}" data-evidence-choice="${field.id}" data-value="${v}">${escapeHtml(pretty(v))}</button>`).join('')}</div><button class="btn small" style="margin-top:10px" data-evidence-choice="${field.id}" data-value="unknown" title="Skip this question for now">Not sure — skip for now</button></div>`;
 }
 
 function selectEvidence(c,id,label,values){return `<div class="tech-section"><h3>${escapeHtml(label)}</h3><div class="field"><select data-evidence-select="${id}">${values.map(v=>`<option value="${v}" ${c.evidence[id]===v?'selected':''}>${escapeHtml(pretty(v))}</option>`).join('')}</select></div></div>`}
@@ -86,8 +86,26 @@ function bind(root,c,context){
   root.querySelectorAll('[data-check-message]').forEach(el=>el.addEventListener('input',()=>{c.checks.poll.message=el.value;context.onChange?.()}));
   root.querySelectorAll('[data-shot-input]').forEach(input=>input.addEventListener('change',async()=>{await addScreenshots(c,input.dataset.shotInput,input.files);context.onChange?.({rerender:true})}));
   root.querySelectorAll('[data-shot-gallery]').forEach(g=>bindScreenshotGallery(g,c,opts=>context.onChange?.(opts)));
-  root.querySelectorAll('[data-evidence-choice]').forEach(btn=>btn.addEventListener('click',()=>{c.evidence[btn.dataset.evidenceChoice]=btn.dataset.value;context.onChange?.({timeline:{source:'Evidence',text:`${pretty(btn.dataset.evidenceChoice)}: ${pretty(btn.dataset.value)}`},rerender:true})}));
-  root.querySelectorAll('[data-evidence-select]').forEach(sel=>sel.addEventListener('change',()=>{c.evidence[sel.dataset.evidenceSelect]=sel.value;context.onChange?.({rerender:true})}));
+  root.querySelectorAll('[data-evidence-choice]').forEach(btn=>btn.addEventListener('click',()=>{
+    const fieldId=btn.dataset.evidenceChoice,value=btn.dataset.value;
+    c.evidence[fieldId]=value;
+    c.workflow ||= {};
+    c.workflow.skippedEvidence = Array.isArray(c.workflow.skippedEvidence) ? c.workflow.skippedEvidence : [];
+    if(value==='unknown'){
+      if(!c.workflow.skippedEvidence.includes(fieldId))c.workflow.skippedEvidence.push(fieldId);
+    } else {
+      c.workflow.skippedEvidence=c.workflow.skippedEvidence.filter(id=>id!==fieldId);
+    }
+    const timelineText=value==='unknown' ? `${pretty(fieldId)}: Not sure (skipped for now)` : `${pretty(fieldId)}: ${pretty(value)}`;
+    context.onChange?.({timeline:{source:'Evidence',text:timelineText},rerender:true});
+  }));
+  root.querySelectorAll('[data-evidence-select]').forEach(sel=>sel.addEventListener('change',()=>{
+    const fieldId=sel.dataset.evidenceSelect;
+    c.evidence[fieldId]=sel.value;
+    c.workflow ||= {};
+    c.workflow.skippedEvidence = Array.isArray(c.workflow.skippedEvidence) ? c.workflow.skippedEvidence.filter(id=>id!==fieldId) : [];
+    context.onChange?.({rerender:true});
+  }));
   root.querySelectorAll('[data-evidence-text]').forEach(el=>el.addEventListener('input',()=>{c.evidence[el.dataset.evidenceText]=el.value;context.onChange?.()}));
   const gt=root.querySelector('#gtAnalysisBlock');if(gt)bindGtAnalysis(gt,c,{onChange:opts=>context.onChange?.(opts)});
 }

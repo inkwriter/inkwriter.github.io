@@ -61,16 +61,17 @@ export function chooseNextEvidenceField(caseData, results, schema) {
   const fields = schema?.fields || [];
   const byId = Object.fromEntries(fields.map(f => [f.id, f]));
   const evidence = caseData?.evidence || {};
+  const skipped = new Set(caseData?.workflow?.skippedEvidence || []);
   const top = results?.[0]?.pattern;
   const preferred = top?.recommended_fields || [];
   for (const fieldId of preferred) {
     const field = byId[fieldId];
-    if (field && isMissing(field, evidence[fieldId])) return field;
+    if (field && !skipped.has(fieldId) && isMissing(field, evidence[fieldId])) return field;
   }
   const fallback = ['store_close_status','poll_files_status','host_status','paperwork_lock_status','xmlgateway_status'];
   for (const fieldId of fallback) {
     const field = byId[fieldId];
-    if (field && isMissing(field, evidence[fieldId])) return field;
+    if (field && !skipped.has(fieldId) && isMissing(field, evidence[fieldId])) return field;
   }
   return null;
 }

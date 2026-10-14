@@ -29,3 +29,8 @@ This environment's managed Chromium policy blocks loopback/private/file URLs, so
 ## Result
 
 The package is ready for a GitHub Pages **v3 pilot folder**, while v2 remains the stable page.
+
+## 3.0.1-dev Hotfix Verification
+- Guided Mode **Not sure** regression test added and passed.
+- Inline favicon added to eliminate the common harmless `favicon.ico` 404.
+- The site code contains no Chrome extension/runtime messaging APIs; `message channel closed` console errors are therefore external to the Case Builder (typically a browser extension).

@@ -1,6 +1,7 @@
 {
-  "app_version": "3.0.0-dev",
+  "app_version": "3.0.1-dev",
   "pattern_library_version": "1.0.0",
   "evidence_schema_version": "1.0",
-  "status": "pilot"
+  "status": "pilot",
+  "notes": "Hotfix: Not sure now skips evidence questions correctly; inline favicon prevents harmless 404."
 }
